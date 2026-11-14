@@ -108,13 +108,14 @@ COLUMNS = [('secao', 'Seção'), ('item', 'Item'), ('situacao', 'Situação'), (
            ('exigido', 'O edital pede'), ('pagina', 'Página'), ('trecho', 'Trecho do edital'), ('feito', 'Feito')]
 
 
-def to_csv(items, done=None):
+def to_csv(items, done=None, origem=None):
+    """origem: "Fictício" ou "Real" do match (startup/edital); vira a última coluna de cada linha."""
     done = done or {}
     out = io.StringIO()
     writer = csv.writer(out)
-    writer.writerow([label for _, label in COLUMNS])
+    writer.writerow([label for _, label in COLUMNS] + ['Origem'])
     for item in items:
-        row = [item.get(key, '') if key != 'feito' else ('Sim' if done.get(item['id']) else 'Não') for key, _ in COLUMNS]
+        row = [item.get(key, '') if key != 'feito' else ('Sim' if done.get(item['id']) else 'Não') for key, _ in COLUMNS] + [origem or '']
         # Neutraliza fórmulas quando o CSV é aberto em uma planilha.
         writer.writerow(["'" + v if isinstance(v, str) and v.startswith(('=', '+', '-', '@')) else ('' if v is None else v) for v in row])
     return '﻿' + out.getvalue()

@@ -7,7 +7,7 @@ from . import attention, captacao, score
 from .applications import APPROVED, LEGACY, LOST, REJECTED, STATUSES
 from .domain import deadline_info, today
 from .matching import match
-from .origin import is_demo
+from .origin import is_demo, match_provenance
 from .vault import EXPIRED, validity_status
 
 
@@ -53,7 +53,7 @@ def build(store, on=None, only_real=False):
         rows.append({'startup': org['name'], 'projeto': project['name'], 'edital': call['title'], 'status': a['status'],
                      'nota': score.text(info['value']), 'impedido': 'sim' if reason else 'não',
                      'valor_solicitado': a.get('valor_solicitado') or '', 'valor_aprovado': a.get('valor_captado') or '',
-                     'origem': a.get('origem') or 'real'})
+                     'origem': match_provenance(a, call, org)})  # "Fictício" ou "Real"
     expired = [f"{orgs[d['startup_id']]['name']}: {d['tipo']}" for d in store.all('documents')
                if d.get('startup_id') in orgs and validity_status(d) == EXPIRED]
     portfolio = [{'Startup': orgs[projects[a['project_id']]['startup_id']]['name'] if a.get('project_id') in projects

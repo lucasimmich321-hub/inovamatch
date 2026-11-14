@@ -67,5 +67,50 @@ def test_dashboard_nos_dados_reais(monkeypatch):
     app.session_state['real_data'] = real.data
     app.run()
     assert any('Sem dados reais ainda' in h.value for h in app.get('html'))
-    # Sem o bloco da lateral, com a base real não vazia não há como ir para a demonstração.
+    # Base real não vazia: a demonstração continua acessível pelo menu do usuário (Institucional).
+    assert any(b.label == 'Carregar demonstração' for b in app.button)
+    assert any('Nesta base: 0 startup(s)' in c.value for c in app.caption)  # exemplos fictícios fora da contagem real
+
+
+def test_menu_do_usuario_base_e_alertas_ocultos(monkeypatch):
+    """Menu do usuário: botão único com o nome; base/demonstração só no Institucional; Alertas fora do menu por padrão."""
+    monkeypatch.delenv('INOVAMATCH_STORAGE', raising=False)
+    monkeypatch.delenv('INOVAMATCH_SHOW_ALERTAS', raising=False)
+    app = AppTest.from_file(APP, default_timeout=60).run()
+    assert not any(b.label == 'Trocar perfil ou exportar' for b in app.button)
+    base = next(s for s in app.selectbox if s.label == 'Base de dados')
+    base.set_value('Demonstração').run()
+    assert app.session_state['dataset'] == 'Demonstração'
+    assert any('no menu do usuário (canto inferior esquerdo)' in w.value for w in app.warning)
+    goto(app, 'Alertas')
+    assert [t.value for t in app.title] == ['Início']  # rota oculta: continua onde estava
+    app.session_state['plan'] = 'Básico'
+    app.run()
+    assert not any(s.label == 'Base de dados' for s in app.selectbox)
     assert not any(b.label == 'Carregar demonstração' for b in app.button)
+
+
+def test_csv_de_dado_ficticio_tem_coluna_origem():
+    from inovamatch import dashboard, office_stats
+    from inovamatch.demo import demo_matches, load_demo
+    from inovamatch.link_checklist import to_csv as checklist_csv
+    store = Store({})
+    load_demo(store)
+    demo_matches(store)
+    office = office_stats.to_csv(office_stats.compute(store)['rows'])
+    assert office.splitlines()[0].endswith(',origem') and 'Fictício' in office
+    report = dashboard.to_csv(dashboard.build(store)['rows'])
+    assert report.splitlines()[0].endswith(',origem') and 'Fictício' in report
+    assert checklist_csv([], origem='Fictício').splitlines()[0].endswith(',Origem')
+
+
+def test_link_cadastrar_startup_abre_aba_de_cadastro(monkeypatch):
+    """"Cadastrar startup →" pede a aba de cadastro; o pedido vale enquanto o usuário está em Startups."""
+    monkeypatch.delenv('INOVAMATCH_STORAGE', raising=False)
+    app = AppTest.from_file(APP, default_timeout=60).run()
+    goto(app, 'Matches')
+    next(b for b in app.button if b.label == 'Cadastrar startup →').click().run()
+    assert not app.exception and [t.value for t in app.title] == ['Startups']
+    assert app.session_state['open_tab'] == ('Startups', 'cadastro')
+    goto(app, 'Editais', open_first=False)
+    assert 'open_tab' not in app.session_state

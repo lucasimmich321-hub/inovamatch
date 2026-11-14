@@ -114,11 +114,13 @@ h1,h2,h3 {font-family:var(--im-font);letter-spacing:-.02em;color:var(--im-dark);
 .im-chip {display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;border:1px solid transparent;}
 .im-chip-ok {background:#DDF3E4;color:#14532D;} .im-chip-info {background:#E3ECFF;color:#0A3A9E;}
 .im-chip-muted {background:#ECEFF5;color:#3A4560;} .im-chip-warn {background:#FDECC8;color:#7A3E06;border-color:#7A3E06;}
-.im-avatar {width:36px;height:36px;border-radius:50%;background:var(--im-dark);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
-/* Bloco do usuário fixo no pé da barra lateral. */
-.im-user {display:flex;flex-direction:column;line-height:1.3;min-width:0;}
-.im-user strong, .im-user span {overflow-wrap:anywhere;}
-.im-user span {font-size:13px;color:var(--im-muted);}
+/* Bloco do usuário fixo no pé da barra lateral: um botão só (avatar + nome + plano) que abre o menu do perfil. */
+.st-key-user_menu button {justify-content:flex-start;gap:10px;padding:6px 10px;min-height:52px;text-align:left;}
+.st-key-user_menu button::before {width:36px;height:36px;flex:none;border-radius:50%;background:var(--im-dark);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+.st-key-user_menu button [data-testid="stMarkdownContainer"] {text-align:left;min-width:0;}
+.st-key-user_menu button [data-testid="stMarkdownContainer"] p {font-weight:700;overflow-wrap:anywhere;white-space:normal;}
+.st-key-user_menu button [data-testid="stMarkdownContainer"]::after {display:block;font-size:13px;font-weight:400;color:var(--im-muted);}
 .st-key-user_block {position:sticky;bottom:0;background:#fff;border-top:1px solid var(--im-border);padding:10px 0 6px;margin-top:24px;z-index:2;}
 .im-chip-fail {background:#FBE0DC;color:#8A1C12;border-color:#8A1C12;}
 .im-band {display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 14px;margin:4px 0 8px;border:1px solid;font-size:14px;}
@@ -139,6 +141,11 @@ st.html(CSS)
 PAGE_DEFS = [('Início', 'inicio', ':material/home:'), ('Editais', 'editais', ':material/description:'),
              ('Startups', 'startups', ':material/rocket_launch:'), ('Matches', 'matches', ':material/handshake:'),
              ('Alertas', 'alertas', ':material/notifications:')]
+# Chave única da página Alertas: False tira o item do menu e a rota (código e testes ficam). Pedido do Kalil, 14/11.
+# Os testes da fila de alertas ligam com INOVAMATCH_SHOW_ALERTAS=1.
+SHOW_ALERTAS = os.environ.get('INOVAMATCH_SHOW_ALERTAS') == '1'
+if not SHOW_ALERTAS:
+    PAGE_DEFS = [d for d in PAGE_DEFS if d[0] != 'Alertas']
 PAGES = [title for title, _, _ in PAGE_DEFS]
 # Nomes de telas antigas (links internos e o ai_ui, que não é alterado) levam à página nova equivalente.
 LEGACY_PAGES = {'Dashboard': 'Início', 'Painel': 'Início', 'Radar de Editais': 'Editais', 'Vínculos': 'Editais', 'Candidaturas': 'Matches',
@@ -170,10 +177,12 @@ def locked_card(feature, key):
         st.page_link(CTX['plans_page'], label='Ver planos', icon=':material/workspace_premium:')
 
 
-def go(page, call_id=None):
+def go(page, call_id=None, tab=None):
     st.session_state.goto = LEGACY_PAGES.get(page, page)
     if call_id:
         st.session_state.focus_call = call_id
+    if tab:  # aba que a página de destino abre (ex.: 'cadastro' em Startups, 'novo_projeto' em Matches)
+        st.session_state.open_tab = (st.session_state.goto, tab)
 
 
 def demo_activate():
@@ -441,7 +450,7 @@ def candidacy_form(store, simulated):
     if not startups:
         if kind == 'Startup':
             st.info('Cadastre uma startup para criar o primeiro projeto dela.')
-            st.button('Cadastrar startup →', on_click=go, args=('Startups',), key='cand_go_startups')
+            st.button('Cadastrar startup →', on_click=go, args=('Startups', None, 'cadastro'), key='cand_go_startups')
             return
         with st.form(f'quick_org_{kind}_{simulated}'):
             st.markdown(f'**Cadastrar proponente: {kind}**')
@@ -733,7 +742,7 @@ def documentation_view(call):
     if submission:
         st.markdown('**Condições de envio identificadas**')
         st.dataframe([{'Condição': c['evidence'], 'Página': c.get('page'), 'Fonte': c['source'], 'Revisão': c.get('review_status')} for c in submission], hide_index=True, width='stretch')
-    st.caption('O checklist operacional é individual por startup, projeto e edital. Marque as tarefas e acompanhe o progresso no Copiloto.')
+    st.caption('O checklist operacional é individual por startup, projeto e edital. Marque as tarefas e acompanhe o progresso em Matches › Gerenciar.')
     st.caption('Veja quais startups atendem a este edital na aba “Startups compatíveis”.')
 
 
@@ -769,7 +778,10 @@ def publication_panel(store, call):
     state = review_state(call)
     blockers = publication_blockers(call)
     with st.container(border=True):
-        st.markdown(f'**{state}**' + (' · visível para as startups' if state == PUBLISHED else ' · ainda não visível para as startups'))
+        # Simulação: ainda não existe acesso de startup; "publicar" só marca o edital como revisado e liberado.
+        st.markdown(f'**{state}**' + (' · visível para as startups (simulação)' if state == PUBLISHED
+                                      else ' · ainda não visível para as startups (simulação)'))
+        st.caption('Simulação: as startups ainda não têm acesso ao InovaMatch; publicar marca o edital como revisado e liberado.')
         if state == PUBLISHED:
             if st.button('Voltar para revisão', key='unpublish_' + call['id']):
                 store.save('calls', {**call, 'review_state': AWAITING})
@@ -779,9 +791,9 @@ def publication_panel(store, call):
                 st.caption('Falta: ' + item)
             if blockers and not call.get('source_closed'):
                 quick_publish(store, call)
-            if st.button('Publicar para as startups', type='primary', disabled=bool(blockers), key='publish_' + call['id']):
+            if st.button('Publicar para as startups (simulação)', type='primary', disabled=bool(blockers), key='publish_' + call['id']):
                 store.save('calls', {**call, 'review_state': PUBLISHED, 'published_at': now_iso()})
-                st.session_state.flash = 'Edital publicado para as startups.'
+                st.session_state.flash = 'Edital publicado (simulação: as startups ainda não têm acesso).'
                 st.rerun()
 
 
@@ -845,7 +857,7 @@ def versions_view(store, call):
             st.caption('Nenhuma leitura de documento registrada ainda. A primeira leitura (URL ou PDF) cria a versão 1.')
     if CTX.get('simulated') and is_demo(call):
         if st.button('Simular retificação', key='simulate_rect_' + call['id'], icon=':material/edit_document:',
-                     help='Só na demonstração: muda o texto deste edital fictício e dispara o aviso de edital alterado.'):
+                     help='Só na demonstração: muda o texto deste edital fictício e marca o edital como alterado (faixa nos matches).'):
             simulate_rectification(store, call['id'])
             st.session_state.flash = 'Retificação simulada: o edital fictício ficou "Alterado".'
             st.rerun()
@@ -982,7 +994,7 @@ def update_panel(store):
 def radar(store, simulated):
     heading('Editais', 'Editais da FAPESC lidos do PDF, com página e trecho de cada exigência. Revise, confirme o prazo e publique.')
     if simulated:
-        st.info('Você está vendo editais fictícios. Escolha “Dados reais” na barra lateral para consultar a FAPESC.')
+        st.info('Você está vendo editais fictícios. Para consultar a FAPESC, escolha “Dados reais” no menu do usuário (canto inferior esquerdo).')
     else:
         update_panel(store)
         with st.expander('Adicionar edital por URL, PDF ou cadastro manual'):
@@ -1157,7 +1169,7 @@ def clear_radar_filters(sk):
 ESSENTIAL_COLUMNS = ['Requisito', 'Resultado', 'Obrigatório', 'Exigência', 'Dados declarados', 'Justificativa']
 
 
-def result_table(result, key):
+def result_table(result, key, origem=''):
     rows = [{'Requisito': r['requirement'], 'Escopo': {'startup': 'Empresa', 'project': 'Projeto', 'call': 'Edital'}[r['scope']],
              'Exigência': requirement_text(r), 'Dados declarados': display(r['actual']), 'Resultado': attention.requirement_state(r),
              'Obrigatório': 'Obrigatório' if r['mandatory'] else 'Opcional', 'Justificativa': r['reason'], 'Fonte': r['source'],
@@ -1165,6 +1177,7 @@ def result_table(result, key):
     for target, row in zip(rows, result['rows']):
         target['Dimensão'] = DIMENSIONS.get(row.get('dimension'), 'Elegibilidade obrigatória')
         target['Pré-comparação (exigência não validada)'] = row.get('provisional_status', PENDING) if row['status'] == PENDING else '—'
+        target['Origem'] = origem  # "Fictício" ou "Real": vai para o CSV e para "todas as colunas"
     show_all = st.toggle('Mostrar todas as colunas (fonte, página, evidência, dimensão)', key='all_cols_' + key)
     st.dataframe(styled_requirements(rows), hide_index=True, width='stretch', column_order=None if show_all else ESSENTIAL_COLUMNS)
     output = io.StringIO()
@@ -1296,7 +1309,7 @@ def link_detail(store, call, startup, project, show_checklist=True, compact=Fals
         locked_card('requirements', 'req_' + call['id'] + project['id'])
     else:
         with st.expander('Justificativas e evidências da comparação', expanded=not compact):
-            result_table(result, 'match')
+            result_table(result, 'match', match_provenance(application, call, startup))
     if show_checklist and can('manage'):
         with st.expander('Checklist do match', expanded=True):
             link_checklist_view(store, call, startup, project)
@@ -1447,7 +1460,7 @@ def link_checklist_view(store, call, startup, project):
     name = f"checklist-{startup['name']}-{call['title'][:40]}"
     safe = ''.join(ch if ch.isalnum() else '-' for ch in name).strip('-').lower()
     a, b = st.columns(2)
-    a.download_button('Exportar checklist (CSV)', checklist_csv(items, done), safe + '.csv', 'text/csv', key='chk_csv_' + call['id'] + project['id'])
+    a.download_button('Exportar checklist (CSV)', checklist_csv(items, done, match_provenance(store.get('applications', f"{call['id']}:{project['id']}"), call, startup)), safe + '.csv', 'text/csv', key='chk_csv_' + call['id'] + project['id'])
     b.download_button('Exportar checklist (PDF)', checklist_pdf(items, f"Checklist · {call['title']}", f"{startup['name']} · {project['name']}", done),
                       safe + '.pdf', 'application/pdf', key='chk_pdf_' + call['id'] + project['id'])
 
@@ -1559,7 +1572,7 @@ def compat_section(store, call):
     """Ação "Startups compatíveis" do detalhe do edital (antes eram as telas Match e Vínculos)."""
     if not store.all('startups'):
         st.info('Cadastre as startups do polo para ver quais atendem a este edital.')
-        st.button('Cadastrar startup →', on_click=go, args=('Startups',), key='compat_go_' + call['id'])
+        st.button('Cadastrar startup →', on_click=go, args=('Startups', None, 'cadastro'), key='compat_go_' + call['id'])
         return
     if review_state(call) != PUBLISHED and not call.get('simulated'):
         st.caption('Edital ainda em revisão: o resultado usa critérios que podem mudar até a publicação.')
@@ -1567,7 +1580,7 @@ def compat_section(store, call):
     st.dataframe(rows, hide_index=True, width='stretch', column_order=None if can('requirements') else  # Gratuito: sem os pontos que reduzem
                  [k for k in (rows[0] if rows else {}) if k not in ('Motivo principal', 'Pendentes', 'Não atendidos')])
     if not pairs:
-        st.button('Novo projeto →', on_click=go, args=('Matches',), key='compat_new_' + call['id'])
+        st.button('Novo projeto →', on_click=go, args=('Matches', None, 'novo_projeto'), key='compat_new_' + call['id'])
         return
     chosen = st.selectbox('Abrir match', list(pairs), key='links_open_' + call['id'],
                           format_func=lambda pid: pairs[pid][0]['name'] + ' · ' + pairs[pid][1]['name'])
@@ -1618,8 +1631,8 @@ def example_startups_panel(store):
     with st.container(border=True):
         if not present:
             st.markdown('**Testar com editais reais**')
-            st.caption('Adiciona 6 startups e projetos fictícios (selo Demonstração). Os editais continuam os reais; '
-                       'matches com essas startups também saem como Demonstração.')
+            st.caption('Adiciona 6 startups e projetos fictícios (selo Fictício). Os editais continuam os reais; '
+                       'matches com essas startups também saem com o selo Fictício.')
             if st.button('Adicionar startups de exemplo (fictícias)', icon=':material/group_add:', key='add_examples'):
                 count = add_example_startups(store)
                 st.session_state.flash = f'{count} startups de exemplo adicionadas (fictícias).'
@@ -1665,6 +1678,12 @@ def startup_detail(store, startup):
     startup_matches(store, startup)
 
 
+def opened_tab(name, label):
+    """Aba pedida por um link (go(..., tab=name)). Fica fixa enquanto o usuário estiver nessa página: o 'default' das abas
+    precisa ser o mesmo em todo rerun, senão a aba pode voltar para a primeira depois de salvar. main() limpa ao sair."""
+    return label if st.session_state.get('open_tab') == (CTX.get('page'), name) else None
+
+
 def scoped():
     """Perfil abaixo do Institucional: a base é vista só pela startup do perfil (storage.ScopedStore)."""
     return not can('multi_startup')
@@ -1678,8 +1697,9 @@ def my_startup():
 def missing_persona_startup():
     plan = current_plan()
     st.html(empty_state('A startup deste perfil não está nesta base',
-                        f'{plans.PERSONAS[plan]} ({plan}) usa uma startup fictícia da Demonstração. Troque para o perfil '
-                        'Institucional e carregue a demonstração (ou, em Dados reais, adicione as startups de exemplo).'))
+                        f'{plans.PERSONAS[plan]} ({plan}) usa uma startup fictícia da Demonstração. No menu do usuário (canto inferior '
+                        'esquerdo), troque para o perfil Institucional e carregue a demonstração (ou, em Dados reais, '
+                        'adicione as startups de exemplo em Startups).'))
 
 
 def my_startup_page(store, simulated):
@@ -1688,7 +1708,7 @@ def my_startup_page(store, simulated):
     if not startup:
         missing_persona_startup()
         return
-    tab_profile, tab_edit, tab_docs = st.tabs(['Perfil', 'Cadastro', 'Documentos'])
+    tab_profile, tab_edit, tab_docs = st.tabs(['Perfil', 'Cadastro', 'Documentos'], default=opened_tab('cadastro', 'Cadastro'))
     with tab_profile:
         startup_detail(store, startup)
     with tab_edit:
@@ -1699,7 +1719,8 @@ def my_startup_page(store, simulated):
 
 def startups_page(store, simulated):
     heading('Startups', 'As startups que o escritório atende: perfil, documentos e editais compatíveis.')
-    tab_list, tab_edit, tab_docs = st.tabs(['Lista e perfil', 'Cadastrar ou editar', 'Documentos'])
+    edit_label = 'Cadastrar ou editar'
+    tab_list, tab_edit, tab_docs = st.tabs(['Lista e perfil', edit_label, 'Documentos'], default=opened_tab('cadastro', edit_label))
     with tab_list:
         startups_list(store)
     with tab_edit:
@@ -2010,10 +2031,11 @@ def matches_list(store, simulated):
 
 def candidaturas_page(store, simulated):
     heading('Matches', 'Edital × startup: do sugerido ao resultado. Checklist, documentos e andamento de cada match.')
+    new_tab = opened_tab('novo_projeto', 'Novo projeto')  # "Novo projeto →" do detalhe do edital abre direto esta aba
     if scoped():  # abaixo do Institucional: sem a aba Resultados (é do escritório)
-        tab_list, tab_new = st.tabs(['Matches', 'Novo projeto'])
+        tab_list, tab_new = st.tabs(['Matches', 'Novo projeto'], default=new_tab)
     else:
-        tab_list, tab_new, tab_results = st.tabs(['Matches', 'Novo projeto', 'Resultados'])
+        tab_list, tab_new, tab_results = st.tabs(['Matches', 'Novo projeto', 'Resultados'], default=new_tab)
         with tab_results:
             office_results(store)
     with tab_list:
@@ -2218,27 +2240,54 @@ def planos_page():
     heading('Planos', 'Simulação para a demonstração: sem login, sem cobrança e sem gravar a escolha. Preços a definir.')
     st.html(f'<div class="im-chips">{chip("Demonstração")}{chip(f"Plano atual: {current_plan()}", "info")}</div>')
     st.dataframe([dict(zip(['Recurso'] + plans.PLANS, row)) for row in plans.COMPARISON], hide_index=True, width='stretch')
-    st.caption('“Em breve” = ainda não construído. Troque o perfil em “Trocar perfil ou exportar”, no pé da barra lateral.')
+    st.caption('“Em breve” = ainda não construído. Troque o perfil no menu do usuário (canto inferior esquerdo).')
 
 
 def change_profile(key):
     st.session_state.plan = st.session_state[key]
 
 
+def change_dataset(key):
+    st.session_state.dataset = st.session_state[key]
+
+
+def dataset_legend(store, simulated):
+    """Legenda curta da base atual: o texto fixo dos fictícios na Demonstração; em Dados reais, a contagem da base."""
+    if simulated:
+        return '6 startups, 3 editais e 8 matches fictícios para experimentar o fluxo completo.'
+    startups, calls, apps = store.all('startups'), store.all('calls'), store.all('applications')
+    real = lambda rows: sum(not is_demo(r) for r in rows)
+    text = f'Nesta base: {real(startups)} startup(s), {real(calls)} edital(is) e {real(apps)} match(es) reais.'
+    fict = len(startups) - real(startups)
+    return text + (f' Mais {fict} startup(s) de exemplo (fictícias), fora dos números.' if fict else '')
+
+
 def user_block(store, simulated):
-    """Canto inferior da barra lateral: perfil fictício (plano) e exportação. Simulação, não é login real."""
+    """Canto inferior da barra lateral: um botão só (avatar, nome e plano) que abre o menu do perfil.
+    Perfil fictício (simulação, não é login real). No Institucional, o menu também tem a base e a demonstração."""
     plan = current_plan()
     name = plans.PERSONAS[plan]
+    # O rótulo do botão leva só o nome; avatar (iniciais) e "Plano X" entram por CSS, em volta do mesmo botão.
+    st.html(f'<style>.st-key-user_menu button::before {{content:"{plans.initials(name)}";}}'
+            f'.st-key-user_menu button [data-testid="stMarkdownContainer"]::after {{content:"Plano {escape(plan)}";}}</style>')
     with st.container(key='user_block'):
-        # Nome e plano em duas linhas (antes "Nome · Plano" no botão, cortado com reticências na barra estreita).
-        avatar, who = st.columns([1, 4], vertical_alignment='center')
-        avatar.html(f'<div class="im-avatar" aria-hidden="true">{plans.initials(name)}</div>')
-        who.html(f'<div class="im-user"><strong>{escape(name)}</strong><span>Plano {escape(plan)}</span></div>')
-        with st.popover('Trocar perfil ou exportar', icon=':material/manage_accounts:', width='stretch'):
+        with st.popover(name, width='stretch', key='user_menu', help=f'{name} · Plano {plan}. Abre o menu do perfil.'):
             key = '_profile_widget_' + plan  # chave amarrada ao valor, como o seletor de base
             st.selectbox('Trocar perfil (simulação)', plans.PLANS, index=plans.PLANS.index(plan), key=key,
                          format_func=plans.persona_label, on_change=change_profile, args=(key,),
                          help='Perfil fictício para mostrar o que cada plano libera. Não é login real; nada é salvo.')
+            if can('multi_startup'):  # base e demonstração: só o Institucional (escritório)
+                options = [ORIGIN_LABELS['real'], ORIGIN_LABELS[DEMO]]
+                current = ORIGIN_LABELS[DEMO] if simulated else ORIGIN_LABELS['real']
+                # Chave amarrada ao valor: quando a base muda (inclusive pelo botão), nasce um seletor novo já com o valor certo.
+                base_key = '_dataset_widget_' + current
+                st.selectbox('Base de dados', options, index=options.index(current), key=base_key,
+                             on_change=change_dataset, args=(base_key,))
+                st.button('Carregar demonstração', on_click=demo_activate, width='stretch', icon=':material/play_circle:',
+                          key='menu_demo')
+                st.caption(dataset_legend(store, simulated))
+            st.caption('Dados só nesta sessão: somem ao recarregar ou fechar o site. Exporte antes de sair.'
+                       if simulated or not getattr(store, 'path', None) else 'SQLite local: dados compartilhados neste servidor.')
             st.download_button('Exportar dados da sessão (JSON)', store.export(),
                                'inovamatch-demo.json' if simulated else 'inovamatch-dados.json', 'application/json',
                                width='stretch', icon=':material/download:',
@@ -2278,14 +2327,13 @@ def main():
     options = [ORIGIN_LABELS['real'], ORIGIN_LABELS[DEMO]]
     current = st.session_state.get('dataset', options[0])
     dataset = current if current in options else options[0]  # sessão antiga ("Meus dados") cai em Dados reais
-    # O bloco "Espaço de trabalho" (seletor de base, "Carregar demonstração", legenda) saiu da lateral (pedido do Kalil, 14/11).
-    # A base vem só da sessão: "Dados reais" por padrão; "Demonstração" só pelo botão do Início com a base vazia (demo_activate).
+    # Base e demonstração ficam no menu do usuário (só Institucional; nada na lateral). A escolha vive na sessão.
     st.session_state.dataset = dataset
     simulated = dataset == ORIGIN_LABELS[DEMO]
     if simulated:
         store = Store(st.session_state.setdefault('demo_data', {}))
         st.warning('**Você está na Demonstração.** Startups, editais e matches desta base são fictícios e não representam '
-                   'oportunidades reais. Para ver os editais coletados da FAPESC, escolha “Dados reais” na barra lateral.',
+                   'oportunidades reais. Para ver os editais coletados da FAPESC, escolha “Dados reais” no menu do usuário (canto inferior esquerdo).',
                    icon=':material/science:')
     else:
         storage_mode = os.environ.get('INOVAMATCH_STORAGE', 'session').lower()
@@ -2299,7 +2347,10 @@ def main():
     if goto in pages:
         st.switch_page(pages[goto])
     migrate_statuses(store)  # nomes antigos de status (Submetida, Aprovada…) viram o ciclo novo
-    CTX.update(store=store, simulated=simulated)
+    page = next((k for k, v in pages.items() if v.url_path == nav.url_path), None)
+    if st.session_state.get('open_tab', (page,))[0] != page:
+        st.session_state.pop('open_tab', None)  # saiu da página: a próxima visita abre na primeira aba
+    CTX.update(store=store, simulated=simulated, page=page)
     nav.run()
 
 

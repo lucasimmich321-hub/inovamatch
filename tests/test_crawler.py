@@ -201,7 +201,7 @@ def test_publish_button_in_review_screen():
     app.session_state['real_data'] = data
     goto(app, 'Editais')
     assert not app.exception
-    button = next(b for b in app.button if b.label == 'Publicar para as startups')
+    button = next(b for b in app.button if b.label == 'Publicar para as startups (simulação)')
     assert not button.disabled
     button.click().run()
     assert not app.exception

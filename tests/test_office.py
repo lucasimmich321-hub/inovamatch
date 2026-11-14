@@ -51,7 +51,8 @@ def open_app(data, page='Editais', focus='pub'):
 
 # T3 ------------------------------------------------------------------------------------------
 
-def test_five_task_pages_with_real_navigation():
+def test_five_task_pages_with_real_navigation(monkeypatch):
+    monkeypatch.setenv('INOVAMATCH_SHOW_ALERTAS', '1')  # com a chave ligada, as 5 páginas continuam navegáveis
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
     assert [t.value for t in app.title] == ['Início']
     for page in ['Editais', 'Startups', 'Matches', 'Alertas', 'Início']:

@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 
 from .applications import APPROVED, LOST, NOT_SUBMITTED, PREPARING, REASONS, REJECTED, SUBMITTED, SUGGESTED
 from .domain import today
+from .origin import match_provenance
 
 DEFINITIONS = {
     'Captado': 'Soma do valor aprovado dos matches Aprovados com resultado no período.',
@@ -69,9 +70,12 @@ def compute(store, start=None, end=None):
     rows = []
     for a in final + [x for x in applications if x.get('status') in (SUGGESTED, PREPARING, SUBMITTED)]:
         info = describe(store, a)
+        call = next((c for c in store.all('calls') if c['id'] == a.get('call_id')), None)
+        startup = next((s for s in store.all('startups') if s['id'] == a.get('startup_id')), None)
         rows.append({**info, 'status': a['status'], 'valor_solicitado': a.get('valor_solicitado'), 'valor_captado': a.get('valor_captado'),
                      'data_submissao': a.get('data_submissao'), 'data_resultado': a.get('data_resultado'), 'motivo': a.get('motivo') or '',
-                     'motivo_obs': a.get('motivo_obs') or '', 'simulada': bool(a.get('simulated'))})
+                     'motivo_obs': a.get('motivo_obs') or '', 'simulada': bool(a.get('simulated')),
+                     'origem': match_provenance(a, call, startup)})  # "Fictício" ou "Real" (match, edital ou startup)
         if a not in final:
             continue
         for key in ('agencia', 'startup'):
@@ -95,7 +99,7 @@ def compute(store, start=None, end=None):
 def to_csv(rows):
     out = io.StringIO()
     columns = ['agencia', 'edital', 'startup', 'status', 'valor_solicitado', 'valor_captado', 'data_submissao', 'data_resultado',
-               'motivo', 'motivo_obs', 'simulada']
+               'motivo', 'motivo_obs', 'simulada', 'origem']
     writer = csv.DictWriter(out, fieldnames=columns)
     writer.writeheader()
     for row in rows:

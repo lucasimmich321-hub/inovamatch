@@ -4,11 +4,11 @@ O que é dado real, o que é demonstração e o que ainda não existe. Atualize 
 
 ## De onde vem cada edital
 
-- **Dados reais** (barra lateral → "Dados reais"): os editais vêm do crawler da FAPESC (`inovamatch/crawler.py`). Ele lê
+- **Dados reais** (menu do usuário, canto inferior esquerdo, perfil Institucional → "Dados reais"): os editais vêm do crawler da FAPESC (`inovamatch/crawler.py`). Ele lê
   as três listagens oficiais (chamadas abertas, em andamento e encerradas) e o PDF dos editais abertos. Também entram
   editais importados por URL ou PDF (`inovamatch/radar.py`) e editais cadastrados à mão. O armazenamento fica na sessão do
   navegador ou em SQLite (`INOVAMATCH_STORAGE=sqlite`), via `inovamatch/storage.py`.
-- **Demonstração** (barra lateral → "Demonstração" ou botão "Carregar demonstração"): tudo é gerado por código Python,
+- **Demonstração** (menu do usuário, perfil Institucional → "Demonstração" ou "Carregar demonstração"): tudo é gerado por código Python,
   e não por um arquivo JSON. São 2 editais e 3 startups em `inovamatch/demo.py`, documentos fictícios em
   `inovamatch/vault.py` (`demo_documents`) e 10 matches históricos em `inovamatch/office_stats.py` (`demo_applications`).
   Nada disso sai da sessão nem entra na base real.

@@ -137,7 +137,8 @@ def test_nota_e_dashboard_institucional():
     assert 'Startups no portfólio' not in {m.label for m in app.metric}  # Início simples fora do Institucional
 
 
-def test_alertas_simulados_por_plano():
+def test_alertas_simulados_por_plano(monkeypatch):
+    monkeypatch.setenv('INOVAMATCH_SHOW_ALERTAS', '1')  # página oculta por padrão (SHOW_ALERTAS); o código continua testado
     import sys
     from pathlib import Path
     from streamlit.testing.v1 import AppTest
@@ -177,7 +178,8 @@ def test_perfil_abaixo_do_institucional_ve_so_a_sua_startup():
     assert plans.persona_label('Gratuito') == 'Lucas Andrade · Gratuito'
 
 
-def test_hash_do_edital_e_retificacao_simulada():
+def test_hash_do_edital_e_retificacao_simulada(monkeypatch):
+    monkeypatch.setenv('INOVAMATCH_SHOW_ALERTAS', '1')  # confere também o aviso na página Alertas (oculta por padrão)
     import sys
     from pathlib import Path
     from streamlit.testing.v1 import AppTest
@@ -213,8 +215,9 @@ def test_dados_reais_com_startups_de_exemplo_e_publicacao_rapida(monkeypatch):
     app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
     assert any(s.label == 'Trocar perfil (simulação)' for s in app.selectbox)  # perfil fictício no pé da barra lateral
     html = ' '.join(h.value for h in app.get('html'))
-    assert 'Marina Souza' in html and 'Plano Institucional' in html  # nome e plano em duas linhas, fora do botão
-    assert any('Trocar perfil ou exportar' in str(p.proto) for p in app.get('popover'))
+    # Botão único do menu: o rótulo é o nome; avatar e "Plano X" entram por CSS no mesmo botão.
+    assert 'Plano Institucional' in html and any('Marina Souza' in str(p.proto) for p in app.get('popover'))
+    assert not any('Trocar perfil ou exportar' in str(p.proto) for p in app.get('popover'))
     goto(app, 'Startups')
     next(b for b in app.button if b.label == 'Adicionar startups de exemplo (fictícias)').click().run()
     real = app.session_state['real_data']

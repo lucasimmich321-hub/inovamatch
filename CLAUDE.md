@@ -39,13 +39,13 @@ Foco: MVP para demonstração, não sistema completo.
 - Skills: design-taste-frontend (feita para landing page; usar na identidade), ui-ux-pro-max e web-design-guidelines (estrutura das telas).
 
 ## Decisões de arquitetura de informação
-- Navegação por tarefa, 5 páginas: Início, Editais, Startups, Candidaturas (vira "Matches"), Alertas. Match e Copiloto são ações dentro do edital e do perfil da startup.
+- Navegação por tarefa, 5 páginas: Início, Editais, Startups, Candidaturas (vira "Matches"), Alertas. Alertas está oculta desde 14/11 (SHOW_ALERTAS em app.py); o menu mostra 4. Match e Copiloto são ações dentro do edital e do perfil da startup.
 - Vocabulário único: "Match". Ciclo: Sugerido → Em preparação → Inscrito → Resultado (aprovado, reprovado, desistiu) → Gestão da captação (só se aprovado).
 - Cards de editais (não tabela): título, órgão, chip de status, prazo ("Até 15/06 · faltam 12 dias"), valor, resumo de 2 linhas, selo de origem, botões "Ver detalhes" e "Criar match". Filtros: busca, status, para quem, área, prazo, "Incluir encerrados", "Mostrar fora do foco", ordenar. Nunca mostrar filtro com uma única opção: use estado vazio com ação.
 - A tabela crua do crawler vira expander "Detalhes da consulta". Fonte que não funciona não aparece como opção.
 
 ## Dados: real x demonstração
-- Todo registro tem origem = "real" ou "demo". Match é demo se o edital ou a startup for demo. Interface: base "Dados reais" por padrão (o seletor da lateral foi removido em 14/11; a Demonstração só entra pelo botão do Início com a base vazia), aviso amarelo em demo e selo de origem pequeno em cada registro: "Fictício" (laranja) ou "Real (FAPESC)" / "Real" (origin.provenance).
+- Todo registro tem origem = "real" ou "demo". Match é demo se o edital ou a startup for demo. Interface: base "Dados reais" por padrão (seletor de base e "Carregar demonstração" ficam no menu do usuário, canto inferior esquerdo, só no perfil Institucional; também pelo botão do Início com a base vazia), aviso amarelo em demo e selo de origem pequeno em cada registro: "Fictício" (laranja) ou "Real (FAPESC)" / "Real" (origin.provenance).
 - Real: crawler da FAPESC (inovamatch/crawler.py), import por URL ou PDF (inovamatch/radar.py), entrada manual; armazenado na sessão ou em SQLite (inovamatch/storage.py).
 - Demonstração: gerada por código Python (inovamatch/demo.py com 2 editais abertos e 3 startups; demo_matches cria um 3º edital encerrado, mais 3 startups e 8 matches prontos, sem órfãos; o botão não carrega mais os 10 históricos de office_stats.demo_applications, vault.demo_documents, office_stats.demo_applications com 10 matches históricos). Os JSON em docs/ e tests/fixtures/ são só registros de verificação; o app não os lê.
 - Tabela completa em docs/ESTADO_REAL.md.
@@ -271,3 +271,23 @@ Foco: MVP para demonstração, não sistema completo.
     certa já esteja carregada. Importar sessão nunca existiu.
   - O aviso "Dados só nesta sessão: exporte antes de sair" sumiu; resta só a dica do botão "Exportar dados da sessão".
 - 14/11/2026: auditoria de mockups (só leitura) em .ai/notes/2026-11-14-auditoria-mockups.md (fora do git).
+- 14/11/2026: menu do usuário, demonstração de volta, rótulos e Alertas oculta (ajustes, sem fase nova). 241 testes.
+  - Bloco do usuário = um botão só (st.popover key 'user_menu'): rótulo é o nome; avatar (iniciais) e "Plano X" entram por CSS
+    (::before / ::after) no mesmo botão. Saiu o botão "Trocar perfil ou exportar". Menu: trocar perfil, exportar JSON e o aviso
+    "Dados só nesta sessão" (ou "SQLite local").
+  - Institucional: no mesmo menu, "Base de dados" (Dados reais / Demonstração), "Carregar demonstração" e legenda da base
+    (dataset_legend: na demo "6 startups, 3 editais e 8 matches fictícios"; em Dados reais a contagem só dos reais + exemplos
+    "fora dos números"). Nada voltou para a lateral. Em Dados reais o dashboard já excluía fictícios (only_real); não foi alterado.
+  - Textos que citavam a barra lateral: agora "no menu do usuário (canto inferior esquerdo)" (aviso amarelo da demo, info de
+    Editais, estado vazio de perfil sem startup, legenda da tela Planos). Startups de exemplo: "selo Fictício". docs/ESTADO_REAL.md idem.
+  - "Publicar para as startups (simulação)", "visível para as startups (simulação)" + legenda: startups ainda não têm acesso.
+  - "Cadastrar startup →" abre a aba "Cadastrar ou editar" (ou "Cadastro" em Minha startup); "Novo projeto →" abre Matches › Novo projeto.
+    go(page, tab=...) grava open_tab = (página, aba); fica fixo enquanto o usuário está na página e main() limpa ao sair.
+  - CSVs com origem ("Fictício" / "Real", match_provenance): matches (Resultados), relatório do dashboard, checklist e análise de requisitos.
+  - Detalhe do edital: "acompanhe o progresso em Matches › Gerenciar" (sem "Copiloto").
+  - Alertas oculta: SHOW_ALERTAS (app.py, perto de PAGE_DEFS) = INOVAMATCH_SHOW_ALERTAS == '1', falso por padrão. Tira o item do
+    menu e a rota (st.Page não é criada); alertas_page, inovamatch/alerts.py e os testes ficam (testes ligam a chave por env).
+    O Início não tinha link para Alertas; Planos mantém "Alertas por e-mail: Em breve". Menu lateral com 4 páginas.
+  - Cabeçalho "INOVALE 2026" não mexido (aguarda o Kalil confirmar o nome).
+  - Não verificado em navegador: aparência do botão do usuário (avatar e plano por CSS), abertura do popover, aba de destino aberta
+    de fato (AppTest não mostra a aba ativa), coluna Origem nos CSVs abertos em planilha.

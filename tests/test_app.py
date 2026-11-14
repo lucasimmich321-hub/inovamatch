@@ -34,7 +34,7 @@ def test_all_pages_and_demo_matching_and_copilot():
     button(app, 'Carregar demonstração').click().run()
     clean(app)
     assert app.session_state['dataset'] == 'Demonstração'
-    for page in ['Startups', 'Matches', 'Alertas', 'Início', 'Editais']:
+    for page in ['Startups', 'Matches', 'Início', 'Editais']:  # Alertas oculta (SHOW_ALERTAS); testada em test_captacao
         navigate(app, page)
     # Editais › Startups compatíveis: edital × proponentes com Atende / Pendente / Não atende.
     summary = next(d for d in app.dataframe if 'Motivo principal' in d.value.columns)
