@@ -20,7 +20,7 @@ from inovamatch.portfolio import overview, matrix, recalculate, register_applica
 from inovamatch.sources import SOURCES
 from inovamatch.filters import filter_calls, funding_value
 from inovamatch.ai_ui import render_ai
-from inovamatch.call_status import call_situation
+from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, DECLARABLE
 
 st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon='◈', layout='wide')
 
@@ -112,6 +112,13 @@ def heading(title, sub):
     st.caption(sub)
 
 
+def deadline_label(call):
+    # Fluxo contínuo confirmado nunca recebe contagem de prazo.
+    if continuous_confirmed(call):
+        return 'Sem data-limite · fluxo contínuo'
+    return deadline_info(call)['label']
+
+
 def call_badge(call):
     return '[SIMULADO] ' if call.get('simulated') else ''
 
@@ -154,10 +161,9 @@ def dashboard(store):
         for offset in range(0, len(ordered), 3):
             for col, call in zip(st.columns(3), ordered[offset:offset + 3]):
                 with col, st.container(border=True):
-                    info = deadline_info(call)
                     badge = 'SIMULADO' if call.get('simulated') else escape(call.get('institution', 'Fonte pública'))
                     st.html(f'<div class="opportunity"><span class="tag {"demo" if call.get("simulated") else ""}">{badge}</span>'
-                            f'<h3>{escape(call["title"])}</h3><span class="muted">{escape(info["label"])}</span></div>')
+                            f'<h3>{escape(call["title"])}</h3><span class="muted">{escape(deadline_label(call))}</span></div>')
                     st.button('Ver edital →', key='open_' + call['id'], on_click=go, args=('Radar de Editais', call['id']), width='stretch')
     if soon:
         st.warning(f'{len(soon)} edital(is) com prazo confirmado em até 7 dias. Confira o horário e as retificações na fonte.')
@@ -308,7 +314,7 @@ def metadata_editor(store, call):
                                  min_value=date(2000, 1, 1), max_value=date(2100, 12, 31), format='DD/MM/YYYY')
         evidence = st.text_area('Trecho e página que comprovam o prazo (inclua horário, se houver)', call.get('deadline_evidence', ''))
         confirmed = st.checkbox('Confirmei o prazo na fonte e nas retificações', value=bool(call.get('deadline_confirmed')))
-        statuses = ['Situação não confirmada', 'Aberto', 'Encerrado', 'Futuro']
+        statuses = ['Situação não confirmada', *DECLARABLE]
         manual_status = st.selectbox('Situação declarada explicitamente pela fonte', statuses, index=statuses.index(call.get('registration_status', statuses[0])))
         status_evidence = st.text_area('Trecho oficial que declara a situação das inscrições', call.get('registration_status_evidence', ''))
         status_confirmed = st.checkbox('Conferi esta situação na fonte e nas retificações atuais', value=bool(call.get('registration_status_confirmed')))
@@ -324,6 +330,8 @@ def metadata_editor(store, call):
             st.error('Para confirmar a abertura, informe a data e a evidência oficial.')
         elif status_confirmed and (manual_status == statuses[0] or not status_evidence.strip()):
             st.error('Para confirmar a situação, informe o estado e o trecho da fonte oficial.')
+        elif status_confirmed and manual_status == CONTINUOUS and (confirmed or opening_confirmed):
+            st.error('Fluxo contínuo não tem data-limite nem abertura calculadas. Desmarque a confirmação das datas ou escolha outra situação.')
         elif complete and not any(c.get('validation_status') != 'rejected' for c in call.get('criteria', [])):
             st.error('Registre critérios antes de declarar a revisão integral.')
         elif complete and any(not c.get('resolved') for c in call.get('conflicts', [])):
@@ -553,7 +561,7 @@ def call_detail(store, call):
     if info['status'] in ('soon', 'expired'):
         st.warning(info['label'])
     else:
-        st.info(info['label'])
+        st.info(deadline_label(call))
     if call.get('deadline_confirmed'):
         st.caption('Data-limite confirmada na revisão: ' + date.fromisoformat(call['deadline']).strftime('%d/%m/%Y'))
     source_link(call)
@@ -736,7 +744,7 @@ def radar(store, simulated):
         st.info('Nenhum edital corresponde ao filtro.')
         return
     st.caption(f'{len(filtered)} edital(is) · A abertura de uma chamada não garante elegibilidade.')
-    st.dataframe([{'Instituição': c.get('institution'), 'Título': c['title'], 'Situação das inscrições': call_situation(c), 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_info(c)['label'],
+    st.dataframe([{'Instituição': c.get('institution'), 'Título': c['title'], 'Situação das inscrições': call_situation(c), 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_label(c),
                    'Análise de requisitos': 'Revisão integral declarada' if c.get('criteria_complete') else c.get('requirements_status', 'Não analisado'),
                    'Valor identificado': brl(funding_value(c)), 'Última verificação': c.get('last_seen_at') or c.get('discovered_at'),
                    'Fonte oficial': c.get('url'), 'PDF': c.get('pdf_url') or c.get('document_url')} for c in filtered], hide_index=True, width='stretch')

@@ -3,6 +3,16 @@ from datetime import date
 from .domain import today, normalize
 
 UNKNOWN = 'Situação não confirmada'
+CONTINUOUS = 'Fluxo contínuo'
+CONTINUOUS_PENDING = 'Fluxo contínuo (a confirmar)'
+# Situações que a revisão humana pode declarar com evidência da fonte.
+DECLARABLE = ('Aberto', 'Encerrado', 'Futuro', CONTINUOUS)
+
+
+def continuous_confirmed(call):
+    """Fluxo contínuo declarado na revisão, com evidência. Não tem data-limite calculada."""
+    return (call.get('registration_status') == CONTINUOUS and bool(call.get('registration_status_confirmed'))
+            and bool(call.get('registration_status_evidence')))
 
 
 def call_situation(call, on=None):
@@ -15,6 +25,9 @@ def call_situation(call, on=None):
         return UNKNOWN
     if call.get('ai_analysis') and not call.get('ai_schedule_reviewed'):
         return UNKNOWN
+    # Confirmado na revisão: não depende de datas e nunca gera prazo.
+    if continuous_confirmed(call):
+        return CONTINUOUS
     try:
         end = date.fromisoformat(call['deadline']) if call.get('deadline_confirmed') and call.get('deadline_evidence') and call.get('deadline') else None
         start = date.fromisoformat(call['opening_date']) if call.get('opening_confirmed') and call.get('opening_evidence') and call.get('opening_date') else None
@@ -32,4 +45,7 @@ def call_situation(call, on=None):
         status = call.get('registration_status')
         if status in ('Aberto', 'Encerrado', 'Futuro'):
             return status
+    # Pista textual da extração: sinaliza, mas não confirma.
+    if call.get('recurring_schedule'):
+        return CONTINUOUS_PENDING
     return UNKNOWN
