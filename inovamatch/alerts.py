@@ -1,7 +1,7 @@
 """Fila de alertas (SIMULAÇÃO: nada é enviado). Gerada dos dados que já existem; texto pronto em português.
 
 Tipos e destinatários:
-- Match forte (nota ≥ 8, match ainda antes da inscrição) → Startup, Equipe do polo
+- Faz match (nota ≥ score.MATCH_MIN, hoje 7, match ainda antes da inscrição) → Startup, Equipe do polo
 - Edital novo compatível (edital aberto que atende e ainda sem match com a startup) → Startup, Parceiros
 - Prazo chegando (7, 3 e 1 dia): fim das inscrições de match em aberto → Startup, Equipe do polo;
   datas confirmadas da captação → Equipe do polo, Parceiros
@@ -20,7 +20,7 @@ from .vault import EXPIRED, validity_status
 
 TEAM, PARTNERS, STARTUP = 'Equipe do polo', 'Parceiros', 'Startups'
 RECIPIENTS = [TEAM, PARTNERS, STARTUP]
-STRONG, NEW_CALL, DEADLINE, DOCUMENT, ALTERED = 'Match forte', 'Edital novo compatível', 'Prazo chegando', 'Documento vencido', 'Edital alterado'
+STRONG, NEW_CALL, DEADLINE, DOCUMENT, ALTERED = 'Faz match', 'Edital novo compatível', 'Prazo chegando', 'Documento vencido', 'Edital alterado'
 TYPES = [STRONG, NEW_CALL, DEADLINE, ALTERED, DOCUMENT]
 FEATURE = {STRONG: None, NEW_CALL: 'requirements', DEADLINE: 'manage', ALTERED: 'manage', DOCUMENT: 'manage'}  # plano mínimo via plans.FEATURES
 SIGNATURE = '— Escritório de projetos (InovaMatch)'
@@ -59,7 +59,7 @@ def build(store, on=None):
         result = match(call, org, project, on)
         info = score.compute(result, a)
         days = deadline_info(call, on)['days']
-        if a.get('status') in attention.OPEN and info['strong']:
+        if a.get('status') in attention.OPEN and info['faz_match']:
             out.append(_alert(STRONG, [STARTUP, TEAM], f"{org['name']} × {call['title']}",
                               f"Olá, {org['name']}! O edital \"{call['title']}\" tem nota {score.text(info['value'])}/10 "
                               f"(calculada por regras) para o projeto \"{project['name']}\". "

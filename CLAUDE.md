@@ -142,7 +142,7 @@ Foco: MVP para demonstração, não sistema completo.
     rascunho, explicação da nota e "Dashboard institucional (no Início)" — marcado "Sim" no Institucional porque foi construído nesta fase.
   - inovamatch/score.py: nota 0–10 "calculada por regras" (obrigatório peso 2, opcional 1; pendente vale metade; não atendido 0;
     impedimento limita a 4,0; depois da inscrição o prazo encerrado sai da conta). Selo no card e no topo do Gerenciar; métrica e
-    "Como a nota foi calculada" (Básico+) no Resumo. "Match forte" = nota ≥ 8.
+    "Como a nota foi calculada" (Básico+) no Resumo. "Match forte" = nota ≥ 8 (substituído em 14/11 por "Faz match" = nota ≥ 7, score.MATCH_MIN).
   - inovamatch/dashboard.py + institutional_dashboard (Início, só Institucional; os outros planos veem o Início simples):
     startups, recursos solicitados/captados, taxa de aprovação, nota média, funil por status (st.bar_chart), próximos prazos
     (7 e 30 dias), pendências críticas (impedidos, documentos vencidos, tarefas atrasadas), projetos aprovados e "Exportar relatório (CSV)".
@@ -308,3 +308,21 @@ Foco: MVP para demonstração, não sistema completo.
     depender de data/cache). nav.carregar_demo semeia Dados reais antes do clique.
   - Não verificado em navegador: sumiço do menu de três pontinhos, bloco do usuário no rodapé, faixa fixa ao rolar. Demonstração com
     o cache local rodada só pelo AppTest. No Streamlit Cloud o cache começa vazio: a demo avisa até alguém clicar "Atualizar editais".
+- 14/11/2026: aba Compatibilidade, limite único 7, logo, pendências suaves, faixa curta. 245 testes.
+  - Limite único: score.MATCH_MIN = 7.0 e MATCH_LABEL "Faz match" (antes STRONG = 8.0 "Match forte"). O campo do score virou
+    'faz_match'. Mudou em: selo de nota (verde a partir de 7: score_chip), aviso verde do match (strong_notice, verdict_banner),
+    alerts.py (tipo "Faz match"), tabela de Planos ("selo Faz match (nota a partir de 7)"), texto do estado vazio de Alertas,
+    nova aba Compatibilidade. Fórmula da nota não mudou.
+  - Matches › Compatibilidade (primeira aba; inovamatch/compatibility.py + compatibility_view): startups (tipo Startup) × editais não
+    encerrados e não futuros (abertos, fluxo contínuo ou situação a confirmar; sem o edital de simulação), um par por projeto.
+    "Faz match" (nota ≥ 7, maior para menor, 20 por vez) com "Iniciar match" (= Criar match; abre a aba Matches) ou "Abrir match";
+    "Não faz match" recolhido com motivo principal (Básico+); "Sem critérios para avaliar" recolhido com "Analisar edital →".
+    Critério avaliável = campo estruturado (não 'manual'), confirmado, com fonte e trecho, sem conflito (mesma regra de "validado"
+    do matching). Só extraído/pendente não dá nota (daria 4,0 para todos). Perfis abaixo do Institucional: só a própria startup.
+  - Hoje (cache local, 114 editais reais): 3 com critérios extraídos do PDF (66/2025, 65/2025, 54/2024), 0 com critério validado,
+    todos com situação "não confirmada" → 0 pares com nota; os 3 aparecem em "Sem critérios para avaliar".
+  - Logo: o Streamlit 1.67 já leva ao Início ao clicar no logo (st.logo sem link, várias páginas, página padrão = Início;
+    conferido no código do frontend). Sem mudança de código.
+  - Dashboard: "Pendências críticas" (faixa vermelha, até 10) virou expansor recolhido "Pendências · N", no máximo 3 itens, texto âmbar;
+    vermelho só para "Impedido". Faixa da demonstração em uma linha.
+  - Não verificado em navegador: clique no logo, aba ativa depois de "Iniciar match" (open_tab → aba Matches), cores das pendências.

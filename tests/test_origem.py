@@ -96,7 +96,11 @@ def test_menu_do_usuario_base_e_alertas_ocultos(monkeypatch):
     base = next(s for s in app.selectbox if s.label == 'Base de dados')
     base.set_value('Demonstração').run()
     assert app.session_state['dataset'] == 'Demonstração'
-    assert any('no menu do usuário (canto inferior esquerdo)' in h.value for h in app.get('html'))
+    # Faixa curta, em uma linha; a dica de como sair fica no aviso de Editais.
+    assert any(f'<strong>{BAND}.</strong></div>' in h.value for h in app.get('html'))
+    goto(app, 'Editais', open_first=False)
+    assert any('no menu do usuário (canto inferior esquerdo)' in i.value for i in app.info)
+    goto(app, 'Início')
     goto(app, 'Alertas')
     assert [t.value for t in app.title] == ['Início']  # rota oculta: continua onde estava
     app.session_state['plan'] = 'Básico'
@@ -144,3 +148,39 @@ def test_menu_do_streamlit_oculto_e_selo_ficticio_nos_matches(monkeypatch):
     goto(app, 'Matches')
     html = ' '.join(h.value for h in app.get('html'))
     assert html.count('im-origin-fict') >= 5 and BAND in html  # cada match fictício com selo, faixa no topo
+
+
+def test_compatibilidade_regras_e_limite_unico():
+    from inovamatch import compatibility, score
+    from demo_fixture import demo_store
+    assert score.MATCH_MIN == 7.0 and not hasattr(score, 'STRONG')  # limite único
+    store = demo_store()
+    # Edital real com critérios só extraídos (não validados): sem nota, vai para "Sem critérios para avaliar".
+    store.save('calls', {'id': 'fx-pend', 'title': 'Edital extraído', 'source_id': 'fapesc', 'source_listing': 'abertas',
+                         'criteria': [{'id': 'k', 'field': 'state', 'op': 'in', 'expected': ['SC'], 'validation_status': 'pending'}]})
+    data = compatibility.build(store)
+    notes = [r['score']['value'] for r in data['match']]
+    assert notes == sorted(notes, reverse=True) and min(notes) >= 7 and all(r['score']['value'] < 7 for r in data['no_match'])
+    ids = {r['call']['id'] for r in data['match'] + data['no_match']}
+    assert ids == {'fx-call-1', 'fx-call-2'}  # sem o encerrado (fx-call-3) e sem o edital de simulação
+    assert [(x['call']['id'], x['state']) for x in data['no_criteria']] == [('fx-pend', 'pending')]
+
+
+def test_aba_compatibilidade_inicia_match_e_respeita_perfil(monkeypatch):
+    monkeypatch.delenv('INOVAMATCH_STORAGE', raising=False)
+    app = AppTest.from_file(APP, default_timeout=60).run()
+    carregar_demo(app)
+    goto(app, 'Matches')
+    assert [t.label for t in app.tabs][:2] == ['Compatibilidade', 'Matches']
+    assert any('Faz match · 4' in h.value for h in app.get('html'))
+    before = len(app.session_state['demo_data']['applications'])
+    next(b for b in app.button if b.label == 'Iniciar match').click().run()
+    assert not app.exception and len(app.session_state['demo_data']['applications']) == before + 1
+    assert app.session_state['open_tab'] == ('Matches', 'lista')
+    app.session_state['plan'] = 'Gratuito'  # Lucas = Horizonte Digital: só os pares dela
+    app.run()
+    html = ' '.join(h.value for h in app.get('html'))
+    assert 'Horizonte Digital ×' in html and 'Serra Biotec ×' not in html and 'Araucária Tech ×' not in html
+    app.session_state['plan'] = 'Institucional'
+    goto(app, 'Início')
+    assert any(e.label.startswith('Pendências · ') for e in app.expander)  # recolhida, com a contagem no título

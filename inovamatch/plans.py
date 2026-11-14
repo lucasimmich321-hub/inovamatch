@@ -20,7 +20,7 @@ FEATURE_NAMES = {'requirements': 'Requisitos, pontos que reduzem a compatibilida
 COMPARISON = [
     ('Cadastro de startups e projetos', 'Sim', 'Sim', 'Sim', 'Sim', 'Sim'),
     ('Recomendação de editais e matchmaking', 'Sim', 'Sim', 'Sim', 'Sim', 'Sim'),
-    ('Nota de 0 a 10 (calculada por regras) e aviso de match forte', 'Sim', 'Sim', 'Sim', 'Sim', 'Sim'),
+    ('Nota de 0 a 10 (calculada por regras) e selo "Faz match" (nota a partir de 7)', 'Sim', 'Sim', 'Sim', 'Sim', 'Sim'),
     ('Explicação da nota', '—', 'Sim', 'Sim', 'Sim', 'Sim'),
     ('Requisitos atendidos e não atendidos', '—', 'Sim', 'Sim', 'Sim', 'Sim'),
     ('Pontos que reduzem a compatibilidade e sugestões', '—', 'Sim', 'Sim', 'Sim', 'Sim'),

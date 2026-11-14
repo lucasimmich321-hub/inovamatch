@@ -11,7 +11,10 @@ from .matching import FAIL, PASS, PENDING
 
 MANDATORY_WEIGHT, OPTIONAL_WEIGHT = 2, 1
 BLOCKER_CAP = 4.0
-STRONG = 8.0  # "Match forte" a partir desta nota
+# Limite ÚNICO do app: nota a partir de 7,0 = "Faz match" (cards, selos, dashboard, aba Compatibilidade, avisos).
+# Antes havia "Match forte" a partir de 8,0; unificado em 14/11.
+MATCH_MIN = 7.0
+MATCH_LABEL = 'Faz match'
 LABEL = 'calculada por regras'
 
 
@@ -39,7 +42,7 @@ def compute(result, application=None):
     raw = round(10 * earned / possible, 1) if possible else 0.0
     capped = (counts['blockers'] > 0 or counts['missing_mandatory'] > 0) and raw > BLOCKER_CAP  # mesma regra do "Impedido"
     value = BLOCKER_CAP if capped else raw
-    return {'value': value, 'raw': raw, 'capped': capped, 'strong': value >= STRONG, **counts}
+    return {'value': value, 'raw': raw, 'capped': capped, 'faz_match': value >= MATCH_MIN, **counts}
 
 
 def text(value):

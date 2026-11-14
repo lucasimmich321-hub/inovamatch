@@ -35,6 +35,7 @@ from inovamatch.components import band, card, chip, empty_state, locked
 from inovamatch import plans
 from inovamatch import score as scoring
 from inovamatch import dashboard
+from inovamatch import compatibility
 from inovamatch import alerts
 from inovamatch import versioning
 from inovamatch.demo import simulate_rectification
@@ -132,6 +133,8 @@ h1,h2,h3 {font-family:var(--im-font);letter-spacing:-.02em;color:var(--im-dark);
 .im-chip-fail {background:#FBE0DC;color:#8A1C12;border-color:#8A1C12;}
 .im-band {display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 14px;margin:4px 0 8px;border:1px solid;font-size:14px;}
 .im-band ul {margin:4px 0 0;padding-left:18px;} .im-band li {margin:2px 0;} .im-band .im-icon {flex:none;margin-top:1px;}
+.im-pend {margin:0;padding-left:18px;font-size:14px;} .im-pend li {margin:3px 0;}
+.im-pend-warn {color:#7A3E06;} .im-pend-fail {color:#8A1C12;font-weight:700;}
 .im-band-fail {background:#FBE0DC;color:#8A1C12;border-color:#8A1C12;} .im-band-warn {background:#FDECC8;color:#7A3E06;border-color:#7A3E06;}
 .im-card-title {font-size:17px;font-weight:800;color:var(--im-dark);line-height:1.35;margin-top:4px;}
 .im-card-sub {font-size:13px;color:#4A5670;font-weight:600;}
@@ -1239,7 +1242,8 @@ def attention_bands(reason, items, pend):
 
 
 def strong_notice(info):
-    st.success(f"Match forte: nota {scoring.text(info['value'])}/10 ({scoring.LABEL}), segundo os dados declarados.")
+    st.success(f"{scoring.MATCH_LABEL}: nota {scoring.text(info['value'])}/10 ({scoring.LABEL}; faz match a partir de "
+               f"{scoring.text(scoring.MATCH_MIN)}), segundo os dados declarados.")
 
 
 def verdict_banner(result):
@@ -1248,12 +1252,12 @@ def verdict_banner(result):
     if not can('requirements'):
         if reason:
             st.html(band('fail', 'Impedido: motivos disponíveis no plano Básico'))
-        elif info['strong']:
+        elif info['faz_match']:
             strong_notice(info)
         return
     if reason:
         st.html(band('fail', f'Impedido: {reason}', items))
-    elif info['strong']:
+    elif info['faz_match']:
         strong_notice(info)
     elif result['pending']:
         st.html(band('warn', f"{result['verdict']} · {result['pending']} item(ns) a verificar"))
@@ -1807,7 +1811,7 @@ def next_deadline(store, application, call):
 
 
 def score_chip(info):
-    kind = 'fail' if info['capped'] or info['blockers'] or info['missing_mandatory'] else 'ok' if info['strong'] else 'warn'
+    kind = 'fail' if info['capped'] or info['blockers'] or info['missing_mandatory'] else 'ok' if info['faz_match'] else 'warn'
     return chip(f"Nota {scoring.text(info['value'])}/10", kind, 'check' if kind == 'ok' else 'alert')
 
 
@@ -2033,15 +2037,104 @@ def matches_list(store, simulated):
                           type='primary' if match_id == active else 'secondary', icon=':material/tune:')
 
 
+COMPAT_SHOWN = 20  # cards de "Faz match" antes do "Mostrar mais"
+
+
+def open_listed_match(match_id):
+    set_active_match(match_id)
+    st.session_state.open_tab = ('Matches', 'lista')  # o painel "Gerenciar" fica na aba Matches
+
+
+def start_compat_match(store, call, startup, project):
+    """"Iniciar match" da Compatibilidade: cria o match gerenciado (o mesmo do "Criar match") e abre na lista."""
+    result = match(call, startup, project)
+    record = register_application(store, call, startup, project)
+    save_analysis(store, call, startup, project, result)
+    set_active_match(record['id'])
+    st.session_state.open_tab = ('Matches', 'lista')
+    st.session_state.flash = f"Match iniciado: {startup['name']} × {call['title'][:50]}. Está na aba Matches."
+
+
+def compatibility_view(store):
+    """Todas as startups × editais abertos (ou de situação a confirmar), com a nota do score.py. Limite: score.MATCH_MIN."""
+    data = compatibility.build(store, startup_kind=lambda s: org_kind(s) == 'Startup')
+    limit = scoring.text(scoring.MATCH_MIN)
+    st.caption(f"Cruza {data['startups']} startup(s) com {data['calls']} edital(is) abertos, de fluxo contínuo ou com situação "
+               f"a confirmar. Faz match = nota a partir de {limit} ({scoring.LABEL}); não é chance de aprovação.")
+    if not data['startups']:
+        st.html(empty_state('Nenhuma startup cadastrada', 'Cadastre as startups do polo para ver com quais editais elas fazem match.'))
+        st.button('Cadastrar startup →', on_click=go, args=('Startups', None, 'cadastro'), key='compat_tab_go_startups')
+        return
+    if not data['calls']:
+        st.html(empty_state('Nenhum edital aberto na base', 'Em Editais, clique em "Atualizar editais" ou cadastre um edital.'))
+        return
+    st.html(f'<div class="section-head">Faz match · {len(data["match"])}</div>')
+    if not data['match']:
+        st.caption(f'Nenhum par com nota a partir de {limit}.' + (' Veja abaixo os editais que ainda não têm critérios validados.'
+                                                                  if data['no_criteria'] else ''))
+    shown = st.session_state.get('compat_limit', COMPAT_SHOWN)
+    for row in data['match'][:shown]:
+        call, org, project, application = row['call'], row['startup'], row['project'], row['application']
+        with st.container(border=True):
+            text, action = st.columns([5, 1], vertical_alignment='center')
+            situation = '' if row['confirmed_open'] else f' <span class="muted">· situação: {escape(row["situation"])}</span>'
+            text.html(f'<div class="im-chips">{score_chip(row["score"])}{match_origin(application, call, org)}</div>'
+                      f'<div class="im-card-title">{escape(org["name"])} × {escape(call["title"])}</div>'
+                      f'<div class="im-card-sub">{escape(project["name"]) if project else "Sem projeto"} · '
+                      f'{escape(call.get("institution") or "")}{situation}</div>')
+            key = f"compat_{call['id']}_{project['id'] if project else org['id']}"
+            if application:
+                action.button('Abrir match', key=key, on_click=open_listed_match, args=(application['id'],),
+                              icon=':material/tune:', width='stretch')
+            elif project:
+                if action.button('Iniciar match', key=key, type='primary', icon=':material/handshake:', width='stretch'):
+                    start_compat_match(store, call, org, project)
+                    st.rerun()
+            else:
+                action.button('Novo projeto →', key=key, on_click=go, args=('Matches', None, 'novo_projeto'), width='stretch')
+    if len(data['match']) > shown:
+        st.button(f"Mostrar mais ({len(data['match']) - shown})", key='compat_more',
+                  on_click=lambda: st.session_state.update({'compat_limit': shown + COMPAT_SHOWN}))
+    with st.expander(f"Não faz match · {len(data['no_match'])}"):
+        if data['no_match']:
+            rows = [{'Startup': r['startup']['name'], 'Projeto': r['project']['name'] if r['project'] else 'Sem projeto',
+                     'Edital': r['call']['title'], 'Nota': scoring.text(r['score']['value']),
+                     'Motivo principal': main_reason(r['result']),
+                     'Origem': match_provenance(r['application'], r['call'], r['startup'])} for r in data['no_match']]
+            st.dataframe(rows, hide_index=True, width='stretch',
+                         column_order=None if can('requirements') else ['Startup', 'Projeto', 'Edital', 'Nota', 'Origem'])
+            if not can('requirements'):
+                locked_card('requirements', 'lk_compat_reason')
+        else:
+            st.caption('Nenhum par abaixo do limite.')
+    if data['no_criteria']:
+        with st.expander(f"Sem critérios para avaliar · {len(data['no_criteria'])}"):
+            st.caption('Fora das duas listas: sem critério estruturado e validado não há nota. Analise o edital (IA, se configurada) '
+                       'ou cadastre e confirme os critérios no detalhe do edital.')
+            for item in data['no_criteria']:
+                call = item['call']
+                why = ('critérios extraídos do PDF, ainda não validados' if item['state'] == 'pending'
+                       else 'nenhum critério estruturado')
+                text, action = st.columns([5, 1], vertical_alignment='center')
+                text.html(f'<div class="im-card-title">{escape(call["title"])}{call_origin(call)}</div>'
+                          f'<div class="im-card-sub">{escape(why)} · situação: {escape(item["situation"])}</div>')
+                action.button('Analisar edital →', key='compat_review_' + call['id'], on_click=go, args=('Editais', call['id']),
+                              width='stretch')
+
+
 def candidaturas_page(store, simulated):
     heading('Matches', 'Edital × startup: do sugerido ao resultado. Checklist, documentos e andamento de cada match.')
-    new_tab = opened_tab('novo_projeto', 'Novo projeto')  # "Novo projeto →" do detalhe do edital abre direto esta aba
+    # Abas pedidas por link: "Novo projeto →" (detalhe do edital) e "Iniciar match" (Compatibilidade → lista de matches).
+    new_tab = opened_tab('novo_projeto', 'Novo projeto') or opened_tab('lista', 'Matches')
     if scoped():  # abaixo do Institucional: sem a aba Resultados (é do escritório)
-        tab_list, tab_new = st.tabs(['Matches', 'Novo projeto'], default=new_tab)
+        tab_compat, tab_list, tab_new = st.tabs(['Compatibilidade', 'Matches', 'Novo projeto'], default=new_tab)
     else:
-        tab_list, tab_new, tab_results = st.tabs(['Matches', 'Novo projeto', 'Resultados'], default=new_tab)
+        tab_compat, tab_list, tab_new, tab_results = st.tabs(['Compatibilidade', 'Matches', 'Novo projeto', 'Resultados'],
+                                                             default=new_tab)
         with tab_results:
             office_results(store)
+    with tab_compat:
+        compatibility_view(store)
     with tab_list:
         matches_list(store, simulated)
     with tab_new:
@@ -2133,7 +2226,7 @@ def home_operations(store, calls):
 
 
 def institutional_dashboard(store):
-    """Dashboard institucional: portfólio, funil, recursos, aprovação, nota, prazos, pendências críticas e aprovados."""
+    """Dashboard institucional: portfólio, funil, recursos, aprovação, nota, prazos, pendências (recolhidas) e aprovados."""
     data = dashboard.build(store, only_real=not CTX.get('simulated'))
     st.html('<div class="section-head">Dashboard institucional</div>')
     if not CTX.get('simulated') and not data['startups']:
@@ -2167,13 +2260,16 @@ def institutional_dashboard(store):
             st.dataframe([{**r, 'Data': fmt_day(r['Data'])} for r in data['upcoming'][:8]], hide_index=True, width='stretch')
         else:
             st.caption('Nenhum prazo de inscrição ou data confirmada da captação nos próximos 30 dias.')
-    critical = ([f'Impedido · {t}' for t in data['blocked']] + [f'Documento vencido · {t}' for t in data['expired_docs']]
-                + [f'Tarefa atrasada · {t}' for t in data['overdue_tasks']])
-    if critical:
-        st.html(band('fail', f"Pendências críticas: {len(data['blocked'])} impedido(s), {len(data['expired_docs'])} documento(s) "
-                             f"vencido(s), {len(data['overdue_tasks'])} tarefa(s) atrasada(s)", critical[:10]))
-    else:
-        st.success('Nenhuma pendência crítica: sem matches impedidos, documentos vencidos ou tarefas atrasadas.')
+    # Pendências: recolhidas, em âmbar; vermelho só no item que bloqueia (match impedido). No máximo 3 itens.
+    items = ([('fail', f'Impedido · {t}') for t in data['blocked']] + [('warn', f'Documento vencido · {t}') for t in data['expired_docs']]
+             + [('warn', f'Tarefa atrasada · {t}') for t in data['overdue_tasks']])
+    with st.expander(f'Pendências · {len(items)}' if items else 'Pendências · nenhuma', icon=':material/pending_actions:'):
+        if items:
+            st.html('<ul class="im-pend">' + ''.join(f'<li class="im-pend-{kind}">{escape(text)}</li>' for kind, text in items[:3]) + '</ul>')
+            if len(items) > 3:
+                st.caption(f'Mais {len(items) - 3} em Matches (selos "Impedido" e "pendência(s)" em cada match).')
+        else:
+            st.caption('Sem matches impedidos, documentos vencidos ou tarefas atrasadas.')
     with st.container(border=True):
         st.markdown(f"**Projetos aprovados** · {len(data['portfolio'])}")
         if data['portfolio']:
@@ -2215,7 +2311,7 @@ def alertas_page(store):
     allowed = [t for t in alerts.TYPES if alerts.FEATURE[t] is None or can(alerts.FEATURE[t])]
     queue = [a for a in alerts.build(store) if a['tipo'] in allowed and (recipient == 'Todos' or recipient in a['destinatarios'])]
     if not alerts.build(store):
-        st.html(empty_state('Nenhum aviso agora', 'Os avisos aparecem quando há match forte, edital novo compatível, prazo em até '
+        st.html(empty_state('Nenhum aviso agora', 'Os avisos aparecem quando há par que faz match (nota a partir de 7), edital novo compatível, prazo em até '
                                                   '7 dias ou documento vencido. Nada é enviado: o texto fica pronto para você copiar.'))
         return
     # Agrupados por tipo em abas (sem seções empilhadas); tipo fora do plano mostra o cartão de bloqueio.
@@ -2336,9 +2432,7 @@ def main():
     if simulated:
         store = Store(st.session_state.setdefault('demo_data', {}))
         with st.container(key='demo_band'):  # faixa fixa no topo de todas as páginas (CSS sticky)
-            st.html(band('warn', 'Demonstração: startups e matches são fictícios; editais são reais (FAPESC).',
-                         ['O único edital inventado tem o selo “Simulação” e serve só para testar a retificação.',
-                          'Para sair, escolha “Dados reais” no menu do usuário (canto inferior esquerdo).']))
+            st.html(band('warn', 'Demonstração: startups e matches são fictícios; editais são reais.'))
             if not real_calls_in(store):
                 st.html(band('fail', 'Nenhum edital real coletado ainda: a demonstração ficou sem matches.',
                              ['Nada foi inventado no lugar. Em “Dados reais” › Editais, clique em “Atualizar editais” '
