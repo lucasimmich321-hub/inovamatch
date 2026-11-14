@@ -7,8 +7,11 @@ from datetime import date
 
 from .domain import deadline_info, now_iso
 
-PREPARING, SUBMITTED, APPROVED, REJECTED, NOT_SUBMITTED = 'Em preparação', 'Submetida', 'Aprovada', 'Reprovada', 'Não submetida'
-STATUSES = [PREPARING, SUBMITTED, APPROVED, REJECTED, NOT_SUBMITTED]
+# Ciclo do match: Sugerido → Em preparação → Inscrito → Aprovado / Reprovado / Desistiu. Aprovado libera a Captação.
+SUGGESTED, PREPARING, SUBMITTED, APPROVED, REJECTED, NOT_SUBMITTED = 'Sugerido', 'Em preparação', 'Inscrito', 'Aprovado', 'Reprovado', 'Desistiu'
+STATUSES = [SUGGESTED, PREPARING, SUBMITTED, APPROVED, REJECTED, NOT_SUBMITTED]
+# Nomes antigos (até a Fase 3) → ciclo novo. "Não submetida" vira "Desistiu" (o motivo registrado continua valendo).
+LEGACY = {'Submetida': SUBMITTED, 'Aprovada': APPROVED, 'Reprovada': REJECTED, 'Não submetida': NOT_SUBMITTED}
 FINAL = (APPROVED, REJECTED, NOT_SUBMITTED)
 LOST = (REJECTED, NOT_SUBMITTED)
 REASONS = ['Prazo perdido', 'Documentação incorreta ou incompleta', 'Inelegível', 'Reprovada no mérito',
@@ -38,22 +41,23 @@ def _money(value, label):
 def validate(record):
     """Regras de consistência; devolve o registro normalizado ou levanta ValueError em português claro."""
     r = dict(record)
+    r['status'] = LEGACY.get(r.get('status'), r.get('status'))
     if r.get('status') not in STATUSES:
-        raise ValueError('Status de candidatura inválido.')
+        raise ValueError('Status de match inválido.')
     r['valor_solicitado'] = _money(r.get('valor_solicitado'), 'Valor solicitado')
     r['valor_captado'] = _money(r.get('valor_captado'), 'Valor captado')
     submitted, result = _date(r.get('data_submissao')), _date(r.get('data_resultado'))
     if r['status'] in (SUBMITTED, APPROVED, REJECTED) and not submitted:
-        raise ValueError('Informe a data de submissão.')
+        raise ValueError('Informe a data de submissão (inscrição).')
     if r['status'] in (APPROVED, REJECTED) and not result:
         raise ValueError('Informe a data do resultado.')
     if submitted and result and result < submitted:
-        raise ValueError('A data do resultado não pode ser anterior à submissão.')
+        raise ValueError('A data do resultado não pode ser anterior à inscrição.')
     if r['status'] == APPROVED:
         if r['valor_captado'] is None:
-            raise ValueError('Informe o valor captado da candidatura aprovada.')
+            raise ValueError('Informe o valor captado (aprovado) do match.')
     elif r['valor_captado']:
-        raise ValueError('Valor captado só vale para candidatura aprovada.')
+        raise ValueError('Valor aprovado só vale para match Aprovado.')
     if r['status'] in LOST:
         if r.get('motivo') not in REASONS:
             raise ValueError('Escolha o motivo da perda.')
@@ -65,6 +69,16 @@ def validate(record):
     r['data_resultado'] = result.isoformat() if result else None
     r['motivo_obs'] = (r.get('motivo_obs') or '').strip()
     return r
+
+
+def migrate_statuses(store):
+    """Regrava matches salvos com os nomes antigos de status. Devolve quantos mudaram."""
+    count = 0
+    for a in store.all('applications'):
+        if a.get('status') in LEGACY:
+            store.save('applications', {**a, 'status': LEGACY[a['status']]})
+            count += 1
+    return count
 
 
 def update_application(store, application_id, **fields):

@@ -340,7 +340,7 @@ def test_result_form_on_link_screen():
     assert any('Escolha o motivo' in e.value for e in app.error)
     assert any('Sugestão de motivo' in c.value for c in app.caption)
     assert app.session_state['real_data']['applications']['pub:p-sc']['status'] == apps.PREPARING
-    next(s for s in app.selectbox if s.label == 'Motivo (se reprovada ou não submetida)').set_value('Prazo perdido')
+    next(s for s in app.selectbox if s.label == 'Motivo (se reprovado ou desistiu)').set_value('Prazo perdido')
     next(s for s in app.selectbox if s.label == 'Status do match').set_value(apps.NOT_SUBMITTED)
     next(b for b in app.button if b.label == 'Salvar andamento').click().run()
     clean(app)

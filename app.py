@@ -25,8 +25,9 @@ from inovamatch.vault import (DOC_TYPES, DEMO_NOTICE, EXPIRED, SOON, OK as OK_VA
                               read_document, remove_document, replace_document, startup_documents, validity_status)
 from inovamatch.link_checklist import (DOCS as CHK_DOCS, DATA as CHK_DATA, MANUAL as CHK_MANUAL, DEADLINE as CHK_DEADLINE,
                                        build_checklist, summary as checklist_summary, to_csv as checklist_csv, to_pdf as checklist_pdf)
-from inovamatch.applications import (STATUSES, REASONS, PREPARING, LOST, NOT_SUBMITTED, REJECTED, suggest_reason,
-                                     update_application)
+from inovamatch.applications import (STATUSES, REASONS, SUGGESTED, PREPARING, SUBMITTED, APPROVED, LOST, NOT_SUBMITTED, REJECTED,
+                                     migrate_statuses, suggest_reason, update_application)
+from inovamatch import captacao
 from inovamatch.office_stats import DEFINITIONS, PERIODS, compute as compute_office, demo_applications, period_bounds, to_csv as office_csv
 from inovamatch.components import card, chip, empty_state
 from inovamatch.filters import STATUS_FILTERS
@@ -236,14 +237,14 @@ def office_results(store):
     with st.expander('Como cada número é calculado'):
         for name, text in DEFINITIONS.items():
             st.markdown(f'**{name}:** {text}')
-        st.caption(f"No período: {stats['aprovadas']} aprovada(s), {stats['reprovadas']} reprovada(s), {stats['nao_submetidas']} não submetida(s).")
+        st.caption(f"No período: {stats['aprovadas']} aprovada(s), {stats['reprovadas']} reprovada(s), {stats['nao_submetidas']} desistência(s).")
     if not stats['finalizadas']:
         st.info('Nenhum match finalizado no período. Registre o resultado de cada match em Matches › Gerenciar para alimentar o painel.')
     else:
         losses = {k: v for k, v in stats['reasons'].items() if v}
         left, right = st.columns([3, 2])
         with left:
-            st.markdown('**Motivos de perda** (reprovadas e não submetidas)')
+            st.markdown('**Motivos de perda** (reprovados e desistências)')
             if losses:
                 import altair as alt  # vem com o Streamlit; permite rótulos inteiros
                 chart = alt.Chart(alt.Data(values=[{'Motivo': k, 'Matches': v} for k, v in losses.items()])).mark_bar(color='#005CFD').encode(
@@ -1207,15 +1208,16 @@ def application_form(store, application, call, result, totals):
             a, b = st.columns(2)
             requested = a.number_input('Valor solicitado (R$)', min_value=0.0, step=1000.0,
                                        value=float(application['valor_solicitado']) if application.get('valor_solicitado') is not None else None)
-            captured = b.number_input('Valor captado (R$), se aprovada', min_value=0.0, step=1000.0,
+            captured = b.number_input('Valor aprovado (R$), se aprovado', min_value=0.0, step=1000.0,
                                       value=float(application['valor_captado']) if application.get('valor_captado') is not None else None)
-            submitted = a.date_input('Data de submissão', value=as_date(application.get('data_submissao')), format='DD/MM/YYYY',
+            submitted = a.date_input('Data de inscrição', value=as_date(application.get('data_submissao')), format='DD/MM/YYYY',
                                      min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
             decided = b.date_input('Data do resultado', value=as_date(application.get('data_resultado')), format='DD/MM/YYYY',
                                    min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
             options = ['—'] + REASONS
-            reason = st.selectbox('Motivo (se reprovada ou não submetida)', options,
+            reason = st.selectbox('Motivo (se reprovado ou desistiu)', options,
                                   index=options.index(application['motivo']) if application.get('motivo') in REASONS else 0)
+            st.caption('Marcar “Aprovado” libera a aba Captação (datas, tarefas e lembretes).')
             if hint:
                 st.caption(f'Sugestão de motivo, caso o match não avance: {hint}. Não é salva automaticamente: escolha acima para registrar.')
             note = st.text_area('Observação', application.get('motivo_obs', ''))
@@ -1447,13 +1449,144 @@ def match_manage(store, record, simulated):
         top, close = st.columns([5, 1])
         top.html(match_header(application, org, call, 'Match ativo'))
         close.button('Fechar', key='match_close', on_click=set_active_match, args=(None,), icon=':material/close:')
-        tab_summary, tab_check, tab_docs = st.tabs(['Resumo', 'Checklist', 'Documentos'])
+        tab_summary, tab_check, tab_docs, tab_cap = st.tabs(['Resumo', 'Checklist', 'Documentos', 'Captação'])
         with tab_summary:
             link_detail(store, call, org, project, show_checklist=False)
         with tab_check:
             link_checklist_view(store, call, org, project)
         with tab_docs:
             match_documents(store, org, simulated)
+        with tab_cap:
+            captacao_view(store, application, call, org)
+
+
+def fmt_day(value):
+    return date.fromisoformat(value).strftime('%d/%m/%Y') if value else '—'
+
+
+def captacao_view(store, application, call, org):
+    """Aba Captação (só match Aprovado): valor aprovado, datas do edital (a confirmar) e manuais, tarefas, lembretes e .ics."""
+    if application.get('status') != APPROVED:
+        st.html(empty_state('Captação bloqueada', 'Marque o match como “Aprovado” em Resumo › Registrar andamento e resultado '
+                                                  'para liberar valor aprovado, datas, tarefas e lembretes.'))
+        return
+    aid = application['id']
+    if is_demo(application):
+        st.caption('Match de demonstração: datas e tarefas fictícias, guardadas só nesta sessão.')
+    left, right = st.columns([2, 3])
+    left.metric('Valor aprovado', brl(application.get('valor_captado')))
+    with right.form('cap_value_' + aid):
+        value = st.number_input('Corrigir valor aprovado (R$)', min_value=0.0, step=1000.0, value=float(application.get('valor_captado') or 0))
+        save_value = st.form_submit_button('Salvar valor')
+    if save_value:
+        try:
+            update_application(store, aid, valor_captado=value)
+            st.session_state.flash = 'Valor aprovado salvo.'
+            st.rerun()
+        except ValueError as exc:
+            st.error(str(exc))
+    st.info('Datas depois da aprovação (assinatura do termo, parcelas, prestação de contas, vigência) costumam estar no '
+            '**termo de outorga**, não no edital. Confira no termo e adicione essas datas à mão.', icon=':material/info:')
+
+    st.markdown('**Datas importantes**')
+    saved = captacao.dates(store, aid)
+    saved_ids = {d['id'] for d in saved}
+    suggestions = [s for s in captacao.suggested_dates(call, today()) if f"{aid}:cap:{s['sugestao']}" not in saved_ids]
+    for s in suggestions:
+        with st.container(border=True):
+            st.html(f'<div class="im-chips">{chip("A confirmar")}{chip("Do edital")}</div>')
+            st.markdown(f"**{md_escape(s['titulo'])}** · {fmt_day(s['data'])}")
+            st.caption('Fonte: ' + s['fonte'])
+            if st.button('Confirmar data', key='cap_ok_' + aid + s['sugestao'], icon=':material/check:'):
+                captacao.add_date(store, application, s['titulo'], s['data'], captacao.EDITAL, s['fonte'], True, s['sugestao'])
+                st.session_state.flash = 'Data confirmada; tarefa criada.'
+                st.rerun()
+    for d in saved:
+        with st.container(border=True):
+            state = 'Confirmada' if d['estado'] == captacao.CONFIRMED else 'A confirmar'
+            st.html(f'<div class="im-chips">{chip(state)}{chip("Do edital" if d["procedencia"] == captacao.EDITAL else "Manual")}</div>')
+            st.markdown(f"**{md_escape(d['titulo'])}** · {fmt_day(d['data'])}")
+            st.caption('Fonte: ' + (d.get('fonte') or '—'))
+            a, b = st.columns(2)
+            if d['estado'] != captacao.CONFIRMED and a.button('Confirmar data', key='cap_conf_' + d['id'], icon=':material/check:'):
+                captacao.confirm_date(store, d['id'])
+                st.session_state.flash = 'Data confirmada; tarefa criada.'
+                st.rerun()
+            if b.button('Remover', key='cap_rm_' + d['id'], icon=':material/delete:'):
+                captacao.remove_date(store, d['id'])
+                st.session_state.flash = 'Data removida (com a tarefa gerada por ela).'
+                st.rerun()
+    if not suggestions and not saved:
+        st.html(empty_state('Nenhuma data ainda', 'O cronograma deste edital não foi lido. Adicione as datas do termo de outorga abaixo.'))
+    with st.expander('Adicionar data manual', expanded=not saved):
+        with st.form('cap_new_date_' + aid, clear_on_submit=True):
+            kind = st.selectbox('Tipo de data', captacao.MANUAL_KINDS)
+            detail = st.text_input('Detalhe (opcional; obrigatório em "Outra")', placeholder='Ex.: 1ª parcela')
+            day = st.date_input('Data', value=None, format='DD/MM/YYYY', min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
+            confirmed = st.checkbox('Data confirmada (ex.: consta no termo de outorga)', value=True)
+            add = st.form_submit_button('Adicionar data', type='primary')
+        if add:
+            title = detail.strip() if kind == 'Outra' else (f'{kind} · {detail.strip()}' if detail.strip() else kind)
+            try:
+                captacao.add_date(store, application, title, day, captacao.MANUAL, confirmada=confirmed)
+                st.session_state.flash = 'Data adicionada.' + (' Tarefa criada.' if confirmed else '')
+                st.rerun()
+            except ValueError as exc:
+                st.error(str(exc))
+
+    st.markdown('**Tarefas**')
+    st.caption('Cada data confirmada gera uma tarefa. Ajuste responsável, prazo e status.')
+    task_list = captacao.tasks(store, aid)
+    if not task_list:
+        st.caption('Nenhuma tarefa: confirme uma data acima.')
+    for t in task_list:
+        with st.container(border=True):
+            st.markdown(f"**{md_escape(t['titulo'])}**")
+            with st.form('cap_task_' + t['id']):
+                a, b, c = st.columns(3)
+                who = a.text_input('Responsável', t.get('responsavel', ''))
+                due = b.date_input('Prazo', value=date.fromisoformat(t['prazo']) if t.get('prazo') else None, format='DD/MM/YYYY',
+                                   min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
+                status = c.selectbox('Status', captacao.TASK_STATUSES, index=captacao.TASK_STATUSES.index(t.get('status', 'A fazer')))
+                save_task = st.form_submit_button('Salvar tarefa')
+            if save_task:
+                captacao.update_task(store, t['id'], responsavel=who, prazo=due, status=status)
+                st.session_state.flash = 'Tarefa salva.'
+                st.rerun()
+    with st.expander('Nova tarefa avulsa'):
+        with st.form('cap_new_task_' + aid, clear_on_submit=True):
+            title = st.text_input('Tarefa', placeholder='Ex.: Abrir conta específica do projeto')
+            a, b = st.columns(2)
+            who = a.text_input('Responsável')
+            due = b.date_input('Prazo', value=None, format='DD/MM/YYYY', min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
+            add_t = st.form_submit_button('Adicionar tarefa', type='primary')
+        if add_t:
+            try:
+                captacao.add_task(store, application, title, due, who)
+                st.session_state.flash = 'Tarefa adicionada.'
+                st.rerun()
+            except ValueError as exc:
+                st.error(str(exc))
+
+    st.markdown('**Lembretes**')
+    st.caption('Para cada data confirmada: 7, 3 e 1 dia antes. Aparecem também no Início. Nada é enviado por e-mail ou WhatsApp.')
+    active = captacao.reminders(store, application_ids={aid})
+    for r in active:
+        st.markdown('- ' + md_escape(reminder_text(r)))
+    if not active:
+        st.caption('Nenhum lembrete para os próximos 7 dias.')
+    slug = ''.join(ch if ch.isalnum() else '-' for ch in org['name']).strip('-').lower()
+    st.download_button('Baixar agenda (.ics)', captacao.to_ics(store, application, f"{org['name']} · {call['title'][:60]}"),
+                       f'captacao-{slug}.ics', 'text/calendar', icon=':material/event:', type='primary', key='cap_ics_' + aid)
+    st.caption('O .ics leva as datas confirmadas (com alarmes de 7, 3 e 1 dia) e as tarefas com prazo. Datas “a confirmar” ficam de fora.')
+
+
+def reminder_text(r):
+    if r['tipo'] == 'data':
+        quando = 'hoje' if r['dias'] == 0 else f"em {r['dias']} dia(s)"
+        return f"{r['titulo']}: {fmt_day(r['data'])} ({quando})"
+    quando = f"atrasada há {-r['dias']} dia(s)" if r['dias'] < 0 else ('vence hoje' if r['dias'] == 0 else f"vence em {r['dias']} dia(s)")
+    return f"Tarefa: {r['titulo']} ({quando}; {r.get('responsavel') or 'sem responsável'}; {r['status']})"
 
 
 def close_new_match():
@@ -1541,6 +1674,15 @@ def inicio(store):
             st.caption('Nenhuma pendência registrada.')
         if pending:
             st.button('Abrir matches', key='home_candidacies', on_click=go, args=('Matches',), icon=':material/assignment:')
+    approved = {a['id']: a for a in store.all('applications') if a.get('status') == APPROVED}
+    cap = captacao.reminders(store, application_ids=set(approved))
+    if cap:
+        with st.container(border=True):
+            st.markdown(f'**Captação: lembretes e tarefas** · {len(cap)}')
+            st.caption('Datas confirmadas nos próximos 7 dias (lembretes de 7, 3 e 1 dia) e tarefas vencidas ou para os próximos 7 dias.')
+            for r in cap[:8]:
+                st.markdown('- ' + md_escape(f"{approved[r['application_id']].get('call_title', '')[:50]} · {reminder_text(r)}"))
+            st.button('Abrir matches', key='home_captacao', on_click=go, args=('Matches',), icon=':material/assignment:')
     st.html('<div class="soon"><span class="tag demo">Em breve</span><div class="section-head">Visão da startup</div>'
             'Cada startup verá, só para leitura, os editais que o escritório direcionou a ela e o checklist do match. '
             'Ainda não disponível: hoje o InovaMatch é operado pelo escritório de projetos.</div>')
@@ -1556,11 +1698,11 @@ def home_pendencies(store):
         org = orgs.get(project['startup_id']) if project else None
         if not call or not org:
             continue
-        if a.get('status') == PREPARING:
+        if a.get('status') in (SUGGESTED, PREPARING):
             totals = checklist_summary(build_checklist(store, call, org, project))
             if totals['docs_missing'] or totals['docs_expired']:
                 out.append(f"{org['name']}: {totals['docs_missing']} documento(s) faltando e {totals['docs_expired']} vencido(s) para {call['title'][:60]}")
-        elif a.get('status') == 'Submetida':
+        elif a.get('status') == SUBMITTED:
             out.append(f"{org['name']}: match inscrito em {call['title'][:60]} sem resultado registrado")
     for doc in store.all('documents'):
         status = validity_status(doc)
@@ -1632,6 +1774,7 @@ def main():
     goto = st.session_state.pop('goto', None)
     if goto in pages:
         st.switch_page(pages[goto])
+    migrate_statuses(store)  # nomes antigos de status (Submetida, Aprovada…) viram o ciclo novo
     CTX.update(store=store, simulated=simulated)
     nav.run()
 

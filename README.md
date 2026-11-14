@@ -72,7 +72,7 @@ O arquivo será `data/inovamatch.db`. `INOVAMATCH_DB` permite alterar o caminho.
 
 O InovaMatch é operado pelo escritório de projetos do polo de inovação, em quatro telas:
 
-1. **Vínculos** (tela principal): para cada edital publicado e não encerrado, as startups do polo com **Atende / Pendente de verificação / Não atende** e o motivo principal (o match existente; sem nota nem chance de aprovação). Abrir um vínculo mostra a justificativa de cada critério, o **checklist do vínculo** (documentos exigidos Enviado / Falta / Vencido pelo cofre, dados da startup a verificar, pontos manuais e prazo, cada item com página e trecho; exporta CSV e PDF) e o registro da candidatura: Em preparação → Submetida → Aprovada / Reprovada / Não submetida, com valores, datas e motivo de perda. O motivo sugerido nunca é salvo sozinho.
+1. **Vínculos** (tela principal): para cada edital publicado e não encerrado, as startups do polo com **Atende / Pendente de verificação / Não atende** e o motivo principal (o match existente; sem nota nem chance de aprovação). Abrir um vínculo mostra a justificativa de cada critério, o **checklist do vínculo** (documentos exigidos Enviado / Falta / Vencido pelo cofre, dados da startup a verificar, pontos manuais e prazo, cada item com página e trecho; exporta CSV e PDF) e o registro do match: Sugerido → Em preparação → Inscrito → Aprovado / Reprovado / Desistiu, com valores, datas e motivo de perda; match Aprovado libera a aba Captação (datas, tarefas, lembretes e .ics). O motivo sugerido nunca é salvo sozinho.
 2. **Editais**: "Atualizar editais" (FAPESC), revisão de critérios e prazo, publicação às startups.
 3. **Startups**: cadastro, projetos, **cofre de documentos** ([docs/COFRE_DOCUMENTOS.md](docs/COFRE_DOCUMENTOS.md)) e acompanhamento startup × edital (documentos "x de y", status), com filtro por edital.
 4. **Painel**: Captado, Deixou de captar, Taxa de aprovação e Em andamento (definição de cada número na tela), motivos de perda, tabelas por agência e por startup, filtro por período e CSV. Na demonstração, as ~10 candidaturas são simuladas e marcadas como tal.
@@ -155,7 +155,7 @@ Aceitação com busca real e dois PDFs oficiais, em base temporária isolada:
 python scripts/validate_live.py --output work/aceitacao-real.json
 ```
 
-O comando compara os PDFs com os hashes de referência e executa 20 conferências parciais. Se o documento mudar, exige atualizar a referência após leitura humana; não considera a nova interpretação validada. Os registros fictícios do ensaio não entram no site. A suíte normal (`pytest -q`) tem 222 testes e roda sem rede e sem API paga.
+O comando compara os PDFs com os hashes de referência e executa 20 conferências parciais. Se o documento mudar, exige atualizar a referência após leitura humana; não considera a nova interpretação validada. Os registros fictícios do ensaio não entram no site. A suíte normal (`pytest -q`) tem 223 testes e roda sem rede e sem API paga.
 
 Os resultados reais dependem da disponibilidade e estrutura do site na hora da execução. `VALIDACAO.md` mantém o registro inicial; [docs/VALIDACAO_EXTRACAO.md](docs/VALIDACAO_EXTRACAO.md) registra a evolução e os limites atuais.
 

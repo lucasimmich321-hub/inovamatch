@@ -3,14 +3,14 @@ import csv
 import io
 from datetime import date, datetime, timedelta
 
-from .applications import APPROVED, LOST, NOT_SUBMITTED, PREPARING, REASONS, REJECTED, SUBMITTED
+from .applications import APPROVED, LOST, NOT_SUBMITTED, PREPARING, REASONS, REJECTED, SUBMITTED, SUGGESTED
 from .domain import today
 
 DEFINITIONS = {
-    'Captado': 'Soma do valor captado das candidaturas Aprovadas com resultado no período.',
-    'Deixou de captar': 'Soma do valor solicitado das candidaturas Reprovadas ou Não submetidas no período.',
-    'Taxa de aprovação': 'Aprovadas ÷ (Aprovadas + Reprovadas) no período. Não submetidas ficam fora da conta.',
-    'Em andamento': 'Candidaturas Em preparação ou Submetidas hoje (não depende do período).',
+    'Captado': 'Soma do valor aprovado dos matches Aprovados com resultado no período.',
+    'Deixou de captar': 'Soma do valor solicitado dos matches Reprovados ou em que a startup Desistiu, no período.',
+    'Taxa de aprovação': 'Aprovados ÷ (Aprovados + Reprovados) no período. Desistências ficam fora da conta.',
+    'Em andamento': 'Matches Sugeridos, Em preparação ou Inscritos hoje (não depende do período).',
 }
 PERIODS = ['Todo o período', 'Últimos 12 meses', 'Ano atual', 'Ano anterior']
 
@@ -67,7 +67,7 @@ def compute(store, start=None, end=None):
             reasons[a['motivo']] += 1
     by = {'agencia': {}, 'startup': {}}
     rows = []
-    for a in final + [x for x in applications if x.get('status') in (PREPARING, SUBMITTED)]:
+    for a in final + [x for x in applications if x.get('status') in (SUGGESTED, PREPARING, SUBMITTED)]:
         info = describe(store, a)
         rows.append({**info, 'status': a['status'], 'valor_solicitado': a.get('valor_solicitado'), 'valor_captado': a.get('valor_captado'),
                      'data_submissao': a.get('data_submissao'), 'data_resultado': a.get('data_resultado'), 'motivo': a.get('motivo') or '',
@@ -75,18 +75,18 @@ def compute(store, start=None, end=None):
         if a not in final:
             continue
         for key in ('agencia', 'startup'):
-            group = by[key].setdefault(info[key], {'Candidaturas finalizadas': 0, 'Aprovadas': 0, 'Reprovadas': 0, 'Não submetidas': 0,
+            group = by[key].setdefault(info[key], {'Candidaturas finalizadas': 0, 'Aprovados': 0, 'Reprovados': 0, 'Desistiu': 0,
                                                    'Captado': 0.0, 'Deixou de captar': 0.0})
             group['Candidaturas finalizadas'] += 1
-            group['Aprovadas'] += a['status'] == APPROVED
-            group['Reprovadas'] += a['status'] == REJECTED
-            group['Não submetidas'] += a['status'] == NOT_SUBMITTED
+            group['Aprovados'] += a['status'] == APPROVED
+            group['Reprovados'] += a['status'] == REJECTED
+            group['Desistiu'] += a['status'] == NOT_SUBMITTED
             group['Captado'] += (a.get('valor_captado') or 0) if a['status'] == APPROVED else 0
             group['Deixou de captar'] += (a.get('valor_solicitado') or 0) if a['status'] in LOST else 0
     return {'captado': sum(a.get('valor_captado') or 0 for a in approved),
             'deixou_de_captar': sum(a.get('valor_solicitado') or 0 for a in lost),
             'taxa_aprovacao': (len(approved) / decided) if decided else None,
-            'em_andamento': sum(a.get('status') in (PREPARING, SUBMITTED) for a in applications),
+            'em_andamento': sum(a.get('status') in (SUGGESTED, PREPARING, SUBMITTED) for a in applications),
             'aprovadas': len(approved), 'reprovadas': len(rejected), 'nao_submetidas': len(lost) - len(rejected),
             'finalizadas': len(final), 'reasons': reasons, 'by_agency': by['agencia'], 'by_startup': by['startup'], 'rows': rows,
             'simulated': any(a.get('simulated') for a in applications)}

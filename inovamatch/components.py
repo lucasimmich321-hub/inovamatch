@@ -5,7 +5,10 @@ from .icons import icon
 # Situação → (classe CSS, ícone). Sempre ícone + texto, nunca só cor.
 CHIP = {'Aberto': ('ok', 'check'), 'Fluxo contínuo': ('info', 'refresh'), 'Futuro': ('muted', 'calendar'),
         'Em breve': ('muted', 'calendar'), 'Encerrado': ('muted', 'x'), 'Não confirmado': ('warn', 'help'),
-        'Demonstração': ('warn', 'flask')}
+        'Demonstração': ('warn', 'flask'),
+        # Captação: estado e procedência de cada data importante.
+        'A confirmar': ('warn', 'help'), 'Confirmada': ('ok', 'check'), 'Do edital': ('info', 'file'), 'Manual': ('muted', 'tag'),
+        'Aprovado': ('ok', 'check')}
 
 
 def chip(text, kind=None):

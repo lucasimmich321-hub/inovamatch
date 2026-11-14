@@ -3,6 +3,14 @@ from datetime import timedelta
 from .domain import today
 
 
+def _demo_schedule(days, source):
+    day = lambda n: (today() + timedelta(days=n)).isoformat()
+    rows = [('Submissão das propostas', day(-10), day(days)), ('Divulgação do resultado final', day(days + 20), day(days + 20)),
+            ('Contratação e assinatura do termo de outorga', day(days + 35), day(days + 35))]
+    return [{'etapa': etapa, 'inicio': start, 'fim': end, 'page': None, 'source': source, 'continuous': False,
+             'evidence': f'SIMULADO · {etapa}'} for etapa, start, end in rows]
+
+
 def load_demo(store):
     records = [
         ('demo-verde', 'Araucária Tech', 'SC', '2020-01-10', 'Tecnologia', 30_000),
@@ -47,5 +55,7 @@ def load_demo(store):
                              # Abertura confirmada (fictícia) para a demo ter edital "Aberto" pelo mesmo cálculo do produto.
                              'opening_date': (today() - timedelta(days=10)).isoformat(), 'opening_confirmed': True,
                              'opening_evidence': 'SIMULADO · inscrições abertas desde 10 dias antes de carregar a demonstração.',
+                             # Cronograma FICTÍCIO: alimenta as datas sugeridas da aba Captação na demonstração.
+                             'schedule': _demo_schedule(days, source),
                              'review_state': 'Publicado', 'relevance': 'Relevante',
                              'summary': 'Edital fictício, sem oportunidade real de financiamento.'})
