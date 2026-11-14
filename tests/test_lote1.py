@@ -156,3 +156,31 @@ def test_status_badge_has_text_and_color_class():
         assert css in html and f'Inscrições: {text}' in html
         assert ui.status_text(call).endswith(text)
     assert ui.deadline_label(dict(CONFIRMED_FLOW)) == 'Sem data-limite · fluxo contínuo'
+
+
+# T4 ---------------------------------------------------------------------
+
+def test_timestamps_and_scan_headers_in_portuguese():
+    import app as ui
+    assert ui.when('2026-11-14T09:05:33-03:00') == '14/11/2026 09:05'
+    assert ui.when(None) == 'Não registrada' and ui.when('ontem') == 'ontem'
+    rows = ui.scan_rows({'results': [{'institution': 'FAPESC', 'url': 'https://x', 'found': 3, 'added': 2,
+                                      'status': 'Consulta concluída', 'error': ''}]})
+    assert list(rows[0]) == ['Instituição', 'Links encontrados', 'Novos', 'Situação da consulta', 'Erro', 'Página consultada']
+
+
+def test_scan_progress_caption_is_cleared(monkeypatch):
+    from inovamatch import radar
+
+    def fake_scan(store, notices, source_ids=None, progress=None):
+        progress('Consultando FAPESC…')
+        return {'sources': [], 'found': 0, 'added': 0, 'errors': [], 'searched_at': '2026-11-14T09:05:00-03:00',
+                'results': [{'institution': 'FAPESC', 'url': 'https://x', 'found': 0, 'added': 0, 'status': 'Consulta concluída', 'error': ''}]}
+    monkeypatch.setattr(radar, 'scan', fake_scan)
+    app = clean(AppTest.from_file(APP, default_timeout=20).run())
+    app.sidebar.radio[0].set_value('Radar de Editais').run()
+    next(b for b in app.button if b.label == 'Buscar editais agora').click().run()
+    clean(app)
+    captions = [c.value for c in app.caption]
+    assert not any('Consultando' in c for c in captions)
+    assert any(c.startswith('Última busca: 14/11/2026 09:05') for c in captions)

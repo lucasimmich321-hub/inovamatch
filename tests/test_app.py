@@ -29,7 +29,9 @@ def navigate(app, page):
 
 def test_all_pages_and_demo_matching_and_copilot():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    assert app.title[0].value == 'Sua próxima oportunidade, mais perto.'
+    # Dashboard tem um único título de página: o H1 do hero.
+    assert not app.title
+    assert sum('<h1>' in h.value for h in app.get('html')) == 1
     button(app, 'Carregar demonstração').click().run()
     clean(app)
     assert app.session_state['dataset'] == 'Demonstração'

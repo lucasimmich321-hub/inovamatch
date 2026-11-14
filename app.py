@@ -29,11 +29,12 @@ CSS = '''
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap');
 html, body, [class*="css"], [data-testid="stApp"] {font-family:'DM Sans',sans-serif;}
 h1,h2,h3 {font-family:'Manrope',sans-serif;letter-spacing:-.035em;}
-.block-container {max-width:1450px;padding-top:2.2rem;padding-bottom:3rem;}
+.block-container {max-width:1450px;padding-top:4.75rem;padding-bottom:3rem;}
 [data-testid="stSidebar"] {border-right:1px solid #e3e9e8;background:#fff;}
 [data-testid="stSidebar"] .block-container {padding-top:2rem;}
 [data-testid="stMetric"] {background:white;border:1px solid #e1e9e6;border-radius:14px;padding:20px 22px;}
 [data-testid="stMetricLabel"] {color:#667b7a;font-size:13px;}
+[data-testid="stMetricLabel"], [data-testid="stMetricLabel"] * {white-space:normal !important;overflow:visible !important;text-overflow:clip !important;}
 [data-testid="stMetricValue"] {font-family:'Manrope',sans-serif;font-weight:800;font-size:32px;}
 .eyebrow {color:#61817b;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;}
 .brand {display:flex;gap:11px;align-items:center;margin-bottom:27px;}
@@ -43,7 +44,7 @@ h1,h2,h3 {font-family:'Manrope',sans-serif;letter-spacing:-.035em;}
 .hero {border-radius:19px;background:linear-gradient(120deg,#103b38,#12584f);padding:30px 34px;margin:14px 0 26px;color:#fff;position:relative;overflow:hidden;}
 .hero:after {content:'◉';font-size:240px;position:absolute;right:2%;top:-100px;color:#a3e5bc10;}
 .hero .eyebrow {color:#a9e7bf;}
-.hero h2 {font-size:32px;color:white;max-width:680px;margin:12px 0;line-height:1.24;}
+.hero h1 {font-family:'Manrope',sans-serif;font-size:32px;font-weight:800;color:white;padding:0;max-width:680px;margin:12px 0;line-height:1.24;}
 .hero p {color:#c7dfd8;margin:0;font-size:14px;}
 .tag {display:inline-block;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;background:#e4f4ec;color:#1c7359;}
 .tag.warn {background:#fff2d9;color:#8b6418;}
@@ -63,7 +64,7 @@ h1,h2,h3 {font-family:'Manrope',sans-serif;letter-spacing:-.035em;}
 .s-unknown {background:#eef1f0;color:#44524e;}
 [data-testid="stForm"] {background:#fff;border-color:#e2eae5;border-radius:14px;}
 .stButton button {border-radius:9px;}
-@media(max-width:700px) {.hero {padding:24px}.hero h2 {font-size:25px}.block-container {padding:1.2rem;}}
+@media(max-width:700px) {.hero {padding:24px}.hero h1 {font-size:25px}.block-container {padding:4.5rem 1.2rem 1.2rem;}}
 </style>'''
 st.html(CSS)
 
@@ -88,6 +89,24 @@ def brl(value):
     if value is None:
         return 'Não informado'
     return ('R$ ' + f'{value:,.2f}').replace(',', 'X').replace('.', ',').replace('X', '.')
+
+
+def when(value, fallback='Não registrada'):
+    """ISO 8601 → dd/mm/aaaa hh:mm. Valor não reconhecido é mostrado como veio."""
+    if not value:
+        return fallback
+    try:
+        return datetime.fromisoformat(str(value)).strftime('%d/%m/%Y %H:%M')
+    except ValueError:
+        return str(value)
+
+
+SCAN_COLUMNS = {'institution': 'Instituição', 'found': 'Links encontrados', 'added': 'Novos', 'status': 'Situação da consulta',
+                'error': 'Erro', 'url': 'Página consultada'}
+
+
+def scan_rows(report):
+    return [{label: r.get(key, '') for key, label in SCAN_COLUMNS.items()} for r in report.get('results', [])]
 
 
 def lines(value):
@@ -154,9 +173,10 @@ def source_link(call):
 
 
 def dashboard(store):
-    heading('Sua próxima oportunidade, mais perto.', 'Do edital encontrado à candidatura preparada')
+    # Título único da página: o hero (antes havia um H1 repetindo a mesma ideia).
+    st.html('<div class="eyebrow">INOVALE 2026 &nbsp; / &nbsp; RADAR INTELIGENTE DE FOMENTO</div>')
     st.html('''<div class="hero"><div class="eyebrow">ENCONTRE. COMPARE. PREPARE.</div>
-    <h2>Transforme oportunidades<br>em próximos passos.</h2>
+    <h1>Transforme oportunidades<br>em próximos passos.</h1>
     <p>Conecte sua startup ao fomento e saiba o que falta para candidatar seu projeto.</p></div>''')
     calls = store.all('calls')
     soon = [c for c in calls if deadline_info(c)['status'] == 'soon']
@@ -196,7 +216,7 @@ def dashboard(store):
         st.button('Abrir portfólio da incubadora →', on_click=go, args=('Portfólio da Incubadora',))
     if calls:
         with st.expander('Novos editais e revisões necessárias'):
-            st.dataframe([{'Edital': c['title'], 'Instituição': c.get('institution'), 'Encontrado em': c.get('discovered_at', 'Cadastro manual'),
+            st.dataframe([{'Edital': c['title'], 'Instituição': c.get('institution'), 'Encontrado em': when(c.get('discovered_at'), 'Cadastro manual'),
                            'Revisão': 'Concluída' if c.get('criteria_complete') else 'Necessária'} for c in sorted(calls, key=lambda c: c.get('discovered_at', ''), reverse=True)[:20]], hide_index=True)
     st.html('<div class="steps"><strong>Uma candidatura preparada começa com três passos</strong><br>'
             '01 &nbsp; Cadastre sua startup e seu projeto &nbsp; → &nbsp; 02 &nbsp; Revise os critérios do edital &nbsp; → &nbsp; '
@@ -490,7 +510,7 @@ def summary_view(store, call):
         st.dataframe([{'Data sugerida': d['value'], 'Página': d['page'], 'Trecho': d['evidence'], 'Fonte': d['source']} for d in call['deadline_candidates']], hide_index=True, width='stretch')
     if call.get('recurring_schedule'):
         st.info('Foi identificado um cronograma recorrente ou de fluxo contínuo. Confira a etapa e a regra mensal; o sistema não presume uma data-limite final.')
-    st.caption('Última verificação na fonte: ' + (call.get('last_seen_at') or call.get('discovered_at') or 'Não registrada'))
+    st.caption('Última verificação na fonte: ' + when(call.get('last_seen_at') or call.get('discovered_at')))
     with st.expander('Revisar dados, prazo e conclusão da análise'):
         metadata_editor(store, call)
 
@@ -602,7 +622,7 @@ def call_detail(store, call):
                 st.error(str(exc))
     if call.get('criteria'):
         pending = sum(not c.get('confirmed') and c.get('validation_status') != 'rejected' for c in call['criteria'])
-        st.caption(f"{len(call['criteria'])} critérios registrados · {pending} aguardando revisão · última análise: {call.get('analyzed_at', 'não registrada')}")
+        st.caption(f"{len(call['criteria'])} critérios registrados · {pending} aguardando revisão · última análise: {when(call.get('analyzed_at'), 'não registrada')}")
     for warning in call.get('extraction_warnings', []):
         st.warning(warning)
     tab_summary, tab1, tab_docs, tab_compat, tab3 = st.tabs(['Resumo', 'Requisitos', 'Documentação', 'Compatibilidade', 'Fonte'])
@@ -686,17 +706,20 @@ def radar(store, simulated):
                 elif elapsed < 60:
                     st.warning('Aguarde 60 segundos entre buscas para respeitar a fonte.')
                 else:
-                    with st.spinner('Consultando a fonte oficial…'):
-                        status = st.empty()
-                        report = scan(store, notices, source_ids=source_ids, progress=status.caption)
+                    status = st.empty()
+                    try:
+                        with st.spinner('Consultando a fonte oficial…'):
+                            report = scan(store, notices, source_ids=source_ids, progress=status.caption)
+                    finally:
+                        status.empty()  # a legenda de progresso some ao concluir
                     st.session_state.scan_report = report
             report = st.session_state.get('scan_report') or (store.all('scans')[-1] if store.all('scans') else None)
             if report:
-                st.caption(f"Última busca: {report['searched_at']} · {report['found']} links encontrados · {report['added']} novos")
+                st.caption(f"Última busca: {when(report['searched_at'])} · {report['found']} links encontrados · {report['added']} novos")
                 for error in report['errors']:
                     st.error(error)
                 if report.get('results'):
-                    st.dataframe(report['results'], hide_index=True, width='stretch')
+                    st.dataframe(scan_rows(report), hide_index=True, width='stretch')
                 if not report['errors']:
                     st.success('Consulta concluída. Revise os documentos antes de usar os critérios.')
         with right:
@@ -773,7 +796,7 @@ def radar(store, simulated):
     st.caption(f'{len(filtered)} edital(is) · A abertura de uma chamada não garante elegibilidade.')
     st.dataframe([{'Instituição': c.get('institution'), 'Título': c['title'], 'Situação das inscrições': status_text(c), 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_label(c),
                    'Análise de requisitos': 'Revisão integral declarada' if c.get('criteria_complete') else c.get('requirements_status', 'Não analisado'),
-                   'Valor identificado': brl(funding_value(c)), 'Última verificação': c.get('last_seen_at') or c.get('discovered_at'),
+                   'Valor identificado': brl(funding_value(c)), 'Última verificação': when(c.get('last_seen_at') or c.get('discovered_at')),
                    'Fonte oficial': c.get('url'), 'PDF': c.get('pdf_url') or c.get('document_url')} for c in filtered], hide_index=True, width='stretch')
     preferred = st.session_state.pop('focus_call', None)
     select_key = 'radar_call_' + str(simulated)
