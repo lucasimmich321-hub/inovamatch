@@ -346,3 +346,10 @@ Foco: MVP para demonstração, não sistema completo.
   - Limitações conhecidas: ai_ui.py (não alterado) valida em lote sem passar pelo arquivo (só "Conferi esta exigência" grava de volta);
     a extração ainda pode classificar exigência de projeto como "documento da startup" (caso do Plano de Trabalho); `pytest -q` na raiz coleta o .venv
     (greenlet/playwright, vindos do trabalho e2e fora desta tarefa), use `pytest -q tests`.
+- 14/11/2026: match do 65/2025 só com o que a extração achou (pedido do Kalil; fórmula intacta).
+  - scripts/curadoria_lote.py: `descartar-manuais` (feito no 65/2025: 118 critérios de revisão humana ficaram "Descartado", só no JSON de curadoria,
+    reversível; sobram 15 comparáveis) e `validar-comparaveis` (é o "conferi na fonte" do Kalil; NÃO rodado).
+  - Para a nota subir ainda faltam 3 ações DO KALIL: validar os 15 critérios; resolver o "conflito de datas entre documentos" do edital
+    (Editais › revisão); confirmar um prazo (a fonte não tem data de inscrição). Sem prazo/revisão integral a nota fica limitada a 4,0.
+  - Simulação em memória com isso feito: Alfa 10,0 "Potencialmente elegível" (Faz match); Beta, Gama, Delta, Epsilon, Zeta e Eta "Com impedimentos" (4,0).
+    Seed ganhou duração (18 meses), estado de execução (SC) e Currículo Lattes nos projetos (faltavam e geravam pendência/não atende opcional).

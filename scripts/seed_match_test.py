@@ -19,7 +19,7 @@ from inovamatch.storage import Store  # noqa: E402
 
 CALL_TITLE_PART = '65/2025'
 ALL_DOCS = ['Cartão CNPJ', 'Contrato social', 'Formulário de consulta de elegibilidade', 'Plano de Trabalho']
-PROJECT_DOCS = ['Contrato social', 'Plano de Trabalho']
+PROJECT_DOCS = ['Contrato social', 'Plano de Trabalho', 'Currículo Lattes']
 
 # id, nome, UF, meses de CNPJ (None = em formação), porte, documentos da startup, valor pedido, documentos do projeto, o que testa
 COMPANIES = [
@@ -52,7 +52,7 @@ def seed(store):
         store.save('projects', {'id': 'project-' + sid, 'startup_id': sid, 'name': 'Projeto ' + name, 'theme': 'Tecnologia',
                                 'objective': 'Projeto fictício.', 'description': 'Projeto fictício.', 'stage': 'MVP',
                                 'requested': requested, 'budget': requested, 'expenses': ['Equipamentos', 'Consultoria'],
-                                'project_documents': project_docs, 'team': 'Equipe fictícia', 'simulated': True, 'origem': 'demo'})
+                                'project_documents': project_docs, 'duration_months': 18, 'execution_state': 'SC', 'team': 'Equipe fictícia', 'simulated': True, 'origem': 'demo'})
 
 
 def main():
