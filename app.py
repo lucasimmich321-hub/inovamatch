@@ -16,7 +16,7 @@ from inovamatch.demo import demo_matches, load_demo
 from inovamatch.domain import STATES, deadline_info, now_iso, today
 from inovamatch.matching import FIELDS, OPS, FAIL, PASS, PENDING, DIMENSIONS, dimension_for, fingerprint, match
 from inovamatch.radar import import_url, pdf_call
-from inovamatch.storage import Store
+from inovamatch.storage import ScopedStore, Store
 from inovamatch.documents import merge_analysis, automatic_analysis
 from inovamatch.portfolio import overview, matrix, recalculate, register_application
 from inovamatch.filters import filter_calls, funding_value, sort_calls, status_group
@@ -360,16 +360,20 @@ def office_results(store):
     st.html('<div class="section-head">Operação</div>')
 
 
-def startup_form(store, simulated):
+def startup_form(store, simulated, fixed=None):
+    """fixed: a startup do perfil (planos abaixo do Institucional) — só edita essa, sem "Nova startup"."""
     st.caption('As informações da empresa são avaliadas separadamente das informações do projeto.')
     records = store.all('startups')
-    options = ['__new__'] + [r['id'] for r in records]
     lookup = {r['id']: r for r in records}
-    pending = st.session_state.pop(f'pending_startup_{simulated}', None)
-    if pending in lookup:
-        st.session_state[f'startup_edit_{simulated}'] = pending
-    selected = st.selectbox('Novo cadastro ou editar', options, format_func=lambda i: '＋ Nova startup' if i == '__new__' else lookup[i]['name'],
-                            key=f'startup_edit_{simulated}')
+    if fixed:
+        selected = fixed['id']
+    else:
+        options = ['__new__'] + [r['id'] for r in records]
+        pending = st.session_state.pop(f'pending_startup_{simulated}', None)
+        if pending in lookup:
+            st.session_state[f'startup_edit_{simulated}'] = pending
+        selected = st.selectbox('Novo cadastro ou editar', options, format_func=lambda i: '＋ Nova startup' if i == '__new__' else lookup[i]['name'],
+                                key=f'startup_edit_{simulated}')
     old = lookup.get(selected, {})
     with st.form('startup_' + selected):
         st.markdown('**Identificação da empresa**')
@@ -1273,13 +1277,13 @@ def link_detail(store, call, startup, project, show_checklist=True, compact=Fals
 VALIDITY_MARK = {EXPIRED: '🔴', SOON: '🟡', OK_VALID: '🟢', NO_DATE: '⚪'}
 
 
-def vault_view(store, simulated):
+def vault_view(store, simulated, fixed=None):
     st.caption('O escritório envia e mantém os documentos de cada startup. O checklist dos matches marca Enviado / Falta / Vencido a partir daqui.')
     startups = store.all('startups')
     if not startups:
         st.info('Cadastre uma startup para guardar os documentos dela.')
         return
-    startup = pick('Startup', startups, 'vault_startup')
+    startup = fixed or pick('Startup', startups, 'vault_startup')
     if simulated:
         st.info(DEMO_NOTICE + ' O envio de arquivos fica desativado na demonstração.')
     else:
@@ -1603,7 +1607,10 @@ def startups_list(store):
 
 
 def startup_profile(store, startups):
-    startup = pick('Startup', startups, 'profile_startup')
+    startup_detail(store, pick('Startup', startups, 'profile_startup'))
+
+
+def startup_detail(store, startup):
     if is_demo(startup):
         st.html(origin_badge(startup) + ' <span class="muted">Startup fictícia, criada para demonstração.</span>')
     gaps = attention.startup_gaps(startup, [p for p in store.all('projects') if p['startup_id'] == startup['id']])
@@ -1617,6 +1624,38 @@ def startup_profile(store, startups):
     c.markdown(f"**Documentos no cofre**  \n{len(docs)}" + (f' · {expired} vencido(s)' if expired else ''))
     st.html('<div class="section-head">Editais compatíveis</div>')
     startup_matches(store, startup)
+
+
+def scoped():
+    """Perfil abaixo do Institucional: a base é vista só pela startup do perfil (storage.ScopedStore)."""
+    return not can('multi_startup')
+
+
+def my_startup():
+    startups = CTX['store'].all('startups')
+    return startups[0] if startups else None
+
+
+def missing_persona_startup():
+    plan = current_plan()
+    st.html(empty_state('A startup deste perfil não está nesta base',
+                        f'{plans.PERSONAS[plan]} ({plan}) usa uma startup fictícia da Demonstração. Troque para o perfil '
+                        'Institucional e carregue a demonstração (ou, em Dados reais, adicione as startups de exemplo).'))
+
+
+def my_startup_page(store, simulated):
+    heading('Minha startup', 'Perfil, cadastro e documentos da sua startup.')
+    startup = my_startup()
+    if not startup:
+        missing_persona_startup()
+        return
+    tab_profile, tab_edit, tab_docs = st.tabs(['Perfil', 'Cadastro', 'Documentos'])
+    with tab_profile:
+        startup_detail(store, startup)
+    with tab_edit:
+        startup_form(store, simulated, fixed=startup)
+    with tab_docs:
+        vault_view(store, simulated, fixed=startup)
 
 
 def startups_page(store, simulated):
@@ -1932,21 +1971,24 @@ def matches_list(store, simulated):
 
 def candidaturas_page(store, simulated):
     heading('Matches', 'Edital × startup: do sugerido ao resultado. Checklist, documentos e andamento de cada match.')
-    tab_list, tab_new, tab_results = st.tabs(['Matches', 'Novo projeto', 'Resultados'])
+    if scoped():  # abaixo do Institucional: sem a aba Resultados (é do escritório)
+        tab_list, tab_new = st.tabs(['Matches', 'Novo projeto'])
+    else:
+        tab_list, tab_new, tab_results = st.tabs(['Matches', 'Novo projeto', 'Resultados'])
+        with tab_results:
+            office_results(store)
     with tab_list:
         matches_list(store, simulated)
     with tab_new:
         candidacy_form(store, simulated)
-    with tab_results:
-        if can('multi_startup'):
-            office_results(store)
-        else:
-            locked_card('multi_startup', 'lk_results')
 
 
 def inicio(store):
     heading('Início', 'O que precisa da sua atenção: prazos que vencem, editais para revisar e pendências.')
     calls = store.all('calls')
+    if scoped() and not my_startup():
+        missing_persona_startup()
+        return
     if not calls and not store.all('startups'):
         with st.container(border=True):
             st.markdown('**Comece por aqui**')
@@ -2096,7 +2138,8 @@ def home_pendencies(store):
 def alertas_page(store):
     heading('Alertas', 'Fila de avisos por destinatário, com texto pronto para copiar, abrir no e-mail ou no WhatsApp.')
     st.html(f'<div class="im-chips">{chip("Simulação: nada é enviado", "warn", "alert")}</div>')
-    recipient = st.segmented_control('Destinatário', ['Todos'] + alerts.RECIPIENTS, default='Todos', key='alert_recipient') or 'Todos'
+    recipient = 'Todos' if scoped() else (
+        st.segmented_control('Destinatário', ['Todos'] + alerts.RECIPIENTS, default='Todos', key='alert_recipient') or 'Todos')
     allowed = [t for t in alerts.TYPES if alerts.FEATURE[t] is None or can(alerts.FEATURE[t])]
     queue = [a for a in alerts.build(store) if a['tipo'] in allowed and (recipient == 'Todos' or recipient in a['destinatarios'])]
     if not alerts.build(store):
@@ -2129,7 +2172,7 @@ def planos_page():
     heading('Planos', 'Simulação para a demonstração: sem login, sem cobrança e sem gravar a escolha. Preços a definir.')
     st.html(f'<div class="im-chips">{chip("Demonstração")}{chip(f"Plano atual: {current_plan()}", "info")}</div>')
     st.dataframe([dict(zip(['Recurso'] + plans.PLANS, row)) for row in plans.COMPARISON], hide_index=True, width='stretch')
-    st.caption('“Em breve” = ainda não construído. Troque o plano em “Plano (simulação)”, na barra lateral.')
+    st.caption('“Em breve” = ainda não construído. Troque o perfil em “Trocar perfil ou exportar”, no pé da barra lateral.')
 
 
 def change_profile(key):
@@ -2139,31 +2182,27 @@ def change_profile(key):
 def user_block(store, simulated):
     """Canto inferior da barra lateral: perfil fictício (plano) e exportação. Simulação, não é login real."""
     plan = current_plan()
-    name, role = plans.PERSONAS[plan]
+    name = plans.PERSONAS[plan]
     with st.container(key='user_block'):
         # Nome e plano em duas linhas (antes "Nome · Plano" no botão, cortado com reticências na barra estreita).
         avatar, who = st.columns([1, 4], vertical_alignment='center')
         avatar.html(f'<div class="im-avatar" aria-hidden="true">{plans.initials(name)}</div>')
         who.html(f'<div class="im-user"><strong>{escape(name)}</strong><span>Plano {escape(plan)}</span></div>')
         with st.popover('Trocar perfil ou exportar', icon=':material/manage_accounts:', width='stretch'):
-            st.html(f'<div class="im-chips">{chip("Demonstração")}</div><strong>{escape(name)}</strong><br>'
-                    f'<span class="muted">{escape(role)} · plano {escape(plan)}</span>')
-            st.caption('Perfil fictício para mostrar o que cada plano libera. Não é login real; nada é salvo.')
             key = '_profile_widget_' + plan  # chave amarrada ao valor, como o seletor de base
             st.selectbox('Trocar perfil (simulação)', plans.PLANS, index=plans.PLANS.index(plan), key=key,
-                         format_func=lambda p: f'{plans.PERSONAS[p][0]} · {plans.PERSONAS[p][1]} ({p})',
-                         on_change=change_profile, args=(key,))
+                         format_func=plans.persona_label, on_change=change_profile, args=(key,),
+                         help='Perfil fictício para mostrar o que cada plano libera. Não é login real; nada é salvo.')
             st.download_button('Exportar dados da sessão (JSON)', store.export(),
                                'inovamatch-demo.json' if simulated else 'inovamatch-dados.json', 'application/json',
-                               width='stretch', icon=':material/download:')
-            st.caption('Baixa tudo desta sessão (startups, editais, matches e tarefas) para guardar uma cópia: '
-                       'os dados somem ao recarregar ou fechar o site.')
+                               width='stretch', icon=':material/download:',
+                               help='Baixa os dados desta sessão: eles somem ao recarregar ou fechar o site.')
 
 
 def _page(title):
     def render():
         store, simulated = CTX['store'], CTX['simulated']
-        {'Início': lambda: inicio(store), 'Editais': lambda: radar(store, simulated), 'Startups': lambda: startups_page(store, simulated),
+        {'Início': lambda: inicio(store), 'Editais': lambda: radar(store, simulated), 'Startups': lambda: (my_startup_page if scoped() else startups_page)(store, simulated),
          'Matches': lambda: candidaturas_page(store, simulated), 'Alertas': lambda: alertas_page(store),
          'Planos': planos_page}[title]()
     render.__name__ = 'page_' + title.encode('ascii', 'ignore').decode().lower()
@@ -2181,23 +2220,26 @@ def main():
     elif legacy:
         st.session_state.goto = LEGACY_PAGES.get(legacy, legacy)
     st.logo(str(LOGO), size='large', icon_image=str(ICON))
-    pages = {title: st.Page(_page(title), title=title, icon=icon, url_path=slug, default=(slug == 'inicio'))
+    # Abaixo do Institucional, "Startups" aparece como "Minha startup" (a chave interna continua 'Startups').
+    pages = {title: st.Page(_page(title), title='Minha startup' if title == 'Startups' and not can('multi_startup') else title,
+                            icon=icon, url_path=slug, default=(slug == 'inicio'))
              for title, slug, icon in PAGE_DEFS}
     # "Planos" é oculta no menu (as 5 páginas continuam as mesmas); abre pelo link "Ver planos".
     pages['Planos'] = CTX['plans_page'] = st.Page(_page('Planos'), title='Planos', icon=':material/workspace_premium:',
                                                   url_path='planos', visibility='hidden')
     nav = st.navigation(list(pages.values()), position='sidebar')
-    with st.sidebar:
-        st.caption('ESPAÇO DE TRABALHO')
-        # A escolha fica numa chave comum de sessão: estado de widget é limpo quando a página muda.
-        options = [ORIGIN_LABELS['real'], ORIGIN_LABELS[DEMO]]
-        current = st.session_state.get('dataset', options[0])
-        current = current if current in options else options[0]  # sessão antiga ("Meus dados") cai em Dados reais
-        # Chave amarrada ao valor: quando a base muda (inclusive pelo botão de demonstração), nasce um seletor novo já com o valor certo.
-        dataset = st.selectbox('Base de dados', options, index=options.index(current), key='_dataset_widget_' + current, label_visibility='collapsed')
-        st.session_state.dataset = dataset
-        st.button('Carregar demonstração', on_click=demo_activate, width='stretch', icon=':material/play_circle:')
-        st.caption('6 startups, 3 editais e 8 matches fictícios para experimentar o fluxo completo.')
+    # A escolha fica numa chave comum de sessão: estado de widget é limpo quando a página muda.
+    options = [ORIGIN_LABELS['real'], ORIGIN_LABELS[DEMO]]
+    current = st.session_state.get('dataset', options[0])
+    dataset = current if current in options else options[0]  # sessão antiga ("Meus dados") cai em Dados reais
+    if can('multi_startup'):  # "Espaço de trabalho" só no Institucional; os outros perfis ficam na base atual
+        with st.sidebar:
+            st.caption('ESPAÇO DE TRABALHO')
+            # Chave amarrada ao valor: quando a base muda (inclusive pelo botão de demonstração), nasce um seletor novo já com o valor certo.
+            dataset = st.selectbox('Base de dados', options, index=options.index(dataset), key='_dataset_widget_' + dataset, label_visibility='collapsed')
+            st.button('Carregar demonstração', on_click=demo_activate, width='stretch', icon=':material/play_circle:')
+            st.caption('6 startups, 3 editais e 8 matches fictícios para experimentar o fluxo completo.')
+    st.session_state.dataset = dataset
     simulated = dataset == ORIGIN_LABELS[DEMO]
     if simulated:
         store = Store(st.session_state.setdefault('demo_data', {}))
@@ -2208,6 +2250,8 @@ def main():
         storage_mode = os.environ.get('INOVAMATCH_STORAGE', 'session').lower()
         path = os.environ.get('INOVAMATCH_DB', 'data/inovamatch.db') if storage_mode == 'sqlite' else None
         store = Store(st.session_state.setdefault('real_data', {}), path=path)
+    if not can('multi_startup'):
+        store = ScopedStore(store, plans.PERSONA_STARTUP[current_plan()])
     with st.sidebar:
         st.caption('Dados só nesta sessão: exporte antes de sair.' if simulated or not store.path
                    else 'SQLite local: dados compartilhados neste servidor.')

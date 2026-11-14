@@ -82,3 +82,35 @@ class Store:
             call = register(call, call.get('url') or call.get('source_label') or 'Documento sem URL',
                             call.get('document_sha256') or '', call['pages'])
         return self.save('calls', {**call, 'dedup_key': key}), True
+
+
+class ScopedStore(Store):
+    """Visão de UMA startup sobre a mesma base (perfis abaixo do Institucional). Editais e coletas continuam todos;
+    startups, projetos, documentos, matches, tarefas e análises ficam só os dessa startup. Gravações vão para a base comum."""
+
+    def __init__(self, base, startup_id):
+        super().__init__(base.data, base.path)
+        self.startup_id = startup_id
+
+    def all(self, kind):
+        rows = super().all(kind)
+        if kind in ('calls', 'scans'):
+            return rows
+        if kind == 'startups':
+            return [r for r in rows if r['id'] == self.startup_id]
+        if kind in ('projects', 'documents'):
+            return [r for r in rows if r.get('startup_id') == self.startup_id]
+        projects = {p['id'] for p in super().all('projects') if p.get('startup_id') == self.startup_id}
+        if kind == 'applications':
+            return [r for r in rows if r.get('project_id') in projects]
+        apps = {a['id'] for a in super().all('applications') if a.get('project_id') in projects}
+
+        def mine(r):
+            if r.get('startup_id'):
+                return r['startup_id'] == self.startup_id
+            if r.get('project_id'):
+                return r['project_id'] in projects
+            if r.get('application_id'):
+                return r['application_id'] in apps
+            return True  # registro sem dono (não ligado a startup)
+        return [r for r in rows if mine(r)]

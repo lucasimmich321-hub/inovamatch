@@ -217,3 +217,13 @@ Foco: MVP para demonstração, não sistema completo.
     Só modelo, título e contagens; nada de chave, senha ou texto.
   - Não verificado em navegador: sumiço do Deploy, bloco do usuário em duas linhas, caixa do CNPJ. Log não visto com chamada real
     (só teste unitário; nenhuma chamada à OpenAI feita).
+- 14/11/2026: perfis por startup (ajuste de usuário, sem fase nova). 234 testes.
+  - plans.PERSONAS só com nome ("Marina Souza · Institucional"; sem cargo); popover enxuto (seletor + exportar, avisos em help).
+  - Institucional: tudo, incluindo "Espaço de trabalho / Carregar demonstração" na lateral, aba Resultados, dashboard e filtro de destinatário.
+  - Abaixo dele: cada perfil é uma startup fictícia (plans.PERSONA_STARTUP: Lucas=Horizonte Digital, Beatriz=Serra Biotec,
+    Rafael=Vale Agro Digital, Juliana=Araucária Tech). storage.ScopedStore recorta a base inteira (startups, projetos, documentos,
+    matches, tarefas, análises; editais não): Início, Editais (startups compatíveis), Matches e Alertas mostram só a startup do perfil.
+    Menu "Startups" vira "Minha startup" (abas Perfil, Cadastro, Documentos; sem portfólio e sem "Nova startup").
+    Sem bloco do espaço de trabalho, sem Resultados, sem filtro de destinatário. Se a startup do perfil não existe na base
+    (ex.: Dados reais sem as startups de exemplo), Início e Minha startup mostram estado vazio pedindo o perfil Institucional.
+  - Não verificado em navegador (só AppTest: os 5 perfis × 5 páginas × 2 bases sem exceção).

@@ -98,11 +98,15 @@ def test_planos_simulados_liberam_e_bloqueiam():
     app.session_state['active_match'] = 'demo-call-1:project-demo-pendente'
     goto(app, 'Matches')
     assert any('Exigência' in d.value.columns for d in app.dataframe)  # Institucional: tudo liberado
-    app.session_state['plan'] = 'Gratuito'
+    app.session_state['plan'] = 'Gratuito'  # Lucas = Horizonte Digital: só o match dela aparece
+    app.session_state['active_match'] = 'demo-call-2:project-demo-fora'
     app.run()
     html = ' '.join(h.value for h in app.get('html'))
     assert not app.exception and 'Disponível no plano Básico' in html and 'Disponível no plano Intermediário' in html
     assert not any('Exigência' in d.value.columns for d in app.dataframe)
+    labels = [t.label for t in app.tabs]
+    assert 'Novo projeto' in labels and 'Resultados' not in labels
+    assert not any(b.label == 'Carregar demonstração' for b in app.button)  # "Espaço de trabalho" só no Institucional
     goto(app, 'Planos')
     table = next(d for d in app.dataframe if 'Recurso' in d.value.columns).value
     assert 'Em breve' in table['Premium'].tolist() and set(table.iloc[-1, 1:]) == {'A definir'}
@@ -148,7 +152,28 @@ def test_alertas_simulados_por_plano():
     assert any('Simulação: nada é enviado' in h.value for h in app.get('html'))
     app.session_state['plan'] = 'Gratuito'
     app.run()
-    assert len(app.code) == 2 and any('Disponível no plano Básico' in h.value for h in app.get('html'))
+    # Lucas (Gratuito) = Horizonte Digital: só os avisos dela, sem filtro de destinatário.
+    assert len(app.code) == 1 and 'Horizonte Digital' in app.code[0].value and not app.get('button_group')
+    assert any('Disponível no plano Básico' in h.value for h in app.get('html'))
+
+
+def test_perfil_abaixo_do_institucional_ve_so_a_sua_startup():
+    from inovamatch import plans
+    from inovamatch.demo import demo_matches, load_demo
+    from inovamatch.storage import ScopedStore
+    from inovamatch.vault import demo_documents
+    base = Store({})
+    load_demo(base)
+    demo_documents(base)
+    demo_matches(base)
+    names = {'Gratuito': 'Horizonte Digital', 'Básico': 'Serra Biotec', 'Intermediário': 'Vale Agro Digital', 'Premium': 'Araucária Tech'}
+    for plan, name in names.items():
+        view = ScopedStore(base, plans.PERSONA_STARTUP[plan])
+        assert [s['name'] for s in view.all('startups')] == [name]
+        projects = {p['id'] for p in view.all('projects')}
+        assert view.all('applications') and all(a['project_id'] in projects for a in view.all('applications'))
+        assert len(view.all('calls')) == len(base.all('calls'))
+    assert plans.persona_label('Gratuito') == 'Lucas Andrade · Gratuito'
 
 
 def test_hash_do_edital_e_retificacao_simulada():

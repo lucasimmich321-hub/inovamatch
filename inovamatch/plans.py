@@ -46,13 +46,15 @@ def required(feature):
     return FEATURES[feature]
 
 # Pessoa fictícia de cada plano (perfil de DEMONSTRAÇÃO; não é login real).
-PERSONAS = {
-    'Gratuito': ('Lucas Andrade', 'Fundador de startup'),
-    'Básico': ('Beatriz Lima', 'Sócia de startup'),
-    'Intermediário': ('Rafael Costa', 'Analista de captação'),
-    'Premium': ('Juliana Prado', 'Consultora de projetos'),
-    'Institucional': ('Marina Souza', 'Coordenadora do escritório de projetos'),
-}
+PERSONAS = {'Gratuito': 'Lucas Andrade', 'Básico': 'Beatriz Lima', 'Intermediário': 'Rafael Costa',
+            'Premium': 'Juliana Prado', 'Institucional': 'Marina Souza'}
+# Abaixo do Institucional, cada perfil é uma startup (fictícia, da demonstração): vê só os dados dela.
+# O Institucional (escritório de projetos) vê todas.
+PERSONA_STARTUP = {'Gratuito': 'demo-fora', 'Básico': 'demo-bio', 'Intermediário': 'demo-agro', 'Premium': 'demo-verde'}
+
+
+def persona_label(plan):
+    return f'{PERSONAS[normalize(plan)]} · {normalize(plan)}'
 
 
 def initials(name):
