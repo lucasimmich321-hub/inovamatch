@@ -28,9 +28,9 @@ def validate_url(url):
     # Escopo explícito do MVP: órgãos públicos e instituições de ensino brasileiras.
     # Não permite requests para localhost, IPs, portas customizadas ou URLs com credenciais.
     allowed = any(host.endswith('.' + suffix) or host == suffix
-                  for suffix in ('gov.br', 'edu.br', 'cnpq.br', 'fapesp.br'))
+                  for suffix in ('gov.br', 'edu.br', 'cnpq.br', 'fapesp.br', 'embrapii.org.br', 'sebrae.com.br', 'brde.com.br'))
     if p.scheme != 'https' or not allowed or p.username or p.password or p.port not in (None, 443):
-        raise ValueError('Use uma URL HTTPS de gov.br, edu.br, cnpq.br ou fapesp.br. Para outras fontes, envie o PDF.')
+        raise ValueError('Use HTTPS de órgão público, universidade ou das fontes oficiais EMBRAPII, SEBRAE e BRDE. Para outras fontes, envie o PDF.')
     return url.strip()
 
 
@@ -104,7 +104,7 @@ def page_text(html):
     for tag in soup(['script', 'style', 'nav', 'footer', 'header']):
         tag.decompose()
     root = soup.select_one('article, main, .entry-content, #content') or soup
-    return root.get_text(' ', strip=True)[:120_000]
+    return root.get_text('\n', strip=True)[:120_000]
 
 
 def parse_listing(html, base_url=FAPESC):
@@ -135,32 +135,38 @@ def parse_listing(html, base_url=FAPESC):
         # Datas de publicação e números de editais nunca viram prazos de inscrição.
         dates = re.findall(r'\b\d{2}/\d{2}/\d{4}\b', title)
         calls.append({'title': title[:400], 'institution': 'FAPESC', 'url': url,
-                      'dedup_key': key, 'discovered_at': now_iso(), 'dates_found': dates,
+                      'dedup_key': key, 'discovered_at': now_iso(), 'last_seen_at': now_iso(), 'dates_found': dates,
                       'deadline': None, 'deadline_confirmed': False, 'criteria_complete': False,
                       'criteria': [], 'simulated': False, 'origin': base_url})
     return calls
 
 
-def scan(store, include_notices=False):
+def scan(store, include_notices=False, source_ids=None, progress=None):
+    from .sources import SOURCES, NOTICES
     fetcher = Fetcher()
-    sources = [FAPESC] + ([COMUNICADOS] if include_notices else [])
-    added, found, errors = 0, 0, []
+    adapters = [SOURCES[sid] for sid in (source_ids if source_ids is not None else ['fapesc']) if sid in SOURCES]
+    if include_notices:
+        adapters.append(NOTICES)
+    added, found, errors, results = 0, 0, [], []
     try:
-        for source in sources:
+        for adapter in adapters:
             try:
-                body, _, resolved = fetcher.fetch(source)
-                calls = parse_listing(body, resolved)
-                if not calls:
-                    raise ValueError('Nenhum link de edital reconhecido. A estrutura da página pode ter mudado.')
+                if progress:
+                    progress(f'Consultando {adapter.institution}…')
+                calls = adapter.collect(fetcher)
                 found += len(calls)
+                source_added = 0
                 for call in calls:
                     _, created = store.upsert_call(call)
                     added += int(created)
+                    source_added += int(created)
+                results.append({'institution': adapter.institution, 'url': adapter.url, 'found': len(calls), 'added': source_added, 'status': 'Consulta concluída', 'error': ''})
             except (requests.RequestException, ValueError) as exc:
-                errors.append(f'{source}: {exc}')
+                errors.append(f'{adapter.institution} · {adapter.url}: {exc}')
+                results.append({'institution': adapter.institution, 'url': adapter.url, 'found': 0, 'added': 0, 'status': 'Consulta automática indisponível', 'error': str(exc)})
     finally:
         fetcher.close()
-    report = {'sources': sources, 'found': found, 'added': added, 'errors': errors, 'searched_at': now_iso()}
+    report = {'sources': [a.url for a in adapters], 'found': found, 'added': added, 'errors': errors, 'results': results, 'searched_at': now_iso()}
     store.save('scans', report)
     return report
 
@@ -191,7 +197,11 @@ def import_url(url):
     suggestions = suggest(pages, resolved)
     return {'title': title[:400], 'institution': 'FAPESC' if 'fapesc.sc.gov.br' in resolved else 'Revisar instituição',
             'url': resolved, 'dedup_key': canonical_url(resolved), 'simulated': False,
-            'criteria_complete': False, 'pages': pages, 'attachments': attachments, **suggestions}
+            'criteria_complete': False, 'pages': pages, 'attachments': attachments,
+            'document_sha256': hashlib.sha256(body).hexdigest(), 'last_seen_at': now_iso(),
+            'document_kind': 'PDF' if body.startswith(b'%PDF') else 'Página web',
+            'pdf_url': resolved if body.startswith(b'%PDF') else next((a['url'] for a in attachments if 'edital completo' in a['title'].lower()), None),
+            **suggestions}
 
 
 def pdf_call(data, filename):
@@ -200,4 +210,5 @@ def pdf_call(data, filename):
     label = 'PDF enviado: ' + filename
     return {'title': filename, 'institution': 'Revisar instituição', 'url': '', 'source_label': label,
             'simulated': False, 'criteria_complete': False, 'pages': pages,
-            'dedup_key': 'pdf:' + hashlib.sha256(data).hexdigest(), **suggest(pages, label)}
+            'dedup_key': 'pdf:' + hashlib.sha256(data).hexdigest(), 'document_sha256': hashlib.sha256(data).hexdigest(),
+            'document_kind': 'PDF', **suggest(pages, label)}

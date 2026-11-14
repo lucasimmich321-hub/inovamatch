@@ -127,3 +127,58 @@ def test_manual_call_criterion_evidence_and_deadline_review():
     clean(app)
     call = next(iter(app.session_state['real_data']['calls'].values()))
     assert call['deadline_confirmed'] and call['criteria_complete']
+
+
+def test_automatic_pdf_analysis_prefills_review_and_integrates_portfolio(monkeypatch):
+    import copy
+    from inovamatch.acceptance import reference_cases
+    from inovamatch.extraction import suggest
+    from inovamatch.radar import canonical_url
+    from inovamatch.storage import Store
+    from inovamatch import radar
+    fixture = next(f for f in reference_cases() if f['id'] == 'fapesc_66_2025')
+    def fake_import(url):
+        if url == fixture['call_url']:
+            return {'url': url, 'pages': [{'page': None, 'text': 'Página oficial do edital.'}], 'criteria': [],
+                    'attachments': [{'title': 'ACESSE O EDITAL COMPLETO', 'url': fixture['pdf_url']}],
+                    'extractor_version': '2.0'}
+        assert url == fixture['pdf_url']
+        return {'url': url, 'pages': fixture['pages'], 'attachments': [], 'document_sha256': fixture['pdf_sha256'],
+                **suggest(fixture['pages'], url)}
+    monkeypatch.setattr(radar, 'import_url', fake_import)
+    store = Store()
+    startup = store.save('startups', {'name': 'Startup fictícia do teste', 'state': 'SC'})
+    store.save('projects', {'name': 'Projeto fictício', 'startup_id': startup['id'], 'requested': 900000, 'budget': 1000000})
+    call, _ = store.upsert_call({'title': fixture['title'], 'institution': 'FAPESC', 'url': fixture['call_url'],
+                                'dedup_key': canonical_url(fixture['call_url']), 'criteria': [], 'criteria_complete': False,
+                                'deadline_confirmed': False, 'simulated': False})
+    app = AppTest.from_file(APP, default_timeout=30)
+    app.session_state['real_data'] = store.data
+    clean(app.run())
+    navigate(app, 'Radar de Editais')
+    button(app, 'Analisar requisitos automaticamente').click().run()
+    clean(app)
+    current = app.session_state['real_data']['calls'][call['id']]
+    assert len(current['criteria']) > 10
+    assert len(current['documents']) == 2
+    assert len(app.session_state['real_data']['analyses']) == 1
+    assert [tab.label for tab in app.tabs] == ['Resumo', 'Requisitos', 'Documentação', 'Compatibilidade', 'Fonte']
+    state_rule = next(c for c in current['criteria'] if c['field'] == 'state')
+    next(s for s in app.selectbox if s.label == 'Adicionar ou editar critério').set_value(state_rule['id']).run()
+    clean(app)
+    assert next(x for x in app.text_area if x.label == 'Valores exigidos / permitidos — um por linha').value == 'SC'
+    assert not next(x for x in app.checkbox if x.label == 'Conferi esta exigência na fonte').value
+    next(x for x in app.checkbox if x.label == 'Conferi esta exigência na fonte').check()
+    button(app, 'Salvar critério').click().run()
+    clean(app)
+    revised = app.session_state['real_data']['calls'][call['id']]
+    rule = next(c for c in revised['criteria'] if c['id'] == state_rule['id'])
+    assert rule['confirmed'] and rule['extracted'] and rule['validation_status'] == 'validated'
+    navigate(app, 'Copiloto de Captação')
+    button(app, 'Iniciar preparação desta candidatura').click().run()
+    clean(app)
+    assert len(app.session_state['real_data']['applications']) == 1
+    navigate(app, 'Portfólio da Incubadora')
+    button(app, 'Recalcular todo o portfólio').click().run()
+    clean(app)
+    assert app.dataframe[0].value['Candidaturas em preparação'].tolist() == [1]

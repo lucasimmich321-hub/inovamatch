@@ -11,3 +11,4 @@ data/
 .env.*
 *.pem
 *.key
+work/

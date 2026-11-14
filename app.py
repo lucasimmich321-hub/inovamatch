@@ -12,9 +12,13 @@ import streamlit as st
 
 from inovamatch.demo import load_demo
 from inovamatch.domain import STATES, deadline_info, now_iso, today
-from inovamatch.matching import FIELDS, OPS, FAIL, PASS, PENDING, checklist, fingerprint, match
+from inovamatch.matching import FIELDS, OPS, FAIL, PASS, PENDING, DIMENSIONS, dimension_for, checklist, fingerprint, match
 from inovamatch.radar import import_url, pdf_call, scan
 from inovamatch.storage import Store
+from inovamatch.documents import merge_analysis, automatic_analysis
+from inovamatch.portfolio import overview, matrix, recalculate, register_application
+from inovamatch.sources import SOURCES
+from inovamatch.filters import filter_calls, funding_value
 
 st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon='◈', layout='wide')
 
@@ -54,8 +58,8 @@ h1,h2,h3 {font-family:'Manrope',sans-serif;letter-spacing:-.035em;}
 </style>'''
 st.html(CSS)
 
-PAGES = ['Dashboard', 'Radar de Editais', 'Cadastrar Startup', 'Cadastrar Projeto', 'Match Inteligente', 'Copiloto de Captação']
-ICONS = ['◫', '◎', '◇', '▤', '⟷', '✧']
+PAGES = ['Dashboard', 'Radar de Editais', 'Cadastrar Startup', 'Cadastrar Projeto', 'Match Inteligente', 'Copiloto de Captação', 'Portfólio da Incubadora']
+ICONS = ['◫', '◎', '◇', '▤', '⟷', '✧', '▦']
 
 
 def go(page, call_id=None):
@@ -124,10 +128,17 @@ def dashboard(store):
     <p>Conecte sua startup ao fomento e saiba o que falta para candidatar seu projeto.</p></div>''')
     calls = store.all('calls')
     soon = [c for c in calls if deadline_info(c)['status'] == 'soon']
+    stats = overview(store)
     cols = st.columns(4)
-    for col, label, value in zip(cols, ['Editais encontrados', 'Startups cadastradas', 'Oportunidades analisadas', 'Prazos em até 7 dias'],
-                                [len(calls), len(store.all('startups')), len(store.all('analyses')), len(soon)]):
+    for col, label, value in zip(cols, ['Editais encontrados', 'Startups cadastradas', 'Projetos no portfólio', 'Editais com requisitos analisados'],
+                                [stats['calls'], stats['startups'], stats['projects'], stats['analyzed']]):
         col.metric(label, value)
+    for col, label, value in zip(st.columns(4), ['Oportunidades potencialmente elegíveis', 'Prazos em até 7 dias', 'Pendências documentais / operacionais', 'Candidaturas em preparação'],
+                                [stats['eligible'], stats['deadlines'], stats['doc_pending'], stats['preparing']]):
+        col.metric(label, value)
+    st.caption('Indicadores recalculados com os dados atuais. Oportunidades contam combinações projeto + edital; pendências não representam reprovação.')
+    if stats['needs_review']:
+        st.warning(f"{stats['needs_review']} edital(is) precisam de revisão dos requisitos antes de concluir a elegibilidade.")
     st.html('<div class="section-head">No seu radar</div>')
     st.caption('Prazos confirmados aparecem primeiro. A coleta é acionada por você.')
     if not calls:
@@ -148,6 +159,14 @@ def dashboard(store):
                     st.button('Ver edital →', key='open_' + call['id'], on_click=go, args=('Radar de Editais', call['id']), width='stretch')
     if soon:
         st.warning(f'{len(soon)} edital(is) com prazo confirmado em até 7 dias. Confira o horário e as retificações na fonte.')
+    if stats['rows']:
+        st.markdown('**Startups e oportunidades da incubadora**')
+        st.dataframe(stats['rows'], hide_index=True, width='stretch')
+        st.button('Abrir portfólio da incubadora →', on_click=go, args=('Portfólio da Incubadora',))
+    if calls:
+        with st.expander('Novos editais e revisões necessárias'):
+            st.dataframe([{'Edital': c['title'], 'Instituição': c.get('institution'), 'Encontrado em': c.get('discovered_at', 'Cadastro manual'),
+                           'Revisão': 'Concluída' if c.get('criteria_complete') else 'Necessária'} for c in sorted(calls, key=lambda c: c.get('discovered_at', ''), reverse=True)[:20]], hide_index=True)
     st.html('<div class="steps"><strong>Uma candidatura preparada começa com três passos</strong><br>'
             '01 &nbsp; Cadastre sua startup e seu projeto &nbsp; → &nbsp; 02 &nbsp; Revise os critérios do edital &nbsp; → &nbsp; '
             '03 &nbsp; Faça o match e organize a preparação</div>')
@@ -176,6 +195,8 @@ def startup_form(store, simulated):
         opened = a.date_input('Data de abertura', date.fromisoformat(old['opened_on']) if old.get('opened_on') else None,
                               min_value=date(1900, 1, 1), max_value=today(), format='DD/MM/YYYY')
         legal = b.text_input('Natureza jurídica', old.get('legal_type', ''), placeholder='Ex.: Sociedade Limitada')
+        organization_type = st.text_input('Tipo de instituição', old.get('organization_type', ''),
+                                           help='Use o tipo registrado no edital, por exemplo Empresa, ICT, ICT pública ou ICT privada sem fins lucrativos. Não é a natureza jurídica.')
         size = a.text_input('Porte', old.get('size', ''), placeholder='Ex.: ME')
         sector = b.text_input('Área de atuação', old.get('sector') or '', placeholder='Ex.: Tecnologia')
         description = st.text_area('Descrição do negócio', old.get('description', ''))
@@ -185,14 +206,17 @@ def startup_form(store, simulated):
         docs = st.text_area('Documentos disponíveis — um por linha', '\n'.join(old.get('documents', [])),
                             help='Declaração de disponibilidade. A aplicação não audita a validade dos documentos.')
         notes = st.text_area('Outras informações relevantes', old.get('notes', ''))
+        recalc = st.checkbox('Recalcular compatibilidade com editais analisados ao salvar', value=True)
         saved = st.form_submit_button('Salvar startup', type='primary')
     if saved:
         try:
             record = {**old, 'name': name.strip(), 'cnpj': cnpj.strip(), 'city': city.strip(), 'state': state or None,
                       'opened_on': opened.isoformat() if opened else None, 'legal_type': legal.strip(), 'size': size.strip(),
                       'sector': sector.strip(), 'description': description, 'counterpart': counterpart,
-                      'documents': lines(docs), 'notes': notes, 'simulated': simulated}
+                      'documents': lines(docs), 'notes': notes, 'simulated': simulated, 'organization_type': organization_type.strip()}
             saved_record = store.save('startups', record)
+            if recalc:
+                recalculate(store, startup_id=saved_record['id'])
             st.session_state[f'pending_startup_{simulated}'] = saved_record['id']
             st.session_state.flash = 'Startup salva. Você já pode cadastrar um projeto ou fazer o match.'
             st.rerun()
@@ -225,19 +249,35 @@ def project_form(store, simulated):
         a, b = st.columns(2)
         theme = a.text_input('Área temática', old.get('theme') or '', placeholder='Ex.: Tecnologia')
         stage = b.text_input('Estágio de desenvolvimento', old.get('stage', ''), placeholder='Ex.: Protótipo')
+        trl = a.number_input('TRL, quando conhecido (1 a 9)', min_value=1, max_value=9, value=old.get('trl'), step=1)
+        duration = b.number_input('Duração inicial do projeto (meses)', min_value=1, value=old.get('duration_months'), step=1)
+        states = [''] + STATES
+        execution_state = a.selectbox('Estado de execução', states, index=states.index(old.get('execution_state') or ''), format_func=lambda s: s or 'Não informado')
+        coordinator_state = b.selectbox('Estado de residência do coordenador', states, index=states.index(old.get('coordinator_state') or ''), format_func=lambda s: s or 'Não informado')
+        degrees = ['', 'Graduação', 'Especialização', 'Mestrado', 'Doutorado']
+        coordinator_degree = st.selectbox('Titulação do coordenador', degrees, index=degrees.index(old.get('coordinator_degree') or ''), format_func=lambda d: d or 'Não informado')
         requested = a.number_input('Valor solicitado (R$)', min_value=0.0, value=float(old['requested']) if old.get('requested') is not None else None, step=1000.0)
         budget = b.number_input('Orçamento total (R$)', min_value=0.0, value=float(old['budget']) if old.get('budget') is not None else None, step=1000.0)
         expenses = st.text_area('Despesas previstas — uma categoria por linha', '\n'.join(old.get('expenses', [])),
                                 help='Use nomes objetivos, como Equipamentos, Bolsas ou Serviços. Valores e detalhes podem ser registrados abaixo.')
         budget_notes = st.text_area('Detalhamento do orçamento e das despesas', old.get('budget_notes', ''))
         team = st.text_area('Equipe e parceiros', old.get('team', ''))
+        partners = st.text_area('Parceiros declarados — um por linha', '\n'.join(old.get('partners', [])))
+        partner_types = st.text_area('Tipos dos parceiros — um por linha', '\n'.join(old.get('partner_types', [])), help='Ex.: ICT, Empresa. O vínculo e a qualificação precisam de comprovação.')
+        project_documents = st.text_area('Documentos do projeto e da equipe — um por linha', '\n'.join(old.get('project_documents', [])), help='Ex.: Diploma, Currículo Lattes, Comprovante de vínculo. A titularidade e a validade devem ser conferidas.')
+        recalc = st.checkbox('Recalcular compatibilidade após salvar o projeto', value=True)
         saved = st.form_submit_button('Salvar projeto', type='primary')
     if saved:
         try:
             saved_record = store.save('projects', {**old, 'startup_id': sid, 'name': name.strip(), 'objective': objective,
                                    'description': description, 'theme': theme.strip(), 'stage': stage.strip(),
                                    'requested': requested, 'budget': budget, 'expenses': lines(expenses),
-                                   'budget_notes': budget_notes, 'team': team, 'simulated': simulated})
+                                   'budget_notes': budget_notes, 'team': team, 'simulated': simulated,
+                                   'trl': trl, 'duration_months': duration, 'execution_state': execution_state or None,
+                                   'coordinator_state': coordinator_state or None, 'coordinator_degree': coordinator_degree or None,
+                                   'partners': lines(partners), 'partner_types': lines(partner_types), 'project_documents': lines(project_documents)})
+            if recalc:
+                recalculate(store, startup_id=sid)
             st.session_state[f'pending_project_{simulated}'] = saved_record['id']
             st.session_state.flash = 'Projeto salvo e vinculado à startup.'
             st.rerun()
@@ -245,19 +285,8 @@ def project_form(store, simulated):
             st.error(str(exc))
 
 
-def merge_document(store, call, imported):
-    existing = list(call.get('criteria', []))
-    signatures = {(c['field'], c.get('evidence')) for c in existing}
-    existing += [c for c in imported.get('criteria', []) if (c['field'], c.get('evidence')) not in signatures]
-    result = {**call, 'criteria': existing, 'pages': imported.get('pages', []), 'observations': imported.get('observations', []),
-              'attachments': imported.get('attachments') or call.get('attachments', []),
-              'document_url': imported.get('url', ''),
-              'source_label': imported.get('source_label') or call.get('source_label', '')}
-    if not call.get('deadline_confirmed'):
-        result.update({k: imported.get(k) for k in ['deadline', 'deadline_evidence', 'deadline_confirmed']})
-    # Qualquer documento novo pode acrescentar exigências e retificações.
-    result['criteria_complete'] = False
-    return store.save('calls', result)
+def merge_document(store, call, imported, kind='Edital / documento'):
+    return store.save('calls', merge_analysis(call, imported, kind=kind))
 
 
 def metadata_editor(store, call):
@@ -281,8 +310,10 @@ def metadata_editor(store, call):
             st.error('Informe um título.')
         elif confirmed and (not deadline or not evidence.strip()):
             st.error('Para confirmar o prazo, informe a data e o trecho da fonte.')
-        elif complete and not call.get('criteria'):
+        elif complete and not any(c.get('validation_status') != 'rejected' for c in call.get('criteria', [])):
             st.error('Registre critérios antes de declarar a revisão integral.')
+        elif complete and any(not c.get('resolved') for c in call.get('conflicts', [])):
+            st.error('Resolva os possíveis conflitos entre documentos antes de concluir a revisão integral.')
         else:
             store.save('calls', {**call, 'title': title.strip(), 'institution': institution, 'summary': summary,
                                  'funding': funding, 'deadline': deadline.isoformat() if deadline else None,
@@ -294,10 +325,18 @@ def metadata_editor(store, call):
 def criteria_editor(store, call):
     criteria = call.get('criteria', [])
     if criteria:
-        st.dataframe([{'Requisito': c.get('label'), 'Escopo': 'Empresa' if c.get('scope') == 'startup' else 'Projeto',
+        for mandatory, group in [(True, 'Obrigatórios'), (False, 'Classificatórios')]:
+            rows = [c for c in criteria if c.get('mandatory', True) == mandatory and c.get('validation_status') != 'rejected']
+            if not rows:
+                continue
+            st.markdown('**' + group + '**')
+            st.dataframe([{'Requisito': c.get('label'), 'Escopo': 'Empresa' if c.get('scope') == 'startup' else 'Projeto',
                        'Operador': OPS.get(c.get('op')), 'Exigência': display(c.get('expected')),
                        'Confirmado': bool(c.get('confirmed')), 'Obrigatório': bool(c.get('mandatory', True)),
-                       'Página': c.get('page'), 'Trecho': c.get('evidence', '')} for c in criteria], hide_index=True, width='stretch')
+                       'Confiança da extração': c.get('confidence', 'Cadastro manual'),
+                       'Revisão': c.get('review_status', 'Validado' if c.get('confirmed') else 'Pendente'),
+                       'Página': c.get('page'), 'Fonte': c.get('source'), 'Trecho': c.get('evidence', '')} for c in rows], hide_index=True, width='stretch')
+        st.caption('Confiança é uma indicação heurística de clareza da extração. Critérios extraídos entram no match como pendentes até validação; os dados e operadores já estão preenchidos para revisão.')
     else:
         st.info('Nenhuma regra estruturada. Adicione os critérios com as evidências do edital.')
     by_id = {c['id']: c for c in criteria}
@@ -307,11 +346,20 @@ def criteria_editor(store, call):
     chosen = st.selectbox('Adicionar ou editar critério', ['__new__'] + list(by_id),
                           format_func=lambda i: '＋ Novo critério' if i == '__new__' else by_id[i].get('label', i), key='crit_select_' + call['id'])
     old = by_id.get(chosen, {})
+    if len(old.get('evidences', [])) > 1:
+        with st.expander('Outros trechos de origem deste requisito'):
+            st.dataframe(old['evidences'], hide_index=True, width='stretch')
+    if old.get('extracted'):
+        st.info(f"Extraído automaticamente · confiança {old.get('confidence', 'não informada')}. {old.get('confidence_note', '')}")
+        if st.button('Descartar sugestão selecionada', key='reject_' + call['id'] + chosen):
+            updated = [{**c, 'validation_status': 'rejected', 'review_status': 'Descartado', 'confirmed': False} if c['id'] == chosen else c for c in criteria]
+            store.save('calls', {**call, 'criteria': updated, 'criteria_complete': False})
+            st.rerun()
     # Fora do formulário para os controles de valor acompanharem o tipo de regra.
     suffix = call['id'] + '_' + chosen
     field = st.selectbox('Campo a comparar', list(FIELDS), index=list(FIELDS).index(old.get('field', 'state')),
                          format_func=lambda f: f'{"Empresa" if FIELDS[f][1] == "startup" else "Projeto"} · {FIELDS[f][0]}', key='field_' + suffix)
-    allowed_ops = ['manual'] if field == 'manual' else ['min', 'max'] if field in ('age_months', 'requested', 'budget', 'counterpart', 'counterpart_pct') else ['contains_all', 'subset', 'manual'] if field in ('documents', 'expenses') else ['present'] if field == 'cnpj' else ['in', 'present', 'manual']
+    allowed_ops = ['manual'] if field == 'manual' else ['min', 'max', 'eq', 'neq', 'manual'] if field in ('age_months', 'requested', 'budget', 'counterpart', 'counterpart_pct', 'trl', 'duration_months') else ['contains_all', 'subset', 'disjoint', 'contains', 'present', 'manual'] if field in ('documents', 'project_documents', 'expenses', 'partners', 'partner_types') else ['present', 'manual'] if field == 'cnpj' else ['in', 'not_in', 'eq', 'neq', 'contains', 'present', 'manual']
     op = st.selectbox('Tipo de comparação', allowed_ops, index=allowed_ops.index(old['op']) if old.get('op') in allowed_ops else 0,
                       format_func=lambda x: OPS[x], key='op_' + suffix + '_' + field)
     if field == 'counterpart_pct':
@@ -321,10 +369,10 @@ def criteria_editor(store, call):
     with st.form('criterion_' + suffix + '_' + field + '_' + op):
         label = st.text_input('Nome do requisito', old.get('label', FIELDS[field][0]))
         prior = old.get('expected')
-        if op in ('min', 'max'):
+        if op in ('min', 'max') or (op in ('eq', 'neq') and field in ('trl', 'duration_months', 'age_months', 'requested', 'budget', 'counterpart', 'counterpart_pct')):
             expected = st.number_input('Valor exigido', min_value=0.0, value=float(prior) if isinstance(prior, (int, float)) else 0.0,
                                        help='Use meses completos para tempo de CNPJ e percentual para contrapartida.')
-        elif op in ('in', 'contains_all', 'subset'):
+        elif op in ('in', 'not_in', 'contains_all', 'subset', 'disjoint'):
             expected = lines(st.text_area('Valores exigidos / permitidos — um por linha', '\n'.join(prior) if isinstance(prior, list) else ''))
         elif op == 'present':
             expected = 'Informado'
@@ -338,7 +386,8 @@ def criteria_editor(store, call):
                                            date.fromisoformat(ref) if ref else None, format='DD/MM/YYYY',
                                            help='Se o edital contar o tempo na data de submissão ou encerramento, registre a data correta.')
         mandatory = st.checkbox('Requisito obrigatório', value=bool(old.get('mandatory', True)))
-        source = st.text_input('Referência da fonte / URL / nome do PDF', old.get('source') or call.get('document_url') or call.get('url') or call.get('source_label', ''))
+        dimension = st.selectbox('Dimensão da avaliação', list(DIMENSIONS), index=list(DIMENSIONS).index(old.get('dimension') or dimension_for(field)), format_func=lambda k: DIMENSIONS[k])
+        source = st.text_input('Referência da fonte / URL / nome do PDF', old.get('source') or call.get('document_source') or call.get('document_url') or call.get('url') or call.get('source_label', ''))
         page = st.number_input('Página da evidência (0 = página web / sem paginação)', min_value=0, max_value=10000, value=int(old.get('page') or 0))
         evidence = st.text_area('Trecho literal de evidência', old.get('evidence', ''))
         confirmed = st.checkbox('Conferi esta exigência na fonte', value=bool(old.get('confirmed', False)))
@@ -349,16 +398,127 @@ def criteria_editor(store, call):
         elif confirmed and (not source.strip() or not evidence.strip()):
             st.error('A confirmação exige referência da fonte e trecho de evidência.')
         else:
-            criterion = {'id': old.get('id') or uuid.uuid4().hex, 'label': label.strip(), 'field': field, 'scope': FIELDS[field][1],
+            criterion = {**old, 'id': old.get('id') or uuid.uuid4().hex, 'label': label.strip(), 'field': field, 'scope': FIELDS[field][1],
                          'op': op, 'expected': expected, 'mandatory': mandatory, 'confirmed': confirmed,
                          'source': source.strip(), 'page': page or None, 'evidence': evidence.strip(),
-                         'reference_date': reference_date.isoformat() if reference_date else None}
+                         'reference_date': reference_date.isoformat() if reference_date else None,
+                         'validation_status': 'validated' if confirmed else 'pending', 'review_status': 'Validado' if confirmed else 'Pendente de revisão',
+                         'classification': 'Obrigatório' if mandatory else 'Classificatório', 'dimension': dimension, 'reviewed_at': now_iso()}
             store.save('calls', {**call, 'criteria': [c for c in criteria if c['id'] != criterion['id']] + [criterion], 'criteria_complete': False})
             st.session_state['pending_criterion_' + call['id']] = criterion['id']
             st.rerun()
     if old and st.button('Excluir critério selecionado', key='delete_' + suffix):
         store.save('calls', {**call, 'criteria': [c for c in criteria if c['id'] != old['id']], 'criteria_complete': False})
         st.rerun()
+
+
+def summary_view(store, call):
+    st.markdown('**' + call.get('institution', 'Instituição não informada') + '**')
+    summary = call.get('extraction_summary', {})
+    st.write(call.get('summary') or 'Resumo ainda não revisado.')
+    for field, label in [('objective', 'Objetivo identificado'), ('target_audience', 'Público-alvo identificado'), ('themes', 'Áreas / linhas temáticas identificadas')]:
+        st.markdown('**' + label + '**')
+        if summary.get(field):
+            for item in summary[field][:5]:
+                st.write(item['value'])
+                st.caption(f"Página {item.get('page') or 'web'} · {item.get('source', '')} · sugestão para revisão")
+        else:
+            st.caption('Não identificado automaticamente; consulte o documento e complete a revisão.')
+    st.write('Valor total registrado: ' + brl(call.get('funding')))
+    if summary.get('funding_candidates'):
+        st.markdown('**Valores identificados — ainda não confirmados**')
+        st.dataframe([{'Tipo': r['kind'], 'Valor': brl(r['value']), 'Página': r['page'], 'Evidência': r['evidence']} for r in summary['funding_candidates']], hide_index=True, width='stretch')
+    if call.get('deadline_candidates'):
+        st.markdown('**Datas de etapas para revisão**')
+        st.dataframe([{'Data sugerida': d['value'], 'Página': d['page'], 'Trecho': d['evidence'], 'Fonte': d['source']} for d in call['deadline_candidates']], hide_index=True, width='stretch')
+    if call.get('recurring_schedule'):
+        st.info('Foi identificado um cronograma recorrente ou de fluxo contínuo. Confira a etapa e a regra mensal; o sistema não presume uma data-limite final.')
+    st.caption('Última verificação na fonte: ' + (call.get('last_seen_at') or call.get('discovered_at') or 'Não registrada'))
+    with st.expander('Revisar dados, prazo e conclusão da análise'):
+        metadata_editor(store, call)
+
+
+def conflicts_view(store, call):
+    for conflict in call.get('conflicts', []):
+        with st.expander(('Resolvido · ' if conflict.get('resolved') else 'Revisão necessária · ') + conflict['description']):
+            st.write('Fontes: ' + ', '.join(conflict.get('sources', [])))
+            st.caption('A aplicação não decide qual versão prevalece. Revise os critérios afetados, valide os aplicáveis e descarte os substituídos antes de registrar a resolução.')
+            with st.form('conflict_' + call['id'] + conflict['id']):
+                note = st.text_area('Fundamento da resolução e versão aplicável', conflict.get('resolution', ''))
+                resolved = st.checkbox('Revisei as fontes e resolvi esta divergência', value=bool(conflict.get('resolved')))
+                submit = st.form_submit_button('Salvar resolução')
+            if submit:
+                if resolved and not note.strip():
+                    st.error('Registre o fundamento e a referência da versão aplicável.')
+                else:
+                    updated = [{**c, 'resolved': resolved, 'resolution': note.strip(), 'reviewed_at': now_iso()} if c['id'] == conflict['id'] else c for c in call['conflicts']]
+                    store.save('calls', {**call, 'conflicts': updated, 'criteria_complete': False})
+                    st.rerun()
+
+
+def documentation_view(call):
+    docs = [c for c in call.get('criteria', []) if c.get('validation_status') != 'rejected' and (c.get('field') in ('documents', 'project_documents') or 'document' in c.get('label', '').lower())]
+    if not docs:
+        st.info('Nenhuma exigência documental foi identificada. Isso não significa que o edital dispense documentos.')
+    for c in docs:
+        st.markdown('- [ ] ' + c.get('label', 'Documento') + ' · ' + display(c.get('expected')))
+        st.caption(f"Página {c.get('page') or 'web'} · {c.get('source', '')} · {'Validado' if c.get('confirmed') else 'A revisar'}")
+    submission = [c for c in call.get('criteria', []) if c.get('requirement_type') == 'Submissão' and c.get('validation_status') != 'rejected']
+    if submission:
+        st.markdown('**Condições de envio identificadas**')
+        st.dataframe([{'Condição': c['evidence'], 'Página': c.get('page'), 'Fonte': c['source'], 'Revisão': c.get('review_status')} for c in submission], hide_index=True, width='stretch')
+    st.caption('O checklist operacional é individual por startup, projeto e edital. Marque as tarefas e acompanhe o progresso no Copiloto.')
+    st.button('Preparar candidatura no Copiloto →', on_click=go, args=('Copiloto de Captação',), key='docs_copilot_' + call['id'])
+
+
+def compatibility_view(store, call):
+    entries = list(matrix(store, call_id=call['id']))
+    if not entries:
+        st.info('Cadastre projetos e analise os requisitos deste edital para comparar o portfólio.')
+        return
+    if st.button('Recalcular este edital com todo o portfólio', key='scale_' + call['id']):
+        count = recalculate(store, call_id=call['id'])
+        st.success(f'{count} comparação(ões) registrada(s).')
+    st.dataframe([{'Startup': e['startup']['name'], 'Projeto': e['project']['name'], 'Resultado': e['result']['verdict'],
+                   'Impedimentos': e['result']['blockers'], 'Pendências': e['result']['pending'],
+                   'Pendências documentais / operacionais': e['result']['dimensions']['readiness']['pending']} for e in entries], hide_index=True, width='stretch')
+    by_project = {e['project']['id']: e for e in entries}
+    selected = st.selectbox('Projeto para inspecionar justificativas', list(by_project), format_func=lambda key: by_project[key]['startup']['name'] + ' · ' + by_project[key]['project']['name'], key='inspect_' + call['id'])
+    result = by_project[selected]['result']
+    verdict_banner(result)
+    dimensions_view(result)
+    with st.expander('Justificativas e evidências da comparação'):
+        result_table(result)
+
+
+def dimensions_view(result):
+    st.dataframe([{'Dimensão': row['label'], 'Atendidos': row['attended'], 'Não atendidos': row['failed'],
+                   'Pendentes': row['pending'], 'Impedimentos obrigatórios': row['blockers']}
+                  for row in result['dimensions'].values()], hide_index=True, width='stretch')
+    st.caption('Contagens por dimensão, sem probabilidade de aprovação. Qualquer requisito obrigatório não atendido continua sendo impedimento, inclusive em outra dimensão.')
+
+
+def portfolio_view(store):
+    heading('Portfólio da Incubadora', 'Startups, projetos e candidaturas em uma visão de gestão da captação.')
+    if st.button('Recalcular todo o portfólio', type='primary'):
+        with st.spinner('Comparando os projetos com os editais analisados…'):
+            count = recalculate(store)
+        st.success(f'{count} comparação(ões) registrada(s).')
+    stats = overview(store)
+    if stats['rows']:
+        st.dataframe(stats['rows'], hide_index=True, width='stretch')
+    else:
+        st.info('Cadastre startups e projetos ou carregue a demonstração.')
+    applications = store.all('applications')
+    if applications:
+        calls = {c['id']: c for c in store.all('calls')}
+        projects = {p['id']: p for p in store.all('projects')}
+        st.markdown('**Candidaturas em preparação**')
+        st.dataframe([{'Edital': calls.get(a['call_id'], {}).get('title', a['call_id']),
+                       'Projeto': projects.get(a['project_id'], {}).get('name', a['project_id']), 'Situação': a['status'],
+                       'Início': a.get('started_at')} for a in applications], hide_index=True, width='stretch')
+    st.button('Cadastrar outra startup →', on_click=go, args=('Cadastrar Startup',))
+    st.button('Cadastrar outro projeto →', on_click=go, args=('Cadastrar Projeto',))
 
 
 def call_detail(store, call):
@@ -371,11 +531,31 @@ def call_detail(store, call):
     if call.get('deadline_confirmed'):
         st.caption('Data-limite confirmada na revisão: ' + date.fromisoformat(call['deadline']).strftime('%d/%m/%Y'))
     source_link(call)
-    tab1, tab2, tab3 = st.tabs(['Critérios e evidências', 'Dados e prazo', 'Documento e extração'])
+    if call.get('url') and not call.get('simulated'):
+        if st.button('Analisar requisitos automaticamente', type='primary', key='auto_' + call['id']):
+            try:
+                with st.spinner('Lendo a fonte e o PDF principal, identificando requisitos e gerando critérios…'):
+                    saved = automatic_analysis(store, call)
+                    count = recalculate(store, call_id=call['id'])
+                st.session_state.flash = f"{len(saved.get('criteria', []))} critérios disponíveis para revisão; {count} comparações recalculadas."
+                st.rerun()
+            except (ValueError, requests.RequestException) as exc:
+                st.error(str(exc))
+    if call.get('criteria'):
+        pending = sum(not c.get('confirmed') and c.get('validation_status') != 'rejected' for c in call['criteria'])
+        st.caption(f"{len(call['criteria'])} critérios registrados · {pending} aguardando revisão · última análise: {call.get('analyzed_at', 'não registrada')}")
+    for warning in call.get('extraction_warnings', []):
+        st.warning(warning)
+    tab_summary, tab1, tab_docs, tab_compat, tab3 = st.tabs(['Resumo', 'Requisitos', 'Documentação', 'Compatibilidade', 'Fonte'])
+    with tab_summary:
+        summary_view(store, call)
     with tab1:
         criteria_editor(store, call)
-    with tab2:
-        metadata_editor(store, call)
+        conflicts_view(store, call)
+    with tab_docs:
+        documentation_view(call)
+    with tab_compat:
+        compatibility_view(store, call)
     with tab3:
         st.caption('A extração usa expressões regulares e pistas textuais. Sugestões nunca são confirmação. PDFs digitalizados precisam de transcrição manual.')
         if call.get('url') and not call.get('simulated'):
@@ -402,18 +582,29 @@ def call_detail(store, call):
                     st.error(str(exc))
         if call.get('document_url') and call['document_url'] != call.get('url'):
             st.link_button('Abrir último documento lido ↗', call['document_url'])
+        kind = st.selectbox('Tipo do documento a associar', ['Edital principal', 'Anexo', 'Retificação'], key='document_kind_' + call['id'])
         file = st.file_uploader('Anexar PDF a este edital', type=['pdf'], key='attach_' + call['id'])
         if st.button('Extrair PDF anexado', disabled=file is None, key='extract_' + call['id']):
             try:
                 imported = pdf_call(file.getvalue(), file.name)
-                merge_document(store, call, imported)
+                merge_document(store, call, imported, kind=kind)
                 st.rerun()
             except ValueError as exc:
                 st.error(str(exc))
         if call.get('observations'):
             st.markdown('**Trechos para revisão manual**')
             st.dataframe(call['observations'], hide_index=True, width='stretch')
-        for page in call.get('pages', []):
+        pages = call.get('pages', [])
+        if call.get('documents'):
+            documents = {d['id']: d for d in call['documents']}
+            doc_id = st.selectbox('Documentos associados', list(documents), format_func=lambda key: documents[key]['kind'] + ' · ' + documents[key]['source'], key='document_view_' + call['id'])
+            document = documents[doc_id]
+            pages = document['pages']
+            st.caption('Fonte deste texto: ' + document['source'])
+        if call.get('sections'):
+            st.markdown('**Seções identificadas**')
+            st.dataframe(call['sections'], hide_index=True, width='stretch')
+        for page in pages:
             with st.expander('Página ' + str(page['page']) if page['page'] else 'Texto da página web'):
                 st.text(page['text'])
 
@@ -425,22 +616,28 @@ def radar(store, simulated):
     else:
         left, right = st.columns([3, 2])
         with left:
+            source_ids = st.multiselect('Fontes oficiais para consultar', list(SOURCES), default=['fapesc'], format_func=lambda key: SOURCES[key].institution)
             notices = st.checkbox('Incluir a página de comunicados da FAPESC', value=False)
             if st.button('Buscar editais agora', type='primary'):
                 scans = store.all('scans')
                 last = scans[-1] if scans else None
                 elapsed = (datetime.fromisoformat(now_iso()) - datetime.fromisoformat(last['searched_at'])).total_seconds() if last else 999
-                if elapsed < 60:
+                if not source_ids and not notices:
+                    st.warning('Selecione ao menos uma fonte.')
+                elif elapsed < 60:
                     st.warning('Aguarde 60 segundos entre buscas para respeitar a fonte.')
                 else:
                     with st.spinner('Consultando a fonte oficial…'):
-                        report = scan(store, notices)
+                        status = st.empty()
+                        report = scan(store, notices, source_ids=source_ids, progress=status.caption)
                     st.session_state.scan_report = report
             report = st.session_state.get('scan_report') or (store.all('scans')[-1] if store.all('scans') else None)
             if report:
                 st.caption(f"Última busca: {report['searched_at']} · {report['found']} links encontrados · {report['added']} novos")
                 for error in report['errors']:
                     st.error(error)
+                if report.get('results'):
+                    st.dataframe(report['results'], hide_index=True, width='stretch')
                 if not report['errors']:
                     st.success('Consulta concluída. Revise os documentos antes de usar os critérios.')
         with right:
@@ -489,11 +686,33 @@ def radar(store, simulated):
         st.info('Nenhum edital cadastrado. Faça uma busca ou importe uma fonte para começar.')
         return
     query = st.text_input('Filtrar editais por título ou instituição', key='call_search_' + str(simulated))
-    filtered = [c for c in calls if query.casefold() in (c['title'] + c.get('institution', '')).casefold()]
+    with st.expander('Filtros de instituição, área, estado, valor, prazo e elegibilidade'):
+        a, b = st.columns(2)
+        institutions = a.multiselect('Instituições', sorted({c.get('institution', 'Não informado') for c in calls}))
+        area = b.text_input('Área / tema identificado')
+        state = a.selectbox('Estado exigido da organização', [''] + STATES, format_func=lambda key: key or 'Todos')
+        min_value = b.number_input('Valor identificado mínimo (R$)', min_value=0.0, value=None)
+        max_days = a.number_input('Prazo confirmado em até quantos dias?', min_value=0, value=None, step=1)
+        eligibility = b.selectbox('Elegibilidade', ['Todas', 'Potencialmente elegível', 'Com impedimentos', 'Precisa de informações'])
+        selected_startup, selected_project = None, None
+        if eligibility != 'Todas':
+            selected_startup = pick('Startup para o filtro', store.all('startups'), 'radar_filter_startup')
+            if selected_startup:
+                selected_project = pick('Projeto para o filtro', [p for p in store.all('projects') if p['startup_id'] == selected_startup['id']], 'radar_filter_project')
+            if not selected_project:
+                st.info('Selecione uma startup com projeto para aplicar o filtro de elegibilidade.')
+        st.caption('Área, estado e valores identificados podem ser sugestões ainda não validadas. Valores ausentes não são estimados. O filtro de prazo usa apenas datas confirmadas.')
+    filtered = filter_calls(calls, institutions=institutions, area=area, state=state, min_value=min_value, max_days=max_days,
+                            verdict=None if eligibility == 'Todas' else eligibility, startup=selected_startup, project=selected_project)
+    filtered = [c for c in filtered if query.casefold() in (c['title'] + c.get('institution', '')).casefold()]
     if not filtered:
         st.info('Nenhum edital corresponde ao filtro.')
         return
     st.caption(f'{len(filtered)} edital(is) · A abertura de uma chamada não garante elegibilidade.')
+    st.dataframe([{'Instituição': c.get('institution'), 'Título': c['title'], 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_info(c)['label'],
+                   'Análise de requisitos': 'Revisão integral declarada' if c.get('criteria_complete') else c.get('requirements_status', 'Não analisado'),
+                   'Valor identificado': brl(funding_value(c)), 'Última verificação': c.get('last_seen_at') or c.get('discovered_at'),
+                   'Fonte oficial': c.get('url'), 'PDF': c.get('pdf_url') or c.get('document_url')} for c in filtered], hide_index=True, width='stretch')
     preferred = st.session_state.pop('focus_call', None)
     select_key = 'radar_call_' + str(simulated)
     if preferred in {c['id'] for c in filtered}:
@@ -524,6 +743,9 @@ def result_table(result):
              'Exigência': display(r['expected']), 'Dados declarados': display(r['actual']), 'Resultado': r['status'],
              'Obrigatório': r['mandatory'], 'Justificativa': r['reason'], 'Fonte': r['source'],
              'Página': r['page'], 'Evidência': r['evidence']} for r in result['rows']]
+    for target, row in zip(rows, result['rows']):
+        target['Dimensão'] = DIMENSIONS.get(row.get('dimension'), 'Elegibilidade obrigatória')
+        target['Pré-comparação (exigência não validada)'] = row.get('provisional_status', PENDING) if row['status'] == PENDING else '—'
     st.dataframe(rows, hide_index=True, width='stretch')
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=list(rows[0]))
@@ -552,6 +774,7 @@ def intelligent_match(store):
             call, startup, project = selection
             result = match(call, startup, project)
             if st.button('Analisar e registrar candidatura', type='primary'):
+                register_application(store, call, startup, project)
                 store.save('analyses', {'id': f'{call["id"]}:{project["id"]}', 'call_id': call['id'], 'project_id': project['id'],
                                         'startup_id': startup['id'], 'verdict': result['verdict'],
                                         'fingerprint': fingerprint(call, startup, project), 'result': result})
@@ -562,6 +785,7 @@ def intelligent_match(store):
             b.metric('Impedimentos obrigatórios', result['blockers'])
             c.metric('Pendências de verificação', result['pending'])
             result_table(result)
+            dimensions_view(result)
             st.caption('A comparação é recalculada com os dados atuais. “Atendido” se refere à regra registrada e à informação declarada, sem auditoria documental. Não representa aprovação pelo órgão.')
     with reverse:
         call = pick('Edital para comparar com o portfólio', store.all('calls'), 'reverse_call', name='title')
@@ -595,6 +819,12 @@ def copilot(store):
     call, startup, project = selection
     result = match(call, startup, project)
     verdict_banner(result)
+    dimensions_view(result)
+    with st.expander('Critérios atendidos, impedimentos e pendências desta candidatura'):
+        result_table(result)
+    if st.button('Iniciar preparação desta candidatura', type='primary'):
+        register_application(store, call, startup, project)
+        st.success('Candidatura em preparação registrada no portfólio.')
     st.caption('Marcar uma tarefa como concluída registra seu progresso. Corrija os cadastros ou critérios para alterar o resultado do match.')
     if result['blockers']:
         st.warning('Revise os impedimentos antes de investir na candidatura. Sede, idade do CNPJ, natureza jurídica e prazo podem inviabilizar a inscrição; melhorar a apresentação não os resolve.')
@@ -613,7 +843,8 @@ def copilot(store):
             completed += int(done)
             st.caption('Fonte: ' + (task['source'] or 'Referência não registrada'))
             if task['evidence']:
-                st.caption('Evidência: ' + task['evidence'])
+                with st.expander('Ver trecho de evidência'):
+                    st.write(task['evidence'])
     st.progress(completed / len(tasks), text=f'{completed} de {len(tasks)} tarefas concluídas')
     st.markdown('**Próximos passos**')
     st.write('Resolva as pendências acima, reúna as comprovações e confira a versão mais recente do edital e seus anexos antes de enviar a candidatura.')
@@ -651,7 +882,8 @@ def main():
         st.download_button('↓ Exportar dados em JSON', store.export(), 'inovamatch-demo.json' if simulated else 'inovamatch-dados.json', 'application/json', width='stretch')
     route = {'Dashboard': lambda: dashboard(store), 'Radar de Editais': lambda: radar(store, simulated),
              'Cadastrar Startup': lambda: startup_form(store, simulated), 'Cadastrar Projeto': lambda: project_form(store, simulated),
-             'Match Inteligente': lambda: intelligent_match(store), 'Copiloto de Captação': lambda: copilot(store)}
+             'Match Inteligente': lambda: intelligent_match(store), 'Copiloto de Captação': lambda: copilot(store),
+             'Portfólio da Incubadora': lambda: portfolio_view(store)}
     route[page]()
 
 

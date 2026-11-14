@@ -6,7 +6,7 @@ import uuid
 from pathlib import Path
 from .domain import now_iso, validate_project, validate_startup
 
-COLLECTIONS = ('startups', 'projects', 'calls', 'analyses', 'tasks', 'scans')
+COLLECTIONS = ('startups', 'projects', 'calls', 'analyses', 'tasks', 'scans', 'applications')
 
 
 class Store:

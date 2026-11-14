@@ -76,6 +76,12 @@ def validate_project(record, startup_ids):
             r[field] = money(r[field])
     if r.get('requested') is not None and r.get('budget') is not None and r['requested'] > r['budget']:
         raise ValueError('O valor solicitado não pode superar o orçamento total.')
+    for field in ['execution_state', 'coordinator_state']:
+        if r.get(field) and r[field] not in STATES:
+            raise ValueError('Estado inválido no cadastro do projeto.')
+    for field, low, high in [('trl', 1, 9), ('duration_months', 1, 1200)]:
+        if r.get(field) is not None and (not isinstance(r[field], (int, float)) or not math.isfinite(r[field]) or r[field] != int(r[field]) or not low <= r[field] <= high):
+            raise ValueError(f'Valor inválido para {field}.')
     return r
 
 

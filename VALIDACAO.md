@@ -65,3 +65,8 @@ A extração de texto foi verificada. A interpretação dos requisitos desse edi
 - O repositório do projeto é `lucasimmich321-hub/inovamatch`; o envio ao GitHub é verificado separadamente nesta conversa. Não foi executado deploy no Streamlit Community Cloud; o roteiro está no README.
 - Não foi configurado agendamento ou monitoramento contínuo.
 - Testes de memória, SQLite, isolamento de sessão e deduplicação passaram. Nenhuma garantia de persistência é dada ao armazenamento local do Community Cloud.
+
+
+## Evolução posterior
+
+Este documento registra a verificação inicial. A evolução de extração automática, portfólio e fontes está em [docs/VALIDACAO_EXTRACAO.md](docs/VALIDACAO_EXTRACAO.md), com os dois PDFs reais, testes adicionais e limites de interpretação.

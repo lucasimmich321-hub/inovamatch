@@ -3,7 +3,17 @@ Radar inteligente de editais de fomento
 
 **Do edital encontrado à candidatura preparada.**
 
-MVP para o Hackathon Incubadora Joaçaba / Inovale 2026. Aplicação Python 3.11+ com Streamlit, Requests, BeautifulSoup, PyMuPDF e SQLite. Não exige API de IA, chave ou serviço pago.
+Plataforma de inteligência e gestão de captação para incubadoras, iniciada no Hackathon Incubadora Joaçaba / Inovale 2026. Python 3.11+, Streamlit, Requests, BeautifulSoup, PyMuPDF e SQLite. Não exige API de IA, modelo local, Docker, cartão ou serviço pago.
+
+## Evolução prioritária: requisitos que chegam prontos para o match
+
+No Radar, **Analisar requisitos automaticamente** lê a página oficial, seleciona o PDF principal quando disponível e gera critérios com campo, operador, valor, obrigatoriedade, dimensão, confiança heurística, página e trecho. O usuário revisa os objetos já preenchidos, sem recriá-los.
+
+A análise do edital tem cinco abas: **Resumo**, **Requisitos**, **Documentação**, **Compatibilidade** e **Fonte**. As sugestões entram diretamente no motor como pendências; a pré-comparação dos dados é mostrada separadamente. Confiança de extração não significa validação nem chance de aprovação.
+
+O **Portfólio da Incubadora** reúne startups, projetos e candidaturas em preparação. O Dashboard mostra oito indicadores e revisões necessárias. É possível recalcular o portfólio por edital, por startup ao salvar e em lote.
+
+Validação real e limites: [relatório de extração e aceitação](docs/VALIDACAO_EXTRACAO.md). Foram usados dois PDFs oficiais diferentes e 20 casos de referência parciais; isso não valida integralmente a interpretação de todos os requisitos.
 
 ## Executar
 
@@ -46,22 +56,25 @@ O arquivo será `data/inovamatch.db`. `INOVAMATCH_DB` permite alterar o caminho.
 4. Abra o **Copiloto de Captação**, escolha uma candidatura e marque tarefas. As tarefas não alteram a elegibilidade. Alterações no cadastro, critérios ou dia de análise criam uma nova revisão das tarefas.
 5. Selecione **Meus dados**. Cadastre uma startup e um projeto ao vivo. Só o nome e o vínculo são obrigatórios; dados ausentes geram pendências quando exigidos.
 6. No **Radar de Editais**, clique em **Buscar editais agora** para consultar a página oficial da FAPESC. Internet é necessária apenas para buscas, importação de URLs e acesso às fontes.
-7. Selecione um edital, abra a fonte e use **Documento e extração** para ler a página. Em seguida, escolha um dos PDFs encontrados na fonte e clique em **Ler PDF oficial selecionado**, ou anexe um PDF local.
-8. Revise os trechos, registre os critérios com referência e evidência, confirme o prazo e, por último, declare a revisão integral em **Dados e prazo**.
+7. Selecione um edital e clique em **Analisar requisitos automaticamente**. O PDF principal é lido e os critérios aparecem preenchidos. Na aba **Fonte**, leia outros PDFs ou associe anexos e retificações.
+8. Na aba **Requisitos**, selecione um critério gerado, confira o campo, operador, valor e evidência e marque a validação; descarte sugestões inaplicáveis. Resolva divergências entre documentos. Na aba **Resumo**, confirme o prazo e declare a revisão integral somente após ler edital, anexos e retificações.
 9. Faça o match e baixe o CSV. O cadastro, as regras, a demonstração, os PDFs locais e o copiloto funcionam sem APIs pagas.
 
 ## Busca e leitura das fontes
 
-- Fontes do radar: `https://fapesc.sc.gov.br/chamadas-abertas/` e, opcionalmente, `/comunicados/`.
+- Adaptadores independentes para FAPESC (e comunicados), FINEP, CNPq, EMBRAPII, SEBRAE, BNDES, BRDE e BADESC. Selecione as fontes no radar. A FAPESC é a seleção padrão. A situação verificada de cada fonte está no [relatório](docs/VALIDACAO_EXTRACAO.md#fontes-adicionais). Páginas dinâmicas ou sem links reconhecíveis mostram limitação individual; as demais fontes continuam funcionando. Listagens podem conter editais históricos ou resultados e não comprovam inscrições abertas.
 - A busca é **manual, sob demanda**, sem cron, alertas por e-mail ou monitoramento em segundo plano.
 - O coletor consulta `robots.txt`, respeita bloqueios, aplica intervalo entre requisições, timeouts, limites de bytes e redirecionamentos. Não tenta contornar bloqueios ou HTTP 429. Há um intervalo mínimo de 60 segundos entre buscas por base/sessão.
 - Coleta título, instituição, link e datas explícitas no título, quando disponíveis. Consulta as páginas indicadas, sem percorrer paginação automaticamente. Essas datas não viram automaticamente prazos de inscrição. O usuário deve ler os documentos e as retificações.
 - Cada tentativa registra data, quantidade de links, novos cadastros e erros. Uma falha mantém os registros anteriores e permite URL, PDF ou cadastro manual.
 - URLs são normalizadas sem fragmentos e parâmetros de rastreamento para deduplicação. Nova coleta não apaga revisão humana. PDFs repetidos são reconhecidos por SHA-256.
-- Importação automática por URL é limitada a HTTPS em `gov.br`, `edu.br`, `cnpq.br` e `fapesp.br`, com validação em cada redirecionamento. Para outras fontes, use upload do PDF ou referência manual. Não são permitidos IPs, credenciais em URLs ou portas customizadas.
-- HTML e PDFs têm extração básica. Os trechos de público-alvo, região, natureza jurídica, valores, contrapartida, documentos, despesas e restrições aparecem para revisão. O reconhecimento de idade mínima do CNPJ gera sugestões de critérios. Outros requisitos devem ser estruturados pelo usuário.
+- Importação automática por URL é limitada a HTTPS em `gov.br`, `edu.br`, `cnpq.br`, `fapesp.br` e nos domínios oficiais `embrapii.org.br`, `sebrae.com.br` e `brde.com.br`, com validação em cada redirecionamento. Para outras fontes, use upload do PDF ou referência manual. Não são permitidos IPs, credenciais em URLs ou portas customizadas.
+- HTML e PDFs são segmentados por página, seção e cláusula. Padrões explícitos geram critérios de sede, residência do coordenador, estado de execução, tipo de instituição, natureza jurídica, tempo de CNPJ, porte, tema, maturidade/TRL, parceiros, titulação, duração, contrapartida, teto por proposta, documentos e despesas. Nem todo PDF contém esses padrões. Exceções, condições e regras sem campo seguro geram objetos de revisão humana, com a evidência preservada.
+- O orçamento global não é convertido em teto por projeto; anos de experiência do bolsista não viram idade da empresa; valores de bolsas não viram valor financiável por proposta. Listas parciais de despesas não viram listas exaustivas de permissão. Documentos da empresa e documentos do projeto/equipe têm campos separados.
+- As seções de objeto, público-alvo, elegibilidade, documentos, recursos, despesas, cronograma, seleção e submissão são identificadas por padrões. Não há garantia de leitura completa de tabelas, texto dividido entre páginas ou formatos não previstos.
 - PDF: até 10 MB, 80 páginas e 240 mil caracteres; até 12 mil caracteres por página são considerados. Não há OCR. PDFs protegidos, corrompidos ou sem texto selecionável geram mensagem para registro manual. Consulte o documento integral: a extração não substitui sua leitura.
-- Ler outra versão do documento ou alterar critérios invalida a declaração de revisão integral, que deve ser refeita.
+- São armazenados documentos associados com referência, hash e tipo (edital, anexo ou retificação), com limite de 600 mil caracteres por edital e 160 sugestões por documento. Limites de extração e páginas truncadas são sinalizados. A leitura repetida não duplica critérios nem substitui a revisão humana.
+- Valores divergentes para o mesmo campo e operador em documentos diferentes geram possíveis conflitos, incluindo datas de etapas. A aplicação não determina qual versão prevalece nem interpreta hierarquia jurídica. Registre o fundamento, valide as regras aplicáveis e descarte as substituídas. Outra versão ou alteração de critério invalida a revisão integral; reler o mesmo documento já analisado preserva a revisão.
 
 ## Como funciona o match
 
@@ -69,14 +82,20 @@ As informações da **empresa** e do **projeto** têm campos e escopos separados
 
 | Comparação | Exemplo |
 | --- | --- |
+| Igual / diferente | Campos escalares, incluindo limites numéricos exatos |
+| Pertence / não pertence à lista | Estado, natureza jurídica, porte, tema |
+| Contém | Trecho textual ou item de uma lista |
 | Um dos valores aceitos | Estado SC; natureza jurídica; área temática |
 | Valor mínimo / máximo | Tempo de CNPJ, valor solicitado, orçamento e contrapartida |
 | Contém todos | Documentos declarados disponíveis |
-| Somente categorias permitidas | Despesas previstas no projeto |
+| Somente categorias permitidas | Lista explícita e fechada de despesas |
+| Não contém categorias proibidas | Despesas vedadas reconhecidas |
 | Informado | Presença de CNPJ; não comprova regularidade |
 | Revisão humana | Regras específicas ou interpretação que não cabe na automação |
 
-Resultados: **ATENDIDO**, **NÃO ATENDIDO** ou **PENDENTE DE VERIFICAÇÃO**. Uma regra sem confirmação, referência ou trecho fica pendente. Dados ausentes também ficam pendentes; zero financeiro é um dado conhecido e pode não satisfazer um mínimo. Comparações textuais são exatas, ignorando maiúsculas e acentos: não há inferência de sinônimos.
+O resultado é separado em **elegibilidade obrigatória**, **aderência temática e técnica** e **prontidão documental e operacional**. Não há pontuação de chance de aprovação. Requisitos obrigatórios em qualquer dimensão podem impedir a candidatura.
+
+Resultados: **ATENDIDO**, **NÃO ATENDIDO** ou **PENDENTE DE VERIFICAÇÃO**. Uma regra sem confirmação, referência ou trecho fica pendente. A pré-comparação pode indicar se os dados satisfariam a regra sugerida, mas não altera o resultado oficial enquanto ela não for validada. Dados ausentes também ficam pendentes; zero financeiro é um dado conhecido e pode não satisfazer um mínimo. Comparações textuais são exatas, ignorando maiúsculas e acentos: não há inferência de sinônimos.
 
 Impedimentos são requisitos **obrigatórios** não atendidos, incluindo prazo confirmado vencido. Uma exigência facultativa não atendida permanece visível, mas não é impedimento obrigatório. Requisitos manuais continuam pendentes: concluir uma tarefa não equivale a comprová-los automaticamente.
 
@@ -109,7 +128,15 @@ Consulta real opcional, executada separadamente:
 python -c "from inovamatch.storage import Store; from inovamatch.radar import scan; print(scan(Store()))"
 ```
 
-Os resultados reais dependem da disponibilidade e estrutura do site na hora da execução. O relatório `VALIDACAO.md` registra as verificações feitas na entrega.
+Aceitação com busca real e dois PDFs oficiais, em base temporária isolada:
+
+```bash
+python scripts/validate_live.py --output work/aceitacao-real.json
+```
+
+O comando compara os PDFs com os hashes de referência e executa 20 conferências parciais. Se o documento mudar, exige atualizar a referência após leitura humana; não considera a nova interpretação validada. Os registros fictícios do ensaio não entram no site. Os testes normais permanecem sem rede e incluem os 55 testes originais.
+
+Os resultados reais dependem da disponibilidade e estrutura do site na hora da execução. `VALIDACAO.md` mantém o registro inicial; [docs/VALIDACAO_EXTRACAO.md](docs/VALIDACAO_EXTRACAO.md) registra a evolução e os limites atuais.
 
 ## Publicar gratuitamente no Streamlit Community Cloud
 
@@ -138,6 +165,16 @@ git push origin main
 
 O código está preparado para esse deploy gratuito. O envio ao GitHub e a publicação no Community Cloud são etapas distintas. Não há URL pública da aplicação até concluir **Deploy** no Streamlit. Nenhuma assinatura, cartão ou API paga é necessária para este MVP.
 
+## Atualizar o site já publicado
+
+1. Antes de uma atualização, use **Exportar dados em JSON** se precisar guardar uma cópia dos cadastros da sessão. O JSON é um backup para consulta, sem restauração pela interface nesta versão.
+2. Se o app do Community Cloud estiver conectado a `lucasimmich321-hub/inovamatch`, branch `main`, entrada `app.py`, commits nessa branch são detectados automaticamente e podem reiniciar a sessão.
+3. Aguarde o GitHub Actions passar e a reconstrução do Streamlit. Atualize a página do site.
+4. Se a atualização não aparecer, abra o app em `share.streamlit.io`, confira o repositório/branch/entrada e use **Manage app → Reboot app**. Não crie uma assinatura paga nem um segundo app para atualizar o existente.
+5. Confirme que existe o botão **Analisar requisitos automaticamente**, as cinco abas do edital e o menu **Portfólio da Incubadora**. Faça o fluxo com um PDF e confira as evidências antes de validar requisitos.
+
+Esta atualização não exige novas dependências, API, segredo ou serviço. Não há persistência compartilhada entre usuários: a gestão é feita no espaço de trabalho da sessão atual. Autenticação, banco durável e colaboração simultânea continuam fora desta versão.
+
 ## Estrutura
 
 ```text
@@ -147,7 +184,16 @@ inovamatch/storage.py     Memória de sessão e SQLite
 inovamatch/matching.py    Motor de regras e checklist
 inovamatch/demo.py        3 startups, 3 projetos, 2 editais simulados
 inovamatch/radar.py       Coleta oficial, importação e deduplicação
-inovamatch/extraction.py  Leitura de PDF e sugestões rastreáveis
+inovamatch/extraction.py  Leitura limitada de PDFs
+inovamatch/requirements_engine.py  Extração e critérios estruturados
+inovamatch/documents.py   Associação, revisão e conflitos entre documentos
+inovamatch/sources.py     Adaptadores oficiais independentes
+inovamatch/filters.py     Filtros do radar
+inovamatch/portfolio.py   Comparações em escala e indicadores
+inovamatch/acceptance.py  Conferência dos casos de referência
+scripts/validate_live.py  Aceitação separada com dois PDFs oficiais
+tests/fixtures/          Trechos oficiais e referência parcial
+docs/VALIDACAO_EXTRACAO.md  Relatório atual de testes e limites
 tests/                    Testes de domínio e interface Streamlit
 .streamlit/config.toml   Tema, upload e configuração de execução
 requirements.txt         Dependências de execução

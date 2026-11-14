@@ -1,0 +1,485 @@
+{
+  "executed_at": "2026-11-14T00:58:46-03:00",
+  "scope": "Casos de referência parciais; não constitui revisão integral dos editais.",
+  "scan": {
+    "sources": [
+      "https://fapesc.sc.gov.br/chamadas-abertas/"
+    ],
+    "found": 3,
+    "added": 3,
+    "errors": [],
+    "results": [
+      {
+        "institution": "FAPESC",
+        "url": "https://fapesc.sc.gov.br/chamadas-abertas/",
+        "found": 3,
+        "added": 3,
+        "status": "Consulta concluída",
+        "error": ""
+      }
+    ],
+    "searched_at": "2026-11-14T00:58:51-03:00"
+  },
+  "documents": [
+    {
+      "title": "Edital de Chamada Pública FAPESC nº 54/2024 Programa Inova Talentos — FAPESC e IEL/SC em Fluxo Contínuo",
+      "call_url": "https://fapesc.sc.gov.br/edital-de-chamada-publica-fapesc-no-54-2024-programa-inova-talentos-fapesc-e-iel-sc-em-fluxo-continuo/",
+      "pdf_url": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+      "pdf_sha256": "f3872b6c755ba1c44c8d78164d71786ff79e05a15e7812d7be753b437a679b24",
+      "pdf_pages": 27,
+      "text_characters": 89944,
+      "requirements": 105,
+      "comparable_requirements": 16,
+      "human_review_requirements": 89,
+      "reference_cases": [
+        {
+          "name": "Sede da interveniente",
+          "field": "state",
+          "op": "in",
+          "expected": [
+            "SC"
+          ],
+          "page": 2,
+          "anchor": "4.2.2.",
+          "correct": true,
+          "criterion_id": "auto-ff496e0e59d0cb2bc918",
+          "evidence": "4.2.2. Ser empresa, Instituição de Ciência, Tecnologia e Inovação (ICT) ou entidade do Terceiro Setor, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) em Santa Catarina.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "CNPJ da interveniente",
+          "field": "cnpj",
+          "op": "present",
+          "expected": "Informado",
+          "page": 2,
+          "anchor": "4.2.2.",
+          "correct": true,
+          "criterion_id": "auto-e0855c71cfe7a82add2a",
+          "evidence": "4.2.2. Ser empresa, Instituição de Ciência, Tecnologia e Inovação (ICT) ou entidade do Terceiro Setor, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) em Santa Catarina.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Empresa, ICT ou terceiro setor",
+          "field": "organization_type",
+          "op": "in",
+          "expected": [
+            "Empresa",
+            "ICT",
+            "Terceiro Setor"
+          ],
+          "page": 2,
+          "anchor": "4.2.2.",
+          "correct": true,
+          "criterion_id": "auto-40494050af371cc45d43",
+          "evidence": "4.2.2. Ser empresa, Instituição de Ciência, Tecnologia e Inovação (ICT) ou entidade do Terceiro Setor, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) em Santa Catarina.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Residência do coordenador",
+          "field": "coordinator_state",
+          "op": "in",
+          "expected": [
+            "SC"
+          ],
+          "page": 2,
+          "anchor": "4.1.3.",
+          "correct": true,
+          "criterion_id": "auto-aaf1774c532302a2ef76",
+          "evidence": "4.1.3. Residir no Estado de Santa Catarina.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Graduação mínima",
+          "field": "coordinator_degree",
+          "op": "in",
+          "expected": [
+            "Graduação",
+            "Especialização",
+            "Mestrado",
+            "Doutorado"
+          ],
+          "page": 2,
+          "anchor": "4.1.4.",
+          "correct": true,
+          "criterion_id": "auto-392260ef336fbfad80ee",
+          "evidence": "4.1.4. Possuir titulação mínima de graduação.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Execução do projeto",
+          "field": "execution_state",
+          "op": "in",
+          "expected": [
+            "SC"
+          ],
+          "page": 3,
+          "anchor": "4.3.2.",
+          "correct": true,
+          "criterion_id": "auto-66cdcc3cb978f3d96670",
+          "evidence": "4.3.2. Ser desenvolvida no Estado de Santa Catarina.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Duração inicial",
+          "field": "duration_months",
+          "op": "max",
+          "expected": 12,
+          "page": 3,
+          "anchor": "4.3.6.",
+          "correct": true,
+          "criterion_id": "auto-9295fc0ba076c6525073",
+          "evidence": "4.3.6. Prever projetos com prazo de execução de até 12 (doze) meses, prorrogáveis por mais 12 (doze) meses, condicionado à avaliação substanciada da FAPESC, conforme o novo Plano de Trabalho e com a situação das metas estabelecidas.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Documento de vínculo do coordenador",
+          "field": "project_documents",
+          "op": "contains_all",
+          "expected": [
+            "Comprovante de vínculo"
+          ],
+          "page": 6,
+          "anchor": "8.1.1.",
+          "correct": true,
+          "criterion_id": "auto-d9c52e698d0af13ec5fb",
+          "evidence": "8.1.1. Comprovante de vínculo funcional/empregatício do(a) proponente do projeto, assinado pelo(a) representante legal ou representante do departamento de recursos humanos da interveniente.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Diploma do coordenador",
+          "field": "project_documents",
+          "op": "contains_all",
+          "expected": [
+            "Diploma"
+          ],
+          "page": 6,
+          "anchor": "8.1.4.",
+          "correct": true,
+          "criterion_id": "auto-59ad57763948a6233410",
+          "evidence": "8.1.4. Cópia do diploma (frente e verso) de nível superior do(a) proponente do projeto de PD&I. O diploma de nível superior de graduação, mestrado e/ou doutorado do(a) proponente adquirido fora do país deverá ser validado por uma instituição de ensino de nível superior do Brasil, que possua curso na área correlata, reconhecido pelo MEC.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Cronograma mensal exige revisão",
+          "field": "manual",
+          "op": "manual",
+          "expected": null,
+          "page": 3,
+          "anchor": "4.3.3.",
+          "correct": true,
+          "criterion_id": "auto-a64b5bcb4e6dd8f6a0b3",
+          "evidence": "4.3.3. Ser submetida na plataforma FAPESC, disponível por meio do link http://plataforma.fapesc.sc.gov.br/fapesc, até o dia 10 (dez) de cada mês, conforme tabela presente no cronograma, item 5, sendo obrigatório o preenchimento de todos os campos, os quais darão origem ao Plano de Trabalho.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "outcome": "Revisão humana identificada"
+        }
+      ],
+      "match_statuses": {
+        "PENDENTE DE VERIFICAÇÃO": 102,
+        "ATENDIDO": 4,
+        "NÃO ATENDIDO": 1
+      },
+      "verdict": "Com impedimentos",
+      "checklist_tasks": 107,
+      "status_examples": [
+        {
+          "id": "auto-aaf1774c532302a2ef76",
+          "requirement": "Estado de residência do coordenador",
+          "scope": "project",
+          "expected": [
+            "SC"
+          ],
+          "actual": "SC",
+          "status": "ATENDIDO",
+          "mandatory": true,
+          "reason": "Dados declarados satisfazem a regra registrada; autenticidade documental não auditada.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "page": 2,
+          "evidence": "4.1.3. Residir no Estado de Santa Catarina.",
+          "dimension": "eligibility",
+          "field": "coordinator_state",
+          "confidence": "Alta",
+          "review_status": "Conferido no caso de referência do teste",
+          "provisional_status": "ATENDIDO"
+        },
+        {
+          "id": "auto-9295fc0ba076c6525073",
+          "requirement": "Prazo inicial de execução do projeto",
+          "scope": "project",
+          "expected": 12,
+          "actual": 24,
+          "status": "NÃO ATENDIDO",
+          "mandatory": true,
+          "reason": "Dados declarados não satisfazem a exigência registrada.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "page": 3,
+          "evidence": "4.3.6. Prever projetos com prazo de execução de até 12 (doze) meses, prorrogáveis por mais 12 (doze) meses, condicionado à avaliação substanciada da FAPESC, conforme o novo Plano de Trabalho e com a situação das metas estabelecidas.",
+          "dimension": "eligibility",
+          "field": "duration_months",
+          "confidence": "Alta",
+          "review_status": "Conferido no caso de referência do teste",
+          "provisional_status": "NÃO ATENDIDO"
+        },
+        {
+          "id": "auto-84c55bc51ac650184b44",
+          "requirement": "As instituições intervenientes, ou seja, empresas, ICTs e entidades do Terceiro Setor, que tiverem i",
+          "scope": "project",
+          "expected": "3.1. As instituições intervenientes, ou seja, empresas, ICTs e entidades do Terceiro Setor, que tiverem interesse no Programa deverão se registrar junto ao IEL/SC, via site http://ielsc.org.br/inovatalentos ou e-mail inovatalentos@ielsc.org.br, o qual deverá realizar a assessoria técnica e o acompanhamento da submissão da proposta pelo(a) proponente, junto à interveniente, na plataforma FAPESC, disponível no site http://plataforma.fapesc.sc.gov.br/fapesc.",
+          "actual": null,
+          "status": "PENDENTE DE VERIFICAÇÃO",
+          "mandatory": true,
+          "reason": "Este requisito exige análise humana; a regra automática não o verifica.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+          "page": 2,
+          "evidence": "3.1. As instituições intervenientes, ou seja, empresas, ICTs e entidades do Terceiro Setor, que tiverem interesse no Programa deverão se registrar junto ao IEL/SC, via site http://ielsc.org.br/inovatalentos ou e-mail inovatalentos@ielsc.org.br, o qual deverá realizar a assessoria técnica e o acompanhamento da submissão da proposta pelo(a) proponente, junto à interveniente, na plataforma FAPESC, disponível no site http://plataforma.fapesc.sc.gov.br/fapesc.",
+          "dimension": "eligibility",
+          "field": "manual",
+          "confidence": "Baixa",
+          "review_status": "Pendente de revisão",
+          "provisional_status": "PENDENTE DE VERIFICAÇÃO"
+        }
+      ],
+      "all_auto_criteria_initially_unconfirmed": true,
+      "deadline_confirmed_automatically": false,
+      "accepted": true
+    },
+    {
+      "title": "EDITAL SUPLEMENTAR FAPESC N.º 66/2025 PROGRAMA HORIZONTE EUROPA (2026–2027)",
+      "call_url": "https://fapesc.sc.gov.br/edital-suplementar-fapesc-n-o-66-2025-programa-horizonte-europa-2026-2027/",
+      "pdf_url": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+      "pdf_sha256": "1111409df8f37c0e391e618246330772e6217dd95d13bd3348e0457285d49a8e",
+      "pdf_pages": 46,
+      "text_characters": 156081,
+      "requirements": 148,
+      "comparable_requirements": 23,
+      "human_review_requirements": 125,
+      "reference_cases": [
+        {
+          "name": "Sede da ICT",
+          "field": "state",
+          "op": "in",
+          "expected": [
+            "SC"
+          ],
+          "page": 4,
+          "anchor": "5.2.2.",
+          "correct": true,
+          "criterion_id": "auto-02a560688982bf03ef28",
+          "evidence": "5.2.2. Ser ICT pública ou privada sem fins lucrativos, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) no Estado de Santa Catarina.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "CNPJ da ICT",
+          "field": "cnpj",
+          "op": "present",
+          "expected": "Informado",
+          "page": 4,
+          "anchor": "5.2.2.",
+          "correct": true,
+          "criterion_id": "auto-bf65067d3a475c9de275",
+          "evidence": "5.2.2. Ser ICT pública ou privada sem fins lucrativos, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) no Estado de Santa Catarina.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Tipo de instituição",
+          "field": "organization_type",
+          "op": "in",
+          "expected": [
+            "ICT pública",
+            "ICT privada sem fins lucrativos"
+          ],
+          "page": 4,
+          "anchor": "5.2.2.",
+          "correct": true,
+          "criterion_id": "auto-23ffac08c135f4f48f9e",
+          "evidence": "5.2.2. Ser ICT pública ou privada sem fins lucrativos, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) no Estado de Santa Catarina.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Residência do coordenador",
+          "field": "coordinator_state",
+          "op": "in",
+          "expected": [
+            "SC"
+          ],
+          "page": 4,
+          "anchor": "5.1.3.",
+          "correct": true,
+          "criterion_id": "auto-9d2bf22f95f725eafbe7",
+          "evidence": "5.1.3. Residir no Estado de Santa Catarina.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Mestrado mínimo",
+          "field": "coordinator_degree",
+          "op": "in",
+          "expected": [
+            "Mestrado",
+            "Doutorado"
+          ],
+          "page": 4,
+          "anchor": "5.1.2.",
+          "correct": true,
+          "criterion_id": "auto-3224f795f74c365b7b4f",
+          "evidence": "5.1.2. Possuir titulação mínima de mestrado.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Duração inicial",
+          "field": "duration_months",
+          "op": "max",
+          "expected": 24,
+          "page": 5,
+          "anchor": "5.3.9.",
+          "correct": true,
+          "criterion_id": "auto-a749af522e2d90475cae",
+          "evidence": "5.3.9. Os projetos terão prazo de execução de até 24 (vinte e quatro) meses a partir da data de publicação no Diário Oficial do Estado de Santa Catarina (DOE/SC), prorrogáveis por mais 12 (doze) meses, condicionados à avaliação de desempenho e resultados obtidos, conforme Plano de Trabalho e cumprimento das metas estabelecidas.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Teto por proposta, não orçamento global",
+          "field": "requested",
+          "op": "max",
+          "expected": 700000.0,
+          "page": 7,
+          "anchor": "7.2.",
+          "correct": true,
+          "criterion_id": "auto-4b59653107e0a5928e87",
+          "evidence": "7.2. A FAPESC fomentará projetos de até R$ 700.000,00 (setecentos mil reais) por proposta, a ser liberado em parcela única, de capital e custeio, selecionados/aprovados na presente Chamada Pública.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Vistos não financiáveis",
+          "field": "expenses",
+          "op": "disjoint",
+          "expected": [
+            "Vistos de viagem"
+          ],
+          "page": 8,
+          "anchor": "8.2.2.",
+          "correct": true,
+          "criterion_id": "auto-5fb90bdff4f14eb40633",
+          "evidence": "8.2.2. Despesas com vistos de viagem.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Currículo do proponente",
+          "field": "project_documents",
+          "op": "contains_all",
+          "expected": [
+            "Currículo Lattes"
+          ],
+          "page": 4,
+          "anchor": "5.1.5.",
+          "correct": true,
+          "criterion_id": "auto-7e3d9cae5c39c4f1f936",
+          "evidence": "5.1.5. Ter currículo atualizado na Plataforma Lattes do CNPq (http://lattes.cnpq.br/), com registro ORCID vinculado (https://orcid.org/register).",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "outcome": "Extração comparável correta"
+        },
+        {
+          "name": "Vínculo empregatício exige revisão",
+          "field": "manual",
+          "op": "manual",
+          "expected": null,
+          "page": 4,
+          "anchor": "5.1.4.",
+          "correct": true,
+          "criterion_id": "auto-fb368f089110fa5a0e88",
+          "evidence": "5.1.4. Possuir vínculo empregatício ou funcional com a instituição interveniente estabelecida no Estado de Santa Catarina. Entende-se como vínculo empregatício ou funcional a relação de trabalho que se estabelece entre uma pessoa que presta serviço remunerado a outra pessoa, seja ela física ou jurídica, que a remunera. Essa relação é de subordinação, não eventual e onerosa, no qual o empregado depende do salário pago pelo empregador. Uma pessoa jurídica não pode contribuir em uma relação de emprego com outra. Em caso de o trabalho ser feito por uma pessoa jurídica, em vez de haver um vínculo, haverá uma prestação de serviços.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "outcome": "Revisão humana identificada"
+        }
+      ],
+      "match_statuses": {
+        "PENDENTE DE VERIFICAÇÃO": 143,
+        "NÃO ATENDIDO": 3,
+        "ATENDIDO": 4
+      },
+      "verdict": "Com impedimentos",
+      "checklist_tasks": 150,
+      "status_examples": [
+        {
+          "id": "auto-9d2bf22f95f725eafbe7",
+          "requirement": "Estado de residência do coordenador",
+          "scope": "project",
+          "expected": [
+            "SC"
+          ],
+          "actual": "SC",
+          "status": "ATENDIDO",
+          "mandatory": true,
+          "reason": "Dados declarados satisfazem a regra registrada; autenticidade documental não auditada.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "page": 4,
+          "evidence": "5.1.3. Residir no Estado de Santa Catarina.",
+          "dimension": "eligibility",
+          "field": "coordinator_state",
+          "confidence": "Alta",
+          "review_status": "Conferido no caso de referência do teste",
+          "provisional_status": "ATENDIDO"
+        },
+        {
+          "id": "auto-3224f795f74c365b7b4f",
+          "requirement": "Titulação mínima do coordenador",
+          "scope": "project",
+          "expected": [
+            "Mestrado",
+            "Doutorado"
+          ],
+          "actual": "Graduação",
+          "status": "NÃO ATENDIDO",
+          "mandatory": true,
+          "reason": "Dados declarados não satisfazem a exigência registrada.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "page": 4,
+          "evidence": "5.1.2. Possuir titulação mínima de mestrado.",
+          "dimension": "eligibility",
+          "field": "coordinator_degree",
+          "confidence": "Alta",
+          "review_status": "Conferido no caso de referência do teste",
+          "provisional_status": "NÃO ATENDIDO"
+        },
+        {
+          "id": "auto-febf099282e47a10a720",
+          "requirement": "Área temática / maturidade a revisar",
+          "scope": "project",
+          "expected": "3.1. As áreas temáticas em Santa Catarina representam áreas estratégicas de interesse mútuo entre a União Europeia e o Estado, para reunir projetos e ações que visam resolver os principais desafios globais. A proposta de projeto deverá atender, pelo menos, uma das áreas temáticas descritas abaixo:",
+          "actual": null,
+          "status": "PENDENTE DE VERIFICAÇÃO",
+          "mandatory": true,
+          "reason": "Este requisito exige análise humana; a regra automática não o verifica.",
+          "source": "https://fapesc.sc.gov.br/wp-content/uploads/2025/11/documento_do_processo_materializado-3.pdf",
+          "page": 2,
+          "evidence": "3.1. As áreas temáticas em Santa Catarina representam áreas estratégicas de interesse mútuo entre a União Europeia e o Estado, para reunir projetos e ações que visam resolver os principais desafios globais. A proposta de projeto deverá atender, pelo menos, uma das áreas temáticas descritas abaixo:",
+          "dimension": "alignment",
+          "field": "manual",
+          "confidence": "Baixa",
+          "review_status": "Pendente de revisão",
+          "provisional_status": "PENDENTE DE VERIFICAÇÃO"
+        }
+      ],
+      "all_auto_criteria_initially_unconfirmed": true,
+      "deadline_confirmed_automatically": false,
+      "accepted": true
+    }
+  ],
+  "duration_seconds": 19.5,
+  "accepted": true
+}

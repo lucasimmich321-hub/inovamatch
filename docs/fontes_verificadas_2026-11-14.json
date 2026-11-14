@@ -1,0 +1,129 @@
+[
+  {
+    "id": "finep",
+    "institution": "FINEP",
+    "url": "https://www.finep.gov.br/oportunidades",
+    "checked_at": "2026-11-14T01:05:03-03:00",
+    "count": 0,
+    "error": "Nenhum edital reconhecido nesta página. Conteúdo dinâmico, paginação ou mudança de estrutura exige consulta manual na fonte."
+  },
+  {
+    "id": "cnpq",
+    "institution": "CNPq",
+    "url": "https://www.gov.br/cnpq/pt-br/chamadas/abertas-para-submissao",
+    "checked_at": "2026-11-14T01:05:04-03:00",
+    "count": 7,
+    "samples": [
+      {
+        "title": "Chamada Pública CNPq/Petrobras N° 31/2026 - Projeto InspirAÇÃO",
+        "url": "https://www.gov.br/cnpq/pt-br/chamadas/todas-as-chamadas/chamadas-2026/chamada-no-31-2026/chamada-publica-cnpq-N-31-2026",
+        "source_status": "Situação de inscrição não confirmada"
+      },
+      {
+        "title": "Chamada Pública MCTI/CNPq/CISB/SAAB AB Nº 37/2026 - Cooperação Brasil-Suécia",
+        "url": "https://www.gov.br/cnpq/pt-br/chamadas/todas-as-chamadas/chamadas-2026/chamada-no-37-2026/chamada-publica-cnpq-N-37-2026",
+        "source_status": "Situação de inscrição não confirmada"
+      },
+      {
+        "title": "Chamada Pública CNPq/CAPES Nº 30/2026 – Programa de Mestrado e Doutorado Acadêmico para Inovação – MAI/DAI",
+        "url": "https://www.gov.br/cnpq/pt-br/chamadas/todas-as-chamadas/chamadas-2026/chamada-no-30-2026/chamada-publica-cnpq-N-30-2026",
+        "source_status": "Situação de inscrição não confirmada"
+      }
+    ],
+    "error": null
+  },
+  {
+    "id": "embrapii",
+    "institution": "EMBRAPII",
+    "url": "https://embrapii.org.br/transparencia/#chamadas",
+    "checked_at": "2026-11-14T01:05:07-03:00",
+    "count": 29,
+    "samples": [
+      {
+        "title": "Chamada Pública 01/2016 – RESULTADO FINAL",
+        "url": "https://embrapii.org.br/chamadas-publicas/chamada-publica-01-2016-resultado-final/",
+        "source_status": "Resultado publicado na fonte"
+      },
+      {
+        "title": "Chamada Pública 01/2017 – RESULTADO FINAL",
+        "url": "https://embrapii.org.br/chamadas-publicas/chamada-publica-01-2017-resultado-final/",
+        "source_status": "Resultado publicado na fonte"
+      },
+      {
+        "title": "Chamada Pública 02/2017 – RESULTADO FINAL",
+        "url": "https://embrapii.org.br/chamadas-publicas/chamada-publica-02-2017-resultado-final/",
+        "source_status": "Resultado publicado na fonte"
+      }
+    ],
+    "error": null
+  },
+  {
+    "id": "sebrae",
+    "institution": "SEBRAE",
+    "url": "https://sebrae.com.br/sites/PortalSebrae/editais",
+    "checked_at": "2026-11-14T01:05:07-03:00",
+    "count": 0,
+    "error": "Nenhum edital reconhecido nesta página. Conteúdo dinâmico, paginação ou mudança de estrutura exige consulta manual na fonte."
+  },
+  {
+    "id": "fapesc",
+    "institution": "FAPESC",
+    "url": "https://fapesc.sc.gov.br/chamadas-abertas/",
+    "checked_at": "2026-11-14T01:05:07-03:00",
+    "count": 3,
+    "samples": [
+      {
+        "title": "EDITAL SUPLEMENTAR FAPESC N.º 66/2025 PROGRAMA HORIZONTE EUROPA (2026–2027)",
+        "url": "https://fapesc.sc.gov.br/edital-suplementar-fapesc-n-o-66-2025-programa-horizonte-europa-2026-2027/",
+        "source_status": "Prazo não confirmado"
+      },
+      {
+        "title": "EDITAL SUPLEMENTAR DE SUBVENÇÃO ECONÔMICA FAPESC N.º 65/2025 PROGRAMA HORIZONTE EUROPA (2026–2027)",
+        "url": "https://fapesc.sc.gov.br/edital-suplementar-de-subvencao-economica-fapesc-n-o-65-2025-programa-horizonte-europa-2026-2027/",
+        "source_status": "Prazo não confirmado"
+      },
+      {
+        "title": "Edital de Chamada Pública FAPESC nº 54/2024 Programa Inova Talentos — FAPESC e IEL/SC em Fluxo Contínuo",
+        "url": "https://fapesc.sc.gov.br/edital-de-chamada-publica-fapesc-no-54-2024-programa-inova-talentos-fapesc-e-iel-sc-em-fluxo-continuo/",
+        "source_status": "Prazo não confirmado"
+      }
+    ],
+    "error": null
+  },
+  {
+    "id": "brde",
+    "institution": "BRDE",
+    "url": "https://www.brde.com.br/fundo-verde/",
+    "checked_at": "2026-11-14T01:05:09-03:00",
+    "count": 2,
+    "samples": [
+      {
+        "title": "Edital CAMP VIVA ÁGUA – Impactos Positivos para a segurança hídrica – Inscrições encerradas",
+        "url": "https://www.brde.com.br/wp-content/uploads/2025/09/Edital-retificado.pdf",
+        "source_status": "Inscrições encerradas na fonte"
+      },
+      {
+        "title": "Edital da Chamada Pública 03/2025",
+        "url": "https://www.brde.com.br/wp-content/uploads/2025/11/Edital.pdf",
+        "source_status": "Situação de inscrição não confirmada"
+      }
+    ],
+    "error": null
+  },
+  {
+    "id": "bndes",
+    "institution": "BNDES",
+    "url": "https://www.bndes.gov.br/wps/portal/site/home/financiamento/chamadas-publicas",
+    "checked_at": "2026-11-14T01:05:09-03:00",
+    "count": 0,
+    "error": "Nenhum edital reconhecido nesta página. Conteúdo dinâmico, paginação ou mudança de estrutura exige consulta manual na fonte."
+  },
+  {
+    "id": "badesc",
+    "institution": "BADESC",
+    "url": "https://www.badesc.gov.br/portal/",
+    "checked_at": "2026-11-14T01:05:10-03:00",
+    "count": 0,
+    "error": "Nenhum edital reconhecido nesta página. Conteúdo dinâmico, paginação ou mudança de estrutura exige consulta manual na fonte."
+  }
+]
