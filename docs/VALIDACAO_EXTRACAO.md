@@ -4,10 +4,10 @@ Registro consolidado em 2026-11-14T01:11:33-03:00, America/Sao_Paulo. Python 3.1
 
 ## Resultado efetivamente observado
 
-- Suíte atual: **215 testes**, sem rede e sem API paga (inclui a integração de IA com transporte simulado e o Lote 1 de interface). Resultado de `pytest -q`:
+- Suíte atual: **219 testes**, sem rede e sem API paga (inclui a integração de IA com transporte simulado e o Lote 1 de interface). Resultado de `pytest -q`:
 
 ```text
-215 passed
+219 passed
 ```
 
   Na data deste registro a suíte tinha 97 testes; os testes anteriores continuam preservados.

@@ -356,3 +356,66 @@ def test_follow_up_table_by_call_with_documents_count(tmp_path, monkeypatch):
     table = next(d for d in app.dataframe if 'Documentos' in d.value.columns).value
     assert table['Startup'].tolist() == ['Startup SC', 'Startup PR']
     assert table['Candidatura'].tolist() == ['Em preparação', 'Não iniciada']
+
+
+# T6 · painel do escritório ------------------------------------------------------------------
+
+from inovamatch import office_stats  # noqa: E402
+
+
+def demo_store():
+    from inovamatch.demo import load_demo
+    store = Store({})
+    load_demo(store)
+    office_stats.demo_applications(store)
+    return store
+
+
+def test_four_numbers_from_demo_applications():
+    stats = office_stats.compute(demo_store())
+    assert stats['captado'] == 230_000            # 120k + 60k + 50k aprovados
+    assert stats['deixou_de_captar'] == 410_000   # solicitado das 3 reprovadas + 2 não submetidas
+    assert stats['taxa_aprovacao'] == 0.5         # 3 aprovadas / (3 aprovadas + 3 reprovadas)
+    assert stats['em_andamento'] == 2 and stats['finalizadas'] == 8 and stats['simulated']
+    assert sum(stats['reasons'].values()) == 5 and stats['reasons']['Prazo perdido'] == 1
+    assert stats['by_agency']['Agência fictícia A']['Captado'] == 170_000
+    assert set(stats['by_startup']) == {'Araucária Tech', 'Horizonte Digital', 'Semente Lab'}
+
+
+def test_period_filter_and_empty_rate():
+    store = demo_store()
+    on = today()
+    recent = office_stats.compute(store, on - timedelta(days=100), on)
+    assert recent['finalizadas'] == 3 and recent['captado'] == 50_000  # resultados há 60, 80 e 40 dias
+    empty = office_stats.compute(store, date(2000, 1, 1), date(2000, 12, 31))
+    assert empty['finalizadas'] == 0 and empty['taxa_aprovacao'] is None and empty['em_andamento'] == 2
+    assert office_stats.period_bounds('Ano anterior', date(2026, 11, 14)) == (date(2025, 1, 1), date(2025, 12, 31))
+
+
+def test_csv_export_neutralizes_formulas():
+    store = demo_store()
+    rows = office_stats.compute(store)['rows'] + [{'agencia': '=HYPERLINK("x")', 'edital': 'e', 'startup': 's', 'status': 'Aprovada',
+                                                   'valor_solicitado': 1, 'valor_captado': 1, 'data_submissao': None,
+                                                   'data_resultado': None, 'motivo': '', 'motivo_obs': '', 'simulada': False}]
+    text = office_stats.to_csv(rows)
+    assert text.startswith('﻿agencia,edital,startup,status') and "'=HYPERLINK" in text and text.count('\n') == 12
+
+
+def test_panel_screen_with_demo_and_empty_state():
+    app = clean(AppTest.from_file(APP, default_timeout=20).run())
+    app.sidebar.radio[0].set_value('Painel').run()
+    clean(app)
+    assert any('Nenhuma candidatura finalizada' in i.value for i in app.info)
+    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    app.sidebar.radio[0].set_value('Painel').run()
+    clean(app)
+    metrics = {m.label: m.value for m in app.metric}
+    assert metrics['Captado'] == 'R$ 230.000,00' and metrics['Deixou de captar'] == 'R$ 410.000,00'
+    assert metrics['Taxa de aprovação'] == '50%' and metrics['Em andamento'] == '2'
+    assert any('Dados de demonstração' in i.value for i in app.info)
+    assert any(e.label == 'Como cada número é calculado' for e in app.expander)
+    assert any(b.label == 'Exportar candidaturas (CSV)' for b in app.get('download_button'))
+    assert any('Agência' in d.value.columns for d in app.dataframe)
+
+
+from datetime import date  # noqa: E402

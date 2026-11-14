@@ -26,6 +26,7 @@ from inovamatch.link_checklist import (DOCS as CHK_DOCS, DATA as CHK_DATA, MANUA
                                        build_checklist, summary as checklist_summary, to_csv as checklist_csv, to_pdf as checklist_pdf)
 from inovamatch.applications import (STATUSES, REASONS, PREPARING, LOST, NOT_SUBMITTED, REJECTED, suggest_reason,
                                      update_application)
+from inovamatch.office_stats import DEFINITIONS, PERIODS, compute as compute_office, demo_applications, period_bounds, to_csv as office_csv
 from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN, DECLARABLE
 
 st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon='◈', layout='wide')
@@ -43,7 +44,8 @@ h1,h2,h3 {font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em;color:var
 [data-testid="stMetric"] {background:#fff;border:1px solid var(--im-border);border-radius:14px;padding:18px 20px;}
 [data-testid="stMetricLabel"] {color:#4B5A5F;font-size:13px;}
 [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] * {white-space:normal !important;overflow:visible !important;text-overflow:clip !important;}
-[data-testid="stMetricValue"] {font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:30px;}
+[data-testid="stMetricValue"] {font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;}
+[data-testid="stMetricValue"], [data-testid="stMetricValue"] * {white-space:normal !important;overflow:visible !important;text-overflow:clip !important;}
 [data-testid="stVerticalBlockBorderWrapper"] {border-color:var(--im-border) !important;border-radius:14px !important;background:#fff;}
 .eyebrow {color:#2A3C41;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;}
 .brand {display:flex;gap:11px;align-items:center;margin-bottom:27px;}
@@ -99,6 +101,7 @@ def demo_activate():
     data = st.session_state.setdefault('demo_data', {})
     load_demo(Store(data))
     demo_documents(Store(data))
+    demo_applications(Store(data))
     st.session_state.dataset = 'Demonstração'
     st.session_state.page = 'Vínculos'
 
@@ -190,12 +193,63 @@ def source_link(call):
         st.caption(call.get('source_label', 'Fonte ainda não registrada.'))
 
 
+def office_results(store):
+    """T6: os 4 números do escritório, motivos de perda, tabelas, período e exportação."""
+    st.html('<div class="section-head">Resultados do escritório</div>')
+    period = st.selectbox('Período', PERIODS, index=0, key='panel_period',
+                          help='Candidaturas finalizadas entram pelo resultado (ou pela submissão/última mudança de status).')
+    start, end = period_bounds(period)
+    stats = compute_office(store, start, end)
+    if stats['simulated']:
+        st.info('Dados de demonstração: as candidaturas deste painel são SIMULADAS e não representam captação real.')
+    a, b, c, d = st.columns(4)
+    a.metric('Captado', brl(stats['captado']), help=DEFINITIONS['Captado'])
+    b.metric('Deixou de captar', brl(stats['deixou_de_captar']), help=DEFINITIONS['Deixou de captar'])
+    c.metric('Taxa de aprovação', '—' if stats['taxa_aprovacao'] is None else f"{stats['taxa_aprovacao'] * 100:.0f}%".replace('.', ','),
+             help=DEFINITIONS['Taxa de aprovação'])
+    d.metric('Em andamento', stats['em_andamento'], help=DEFINITIONS['Em andamento'])
+    with st.expander('Como cada número é calculado'):
+        for name, text in DEFINITIONS.items():
+            st.markdown(f'**{name}:** {text}')
+        st.caption(f"No período: {stats['aprovadas']} aprovada(s), {stats['reprovadas']} reprovada(s), {stats['nao_submetidas']} não submetida(s).")
+    if not stats['finalizadas']:
+        st.info('Nenhuma candidatura finalizada no período. Registre o resultado de cada candidatura na tela Vínculos para alimentar o painel.')
+    else:
+        losses = {k: v for k, v in stats['reasons'].items() if v}
+        left, right = st.columns([3, 2])
+        with left:
+            st.markdown('**Motivos de perda** (reprovadas e não submetidas)')
+            if losses:
+                import altair as alt  # vem com o Streamlit; permite rótulos inteiros
+                chart = alt.Chart(alt.Data(values=[{'Motivo': k, 'Candidaturas': v} for k, v in losses.items()])).mark_bar(color='#0F766E').encode(
+                    x=alt.X('Candidaturas:Q', title='Candidaturas', axis=alt.Axis(tickMinStep=1, format='d', labelColor='#2A3C41', titleColor='#2A3C41')),
+                    y=alt.Y('Motivo:N', title=None, sort='-x', axis=alt.Axis(labelLimit=320, labelColor='#2A3C41', labelFontSize=12)),
+                    tooltip=['Motivo:N', 'Candidaturas:Q'])
+                st.altair_chart(chart, use_container_width=True)
+            else:
+                st.caption('Nenhuma perda registrada no período.')
+        with right:
+            st.markdown('**Motivos em números**')
+            st.dataframe([{'Motivo': k, 'Candidaturas': v} for k, v in losses.items()] or [{'Motivo': '—', 'Candidaturas': 0}],
+                         hide_index=True, width='stretch')
+        money = lambda rows, key: [{key: name, **{k: (brl(v) if k in ('Captado', 'Deixou de captar') else v) for k, v in row.items()}}
+                                   for name, row in sorted(rows.items())]
+        st.markdown('**Por agência**')
+        st.dataframe(money(stats['by_agency'], 'Agência'), hide_index=True, width='stretch')
+        st.markdown('**Por startup**')
+        st.dataframe(money(stats['by_startup'], 'Startup'), hide_index=True, width='stretch')
+    if stats['rows']:
+        st.download_button('Exportar candidaturas (CSV)', office_csv(stats['rows']), 'inovamatch-candidaturas.csv', 'text/csv')
+    st.html('<div class="section-head">Operação</div>')
+
+
 def painel(store):
     # Título único da página: o hero (antes havia um H1 repetindo a mesma ideia).
     st.html('<div class="eyebrow">INOVALE 2026 &nbsp; / &nbsp; RADAR INTELIGENTE DE FOMENTO</div>')
     st.html('''<div class="hero"><div class="eyebrow">ENCONTRE. COMPARE. PREPARE.</div>
     <h1>Transforme oportunidades<br>em próximos passos.</h1>
     <p>Conecte sua startup ao fomento e saiba o que falta para candidatar seu projeto.</p></div>''')
+    office_results(store)
     calls = store.all('calls')
     soon = [c for c in calls if deadline_info(c)['status'] == 'soon']
     stats = overview(store)

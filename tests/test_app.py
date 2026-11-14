@@ -39,7 +39,8 @@ def test_all_pages_and_demo_matching_and_copilot():
     assert app.session_state['dataset'] == 'Demonstração' and app.session_state['page'] == 'Vínculos'
     for page in ['Startups', 'Editais', 'Painel']:
         navigate(app, page)
-    assert [m.value for m in app.metric][:2] == ['2', '3']
+    metrics = {m.label: m.value for m in app.metric}
+    assert (metrics['Editais encontrados'], metrics['Startups cadastradas']) == ('2', '3')
     navigate(app, 'Vínculos')
     # Vínculos: tabela edital × startups com Atende / Pendente / Não atende.
     summary = next(d for d in app.dataframe if 'Motivo principal' in d.value.columns)
@@ -51,7 +52,8 @@ def test_all_pages_and_demo_matching_and_copilot():
     assert any(t['done'] for t in app.session_state['demo_data']['tasks'].values())
     button(app, 'Iniciar candidatura').click().run()
     clean(app)
-    assert len(app.session_state['demo_data']['applications']) == 1
+    real = [a for a in app.session_state['demo_data']['applications'].values() if not a.get('simulated')]
+    assert [a['id'] for a in real] == ['demo-call-1:project-demo-verde']
     assert len(app.session_state['demo_data']['analyses']) == 1
     app.segmented_control[0].set_value('Startup').run()
     clean(app)
