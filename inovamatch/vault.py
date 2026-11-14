@@ -149,6 +149,6 @@ def demo_documents(store):
             if store.get('documents', doc_id):
                 continue
             store.save('documents', {'id': doc_id, 'startup_id': startup_id, 'tipo': tipo, 'nome': f'{tipo} (fictício).pdf',
-                                     'arquivo': None, 'mime': 'application/pdf', 'tamanho': 0, 'demo': True,
+                                     'arquivo': None, 'mime': 'application/pdf', 'tamanho': 0, 'demo': True, 'origem': 'demo',
                                      'validade': (today() + timedelta(days=days)).isoformat() if days is not None else None,
                                      'enviado_em': now_iso()})

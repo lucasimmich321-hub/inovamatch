@@ -27,6 +27,7 @@ from inovamatch.link_checklist import (DOCS as CHK_DOCS, DATA as CHK_DATA, MANUA
 from inovamatch.applications import (STATUSES, REASONS, PREPARING, LOST, NOT_SUBMITTED, REJECTED, suggest_reason,
                                      update_application)
 from inovamatch.office_stats import DEFINITIONS, PERIODS, compute as compute_office, demo_applications, period_bounds, to_csv as office_csv
+from inovamatch.origin import DEMO, LABELS as ORIGIN_LABELS, badge_html as origin_badge, is_demo, label as origin_label
 from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN, DECLARABLE
 
 st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon='◈', layout='wide')
@@ -58,7 +59,7 @@ h1,h2,h3 {font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em;color:var
 .hero p {color:#B6C9C6;margin:0;font-size:14px;}
 .tag {display:inline-block;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;background:#D9F2EE;color:#0B4F4A;}
 .tag.warn {background:#FDECC8;color:#7A3E06;}
-.tag.demo {background:#E6EAE9;color:#3A4A4F;}
+.tag.demo {background:#FDECC8;color:#7A3E06;border:1px solid #7A3E06;margin-left:6px;}
 .opportunity {min-height:150px;}
 .opportunity h3 {font-size:17px;margin:12px 0 10px;line-height:1.4;}
 .muted {color:#4B5A5F;font-size:12px;}
@@ -107,7 +108,7 @@ def demo_activate():
     load_demo(Store(data))
     demo_documents(Store(data))
     demo_applications(Store(data))
-    st.session_state.dataset = 'Demonstração'
+    st.session_state.dataset = ORIGIN_LABELS[DEMO]
     st.session_state.goto = 'Início'
 
 
@@ -650,7 +651,7 @@ def publication_panel(store, call):
 
 def call_detail(store, call):
     st.subheader(call['title'])
-    st.html(status_badge(call))
+    st.html(status_badge(call) + origin_badge(call))
     info = deadline_info(call)
     if info['status'] in ('soon', 'expired'):
         st.warning(info['label'])
@@ -777,7 +778,7 @@ def update_panel(store):
 def radar(store, simulated):
     heading('Editais', 'Editais da FAPESC lidos do PDF, com página e trecho de cada exigência. Revise, confirme o prazo e publique.')
     if simulated:
-        st.info('Você está vendo editais simulados. Selecione “Meus dados” na barra lateral para consultar a FAPESC.')
+        st.info('Você está vendo editais fictícios. Escolha “Dados reais” na barra lateral para consultar a FAPESC.')
     else:
         update_panel(store)
         with st.expander('Adicionar edital por URL, PDF ou cadastro manual'):
@@ -850,7 +851,7 @@ def radar(store, simulated):
         st.info(f'Nenhum edital aberto corresponde ao filtro ({hidden} no total). Use “Incluir encerrados” ou “Mostrar fora do foco” para ver os demais.')
         return
     st.caption(f'{len(filtered)} de {len(calls)} edital(is) · A abertura de uma chamada não garante elegibilidade.')
-    st.dataframe([{'Instituição': c.get('institution'), 'Título': c['title'], 'Situação das inscrições': status_text(c),
+    st.dataframe([{'Origem': origin_label(c), 'Instituição': c.get('institution'), 'Título': c['title'], 'Situação das inscrições': status_text(c),
                    'Relevância': c.get('relevance') or 'Não avaliada', 'Revisão': review_state(c), 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_label(c),
                    'Análise de requisitos': 'Revisão integral declarada' if c.get('criteria_complete') else c.get('requirements_status', 'Não analisado'),
                    'Valor identificado': brl(funding_value(c)), 'Última verificação': when(c.get('last_seen_at') or c.get('discovered_at')),
@@ -935,13 +936,13 @@ def link_detail(store, call, startup, project):
     """Um vínculo edital × startup: resultado, motivo de cada critério, checklist e candidatura."""
     result = match(call, startup, project)
     st.html(f'<div class="section-head">{escape(startup["name"])} · {escape(project["name"])}</div>')
-    st.html(verdict_badge(result))
+    application = store.get('applications', f'{call["id"]}:{project["id"]}')
+    st.html(verdict_badge(result) + origin_badge(application or (call if is_demo(call) else startup)))
     verdict_banner(result)
     a, b, c = st.columns(3)
     a.metric('Critérios atendidos', result['attended'])
     b.metric('Não atendidos (obrigatórios)', result['blockers'])
     c.metric('Pendentes de verificação', result['pending'])
-    application = store.get('applications', f'{call["id"]}:{project["id"]}')
     if application:
         st.caption(f"Candidatura: {application.get('status', 'Em preparação')} · iniciada em {when(application.get('started_at'))}")
         application_form(store, application, call, result, checklist_summary(build_checklist(store, call, startup, project)))
@@ -1126,7 +1127,8 @@ def follow_up_view(store):
             continue
         totals = checklist_summary(build_checklist(store, call, startup, project))
         application = applications.get(f'{call_id}:{project_id}', {})
-        rows.append({'Startup': startup['name'], 'Projeto': project['name'], 'Edital': call['title'],
+        rows.append({'Origem': origin_label(application) if application else origin_label(call if is_demo(call) else startup),
+                     'Startup': startup['name'], 'Projeto': project['name'], 'Edital': call['title'],
                      'Documentos': f"{totals['docs_sent']} de {totals['docs_total']}",
                      'Candidatura': application.get('status', 'Não iniciada'),
                      'Solicitado': brl(application.get('valor_solicitado')) if application.get('valor_solicitado') is not None else '—',
@@ -1229,6 +1231,8 @@ def startups_list(store):
         return
     st.html('<div class="section-head">Perfil</div>')
     startup = pick('Startup', startups, 'profile_startup')
+    if is_demo(startup):
+        st.html(origin_badge(startup) + ' <span class="muted">Startup fictícia, criada para demonstração.</span>')
     docs = startup_documents(store, startup['id'])
     expired = sum(validity_status(d) == EXPIRED for d in docs)
     a, b, c = st.columns(3)
@@ -1383,17 +1387,20 @@ def main():
     with st.sidebar:
         st.caption('ESPAÇO DE TRABALHO')
         # A escolha fica numa chave comum de sessão: estado de widget é limpo quando a página muda.
-        options = ['Meus dados', 'Demonstração']
+        options = [ORIGIN_LABELS['real'], ORIGIN_LABELS[DEMO]]
         current = st.session_state.get('dataset', options[0])
+        current = current if current in options else options[0]  # sessão antiga ("Meus dados") cai em Dados reais
         # Chave amarrada ao valor: quando a base muda (inclusive pelo botão de demonstração), nasce um seletor novo já com o valor certo.
         dataset = st.selectbox('Base de dados', options, index=options.index(current), key='_dataset_widget_' + current, label_visibility='collapsed')
         st.session_state.dataset = dataset
         st.button('Carregar demonstração', on_click=demo_activate, width='stretch', icon=':material/play_circle:')
         st.caption('3 startups e 2 editais fictícios para experimentar o fluxo completo.')
-    simulated = dataset == 'Demonstração'
+    simulated = dataset == ORIGIN_LABELS[DEMO]
     if simulated:
         store = Store(st.session_state.setdefault('demo_data', {}))
-        st.info('MODO DEMONSTRAÇÃO · Todos os cadastros e editais desta base são simulados. Não representam oportunidades reais.')
+        st.warning('**Você está na Demonstração.** Startups, editais e matches desta base são fictícios e não representam '
+                   'oportunidades reais. Para ver os editais coletados da FAPESC, escolha “Dados reais” na barra lateral.',
+                   icon=':material/science:')
     else:
         storage_mode = os.environ.get('INOVAMATCH_STORAGE', 'session').lower()
         path = os.environ.get('INOVAMATCH_DB', 'data/inovamatch.db') if storage_mode == 'sqlite' else None

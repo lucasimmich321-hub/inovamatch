@@ -32,7 +32,7 @@ Esse modelo está marcado como descontinuado na documentação; use-o apenas se 
 
 ## Demonstração com um PDF real da FAPESC
 
-1. Em **Meus dados**, cadastre uma startup fictícia e um projeto, identificando seus nomes como fictícios.
+1. Em **Dados reais**, cadastre uma startup fictícia e um projeto, identificando seus nomes como fictícios.
 2. No **Radar de Editais**, busque a FAPESC e selecione um edital real. As páginas de chamadas abertas não bastam para confirmar a situação atual das inscrições.
 3. Clique em **Analisar requisitos automaticamente**, o leitor gratuito já existente. Ele abre a página oficial e o PDF principal. Também é possível selecionar/carregar o PDF na aba **Fonte**.
 4. Abra **Análise com IA · acesso restrito**, informe a senha de demonstração e clique em **Liberar análise com IA**.

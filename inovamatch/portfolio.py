@@ -1,6 +1,7 @@
 """Comparação em escala e indicadores derivados dos dados atuais, sem pontuações."""
 from .domain import deadline_info, now_iso, today
 from .matching import match, fingerprint, PENDING
+from .origin import DEMO, REAL, is_demo
 
 
 def matrix(store, startup_id=None, call_id=None):
@@ -29,7 +30,9 @@ def register_application(store, call, startup, project):
                                        'startup_id': startup['id'], 'project_id': project['id'],
                                        'status': 'Em preparação', 'started_at': now_iso(),
                                        'valor_solicitado': project.get('requested'),
-                                       'call_title': call.get('title'), 'institution': call.get('institution')})
+                                       'call_title': call.get('title'), 'institution': call.get('institution'),
+                                       # Match herda a origem: basta o edital ou a startup ser fictício para ele ser demonstração.
+                                       'origem': DEMO if is_demo(call) or is_demo(startup) else REAL})
 
 
 def overview(store):

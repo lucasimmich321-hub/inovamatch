@@ -58,7 +58,7 @@ class OfficialSource:
                           'pdf_url': target if urlsplit(target).path.lower().endswith('.pdf') else None,
                           'discovered_at': now_iso(), 'last_seen_at': now_iso(), 'criteria': [],
                           'deadline': None, 'deadline_confirmed': False, 'criteria_complete': False,
-                          'requirements_status': 'Não analisado', 'simulated': False})
+                          'requirements_status': 'Não analisado', 'simulated': False, 'origem': 'real'})
         return calls
 
     def collect(self, fetcher):

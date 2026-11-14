@@ -130,6 +130,6 @@ def demo_applications(store):
             'status': status, 'valor_solicitado': requested, 'valor_captado': captured,
             'data_submissao': submitted.isoformat() if submitted else None,
             'data_resultado': result_day.isoformat() if status in (APPROVED, REJECTED) else None,
-            'motivo': reason, 'motivo_obs': 'Dado de demonstração.' if reason else '', 'simulated': True,
+            'motivo': reason, 'motivo_obs': 'Dado de demonstração.' if reason else '', 'simulated': True, 'origem': 'demo',
             'started_at': (result_day - timedelta(days=60)).isoformat() + 'T09:00:00-03:00',
             'updated_status_at': result_day.isoformat() + 'T09:00:00-03:00'})

@@ -5,6 +5,7 @@ import sqlite3
 import uuid
 from pathlib import Path
 from .domain import now_iso, validate_project, validate_startup
+from .origin import origem
 
 COLLECTIONS = ('startups', 'projects', 'calls', 'analyses', 'tasks', 'scans', 'applications', 'documents')
 
@@ -41,6 +42,7 @@ class Store:
         if kind == 'projects':
             r = validate_project(r, {s['id'] for s in self.all('startups')})
         r['id'] = str(r.get('id') or uuid.uuid4().hex)
+        r['origem'] = origem(r)
         r['updated_at'] = now_iso()
         if self.path:
             with self._connect() as conn:

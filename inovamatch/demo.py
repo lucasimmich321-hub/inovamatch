@@ -15,11 +15,11 @@ def load_demo(store):
         store.save('startups', {'id': sid, 'name': name, 'state': state, 'city': 'Joaçaba' if state == 'SC' else '',
                                'opened_on': opened, 'cnpj': '', 'legal_type': 'Sociedade Limitada', 'size': 'ME',
                                'sector': sector, 'description': 'Startup fictícia para demonstração.',
-                               'counterpart': counterpart, 'documents': ['Cartão CNPJ', 'Certidão fiscal'], 'simulated': True})
+                               'counterpart': counterpart, 'documents': ['Cartão CNPJ', 'Certidão fiscal'], 'simulated': True, 'origem': 'demo'})
         store.save('projects', {'id': 'project-' + sid, 'startup_id': sid, 'name': 'Plataforma ' + name,
                                'objective': 'Digitalizar processos de pequenas empresas.', 'description': 'Projeto simulado.',
                                'theme': sector, 'stage': 'Protótipo', 'requested': 100_000, 'budget': 130_000,
-                               'expenses': ['Equipamentos', 'Bolsas'], 'team': 'Equipe fictícia multidisciplinar', 'simulated': True})
+                               'expenses': ['Equipamentos', 'Bolsas'], 'team': 'Equipe fictícia multidisciplinar', 'simulated': True, 'origem': 'demo'})
     for idx, title, days, theme in [(1, 'Inovação Catarinense', 25, 'Tecnologia'), (2, 'Saúde e Impacto', 5, 'Saúde')]:
         cid = f'demo-call-{idx}'
         if store.get('calls', cid):
@@ -41,7 +41,7 @@ def load_demo(store):
                      'label': label, 'evidence': evidence, 'source': source, 'page': i + 1, 'mandatory': True, 'confirmed': True}
                     for i, (field, op, expected, label, evidence) in enumerate(specs)]
         store.save('calls', {'id': cid, 'title': f'[SIMULADO] {title}', 'institution': 'Instituição fictícia',
-                             'url': '', 'source_label': source, 'simulated': True, 'criteria': criteria,
+                             'url': '', 'source_label': source, 'simulated': True, 'origem': 'demo', 'criteria': criteria,
                              'criteria_complete': True, 'deadline': (today() + timedelta(days=days)).isoformat(),
                              'deadline_confirmed': True, 'deadline_evidence': f'Inscrições até {days} dias após carregar a demonstração.',
                              # Abertura confirmada (fictícia) para a demo ter edital "Aberto" pelo mesmo cálculo do produto.

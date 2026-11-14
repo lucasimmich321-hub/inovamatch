@@ -137,7 +137,7 @@ def parse_listing(html, base_url=FAPESC):
         calls.append({'title': title[:400], 'institution': 'FAPESC', 'url': url,
                       'dedup_key': key, 'discovered_at': now_iso(), 'last_seen_at': now_iso(), 'dates_found': dates,
                       'deadline': None, 'deadline_confirmed': False, 'criteria_complete': False,
-                      'criteria': [], 'simulated': False, 'origin': base_url})
+                      'criteria': [], 'simulated': False, 'origem': 'real', 'origin': base_url})
     return calls
 
 
@@ -198,7 +198,7 @@ def import_url(url, fetcher=None):
         attachments = attachments[:30]
     suggestions = suggest(pages, resolved)
     return {'title': title[:400], 'institution': 'FAPESC' if 'fapesc.sc.gov.br' in resolved else 'Revisar instituição',
-            'url': resolved, 'dedup_key': canonical_url(resolved), 'simulated': False,
+            'url': resolved, 'dedup_key': canonical_url(resolved), 'simulated': False, 'origem': 'real',
             'criteria_complete': False, 'pages': pages, 'attachments': attachments,
             'document_sha256': hashlib.sha256(body).hexdigest(), 'last_seen_at': now_iso(),
             'document_kind': 'PDF' if body.startswith(b'%PDF') else 'Página web',
@@ -211,6 +211,6 @@ def pdf_call(data, filename):
     pages = extract_pdf(data)
     label = 'PDF enviado: ' + filename
     return {'title': filename, 'institution': 'Revisar instituição', 'url': '', 'source_label': label,
-            'simulated': False, 'criteria_complete': False, 'pages': pages,
+            'simulated': False, 'origem': 'real', 'criteria_complete': False, 'pages': pages,
             'dedup_key': 'pdf:' + hashlib.sha256(data).hexdigest(), 'document_sha256': hashlib.sha256(data).hexdigest(),
             'document_kind': 'PDF', **suggest(pages, label)}

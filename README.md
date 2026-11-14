@@ -62,7 +62,7 @@ O arquivo será `data/inovamatch.db`. `INOVAMATCH_DB` permite alterar o caminho.
    - **Semente Lab:** informações de sede, tempo de CNPJ e contrapartida pendentes.
 3. Na aba **Match reverso**, compare o edital com todo o portfólio.
 4. Abra o **Copiloto de Captação**, escolha uma candidatura e marque tarefas. As tarefas não alteram a elegibilidade. Alterações no cadastro, critérios ou dia de análise criam uma nova revisão das tarefas.
-5. Selecione **Meus dados**. Cadastre uma startup e um projeto ao vivo. Só o nome e o vínculo são obrigatórios; dados ausentes geram pendências quando exigidos.
+5. Selecione **Dados reais**. Cadastre uma startup e um projeto ao vivo. Só o nome e o vínculo são obrigatórios; dados ausentes geram pendências quando exigidos.
 6. No **Radar de Editais**, clique em **Atualizar editais** para consultar as listas oficiais da FAPESC. Internet é necessária apenas para buscas, importação de URLs e acesso às fontes.
 7. Selecione um edital e clique em **Analisar requisitos automaticamente**. O PDF principal é lido e os critérios aparecem preenchidos. Na aba **Fonte**, leia outros PDFs ou associe anexos e retificações.
 8. Na aba **Requisitos**, selecione um critério gerado, confira o campo, operador, valor e evidência e marque a validação; descarte sugestões inaplicáveis. Resolva divergências entre documentos. Na aba **Resumo**, confirme o prazo e declare a revisão integral somente após ler edital, anexos e retificações.
@@ -155,7 +155,7 @@ Aceitação com busca real e dois PDFs oficiais, em base temporária isolada:
 python scripts/validate_live.py --output work/aceitacao-real.json
 ```
 
-O comando compara os PDFs com os hashes de referência e executa 20 conferências parciais. Se o documento mudar, exige atualizar a referência após leitura humana; não considera a nova interpretação validada. Os registros fictícios do ensaio não entram no site. A suíte normal (`pytest -q`) tem 220 testes e roda sem rede e sem API paga.
+O comando compara os PDFs com os hashes de referência e executa 20 conferências parciais. Se o documento mudar, exige atualizar a referência após leitura humana; não considera a nova interpretação validada. Os registros fictícios do ensaio não entram no site. A suíte normal (`pytest -q`) tem 222 testes e roda sem rede e sem API paga.
 
 Os resultados reais dependem da disponibilidade e estrutura do site na hora da execução. `VALIDACAO.md` mantém o registro inicial; [docs/VALIDACAO_EXTRACAO.md](docs/VALIDACAO_EXTRACAO.md) registra a evolução e os limites atuais.
 
