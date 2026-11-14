@@ -106,3 +106,41 @@ def test_review_form_confirms_continuous_and_rejects_dates_together():
     call = next(iter(app.session_state['real_data']['calls'].values()))
     assert call_situation(call) == CONTINUOUS and not call['deadline_confirmed']
     assert any('Sem data-limite · fluxo contínuo' in i.value for i in app.info)
+
+
+# T2 ---------------------------------------------------------------------
+
+def test_status_groups_with_official_fixtures():
+    from inovamatch.filters import filter_calls, status_group, STATUS_FILTERS
+    flow_pending = fixture_call('fapesc_54_2024')          # "em Fluxo Contínuo" no título e no cronograma
+    flow_confirmed = fixture_call('fapesc_66_2025', **CONFIRMED_FLOW)
+    closed = fixture_call('fapesc_66_2025', id='closed', recurring_schedule=False,
+                          deadline=(today() - timedelta(days=1)).isoformat(), deadline_confirmed=True, deadline_evidence='p. 6')
+    unknown = fixture_call('fapesc_66_2025', id='unknown', recurring_schedule=False)
+    calls = [flow_pending, flow_confirmed, closed, unknown]
+    assert flow_pending['recurring_schedule'] and flow_confirmed['recurring_schedule']
+    assert [status_group(c) for c in calls] == ['Fluxo contínuo', 'Fluxo contínuo', 'Encerrado', 'Não confirmado']
+    ids = lambda statuses: [c['id'] for c in filter_calls(calls, statuses=statuses)]
+    assert ids(['Fluxo contínuo']) == ['fapesc_54_2024', 'fapesc_66_2025']
+    assert ids(['Encerrado', 'Não confirmado']) == ['closed', 'unknown']
+    assert ids(['Aberto']) == []
+    assert ids(None) == ids([]) == [c['id'] for c in calls]
+    assert set(STATUS_FILTERS) == {'Aberto', 'Fluxo contínuo', 'Encerrado', 'Futuro', 'Não confirmado'}
+
+
+def test_radar_status_pills_filter_the_list():
+    from inovamatch.filters import STATUS_FILTERS
+    app = clean(AppTest.from_file(APP, default_timeout=20).run())
+    data = {}
+    store = Store(data)
+    store.save('calls', fixture_call('fapesc_54_2024', title='Inova Talentos'))
+    store.save('calls', fixture_call('fapesc_66_2025', title='Horizonte Europa', recurring_schedule=False))
+    app.session_state['real_data'] = data
+    app.sidebar.radio[0].set_value('Radar de Editais').run()
+    clean(app)
+    pills = next(p for p in app.get('button_group') if p.label == 'Situação das inscrições')
+    assert list(pills.options) == list(STATUS_FILTERS)
+    pills.set_value(['Fluxo contínuo']).run()
+    clean(app)
+    titles = next(t for t in app.dataframe if 'Título' in t.value.columns).value['Título'].tolist()
+    assert titles == ['Inova Talentos']

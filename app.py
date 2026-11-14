@@ -18,7 +18,7 @@ from inovamatch.storage import Store
 from inovamatch.documents import merge_analysis, automatic_analysis
 from inovamatch.portfolio import overview, matrix, recalculate, register_application
 from inovamatch.sources import SOURCES
-from inovamatch.filters import filter_calls, funding_value
+from inovamatch.filters import filter_calls, funding_value, STATUS_FILTERS
 from inovamatch.ai_ui import render_ai
 from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, DECLARABLE
 
@@ -721,6 +721,8 @@ def radar(store, simulated):
         st.info('Nenhum edital cadastrado. Faça uma busca ou importe uma fonte para começar.')
         return
     query = st.text_input('Filtrar editais por título ou instituição', key='call_search_' + str(simulated))
+    statuses = st.pills('Situação das inscrições', STATUS_FILTERS, selection_mode='multi', key='status_filter_' + str(simulated),
+                        help='Sem seleção, mostra todas. “Fluxo contínuo” inclui os ainda a confirmar; o selo de cada edital indica qual é.')
     with st.expander('Filtros de instituição, área, estado, valor, prazo e elegibilidade'):
         a, b = st.columns(2)
         institutions = a.multiselect('Instituições', sorted({c.get('institution', 'Não informado') for c in calls}))
@@ -738,7 +740,8 @@ def radar(store, simulated):
                 st.info('Selecione uma startup com projeto para aplicar o filtro de elegibilidade.')
         st.caption('Área, estado e valores identificados podem ser sugestões ainda não validadas. Valores ausentes não são estimados. O filtro de prazo usa apenas datas confirmadas.')
     filtered = filter_calls(calls, institutions=institutions, area=area, state=state, min_value=min_value, max_days=max_days,
-                            verdict=None if eligibility == 'Todas' else eligibility, startup=selected_startup, project=selected_project)
+                            verdict=None if eligibility == 'Todas' else eligibility, startup=selected_startup, project=selected_project,
+                            statuses=statuses)
     filtered = [c for c in filtered if query.casefold() in (c['title'] + c.get('institution', '')).casefold()]
     if not filtered:
         st.info('Nenhum edital corresponde ao filtro.')

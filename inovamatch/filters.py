@@ -1,6 +1,19 @@
 """Filtros do radar sobre metadados identificados, sem completar valores ausentes."""
 from .domain import normalize, deadline_info
 from .matching import match
+from .call_status import call_situation, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN
+
+# Chips do Radar. "Fluxo contínuo" agrupa o confirmado e o "a confirmar"; o selo mostra a diferença.
+STATUS_FILTERS = ('Aberto', 'Fluxo contínuo', 'Encerrado', 'Futuro', 'Não confirmado')
+
+
+def status_group(call, on=None):
+    situation = call_situation(call, on)
+    if situation in (CONTINUOUS, CONTINUOUS_PENDING):
+        return 'Fluxo contínuo'
+    if situation == UNKNOWN:
+        return 'Não confirmado'
+    return situation
 
 
 def identified_values(call, field):
@@ -17,9 +30,11 @@ def funding_value(call):
 
 
 def filter_calls(calls, institutions=None, area='', state='', min_value=None, max_days=None,
-                 verdict=None, startup=None, project=None):
+                 verdict=None, startup=None, project=None, statuses=None, on=None):
     result = []
     for call in calls:
+        if statuses and status_group(call, on) not in statuses:
+            continue
         if institutions and call.get('institution') not in institutions:
             continue
         themes = ' '.join(str(v) for v in identified_values(call, 'theme'))
