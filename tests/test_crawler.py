@@ -205,3 +205,13 @@ def test_publish_button_in_review_screen():
     button.click().run()
     assert not app.exception
     assert app.session_state['real_data']['calls'][ready['id']]['review_state'] == PUBLISHED
+
+
+def test_demo_has_open_calls_marked_as_simulated():
+    from inovamatch.demo import load_demo
+    store = Store({})
+    load_demo(store)
+    calls = store.all('calls')
+    assert any(call_situation(c) == 'Aberto' for c in calls)
+    assert all(c['simulated'] and c['title'].startswith('[SIMULADO]') for c in calls)
+    assert all('SIMULADO' in c['opening_evidence'] for c in calls)

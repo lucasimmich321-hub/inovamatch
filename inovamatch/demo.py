@@ -44,4 +44,8 @@ def load_demo(store):
                              'url': '', 'source_label': source, 'simulated': True, 'criteria': criteria,
                              'criteria_complete': True, 'deadline': (today() + timedelta(days=days)).isoformat(),
                              'deadline_confirmed': True, 'deadline_evidence': f'Inscrições até {days} dias após carregar a demonstração.',
+                             # Abertura confirmada (fictícia) para a demo ter edital "Aberto" pelo mesmo cálculo do produto.
+                             'opening_date': (today() - timedelta(days=10)).isoformat(), 'opening_confirmed': True,
+                             'opening_evidence': 'SIMULADO · inscrições abertas desde 10 dias antes de carregar a demonstração.',
+                             'review_state': 'Publicado', 'relevance': 'Relevante',
                              'summary': 'Edital fictício, sem oportunidade real de financiamento.'})
