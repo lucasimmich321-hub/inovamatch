@@ -56,7 +56,7 @@ Foco: MVP para demonstração, não sistema completo.
 - Fase 0 (feita, 88fb6f6): campo origem, seletor Dados reais/Demonstração, selos, docs/ESTADO_REAL.md. 222 testes passando.
 - Fase 2 + 3 (feita, f843523): cards de editais na paleta nova, página Matches com match ativo no topo, abas Checklist (marcar ok, vincular documento) e Documentos (enviar, baixar, "Baixar tudo (.zip)"), nome "Match" unificado.
 - Fase 4 (feita, mínima): gestão da captação. Datas sugeridas a partir do cronograma extraído (com fonte e "a confirmar") e datas manuais; cada data confirmada gera tarefas (responsável, prazo, status) e lembretes (7, 3 e 1 dia); exportar .ics. Aviso: datas pós-aprovação costumam estar no termo de outorga, não no edital.
-- Fase 5: resumo estruturado do PDF (objeto, elegibilidade, valores, contrapartida, cronograma, documentos, vedações; cada campo com trecho e página) + hash SHA-256 do arquivo e do texto normalizado. Texto mudou: edital "Alterado", volta para revisão, guarda a versão anterior e avisa os matches. Só o arquivo mudou: registrar sem alarmar. Ligar retificações ao edital de origem.
+- Fase 5 (hash feito na 5A; resumo estruturado pendente): resumo estruturado do PDF (objeto, elegibilidade, valores, contrapartida, cronograma, documentos, vedações; cada campo com trecho e página) + hash SHA-256 do arquivo e do texto normalizado. Texto mudou: edital "Alterado", volta para revisão, guarda a versão anterior e avisa os matches. Só o arquivo mudou: registrar sem alarmar. Ligar retificações ao edital de origem.
 - Fase 6: cadastro de startup por documento (CNPJ, razão social, CNAE, data de abertura, porte) com tela de confirmação; imagem/escaneado via o que ai_*.py já oferecer, sem instalar Tesseract sem perguntar.
 - Fase 7: alertas por segmento (mailto: e wa.me, sem envio real), Início com prazos, alterados, tarefas atrasadas e matches parados.
 - Cortar nesta ordem se faltar tempo: Fase 6, depois 7, depois o hash da 5.
@@ -178,3 +178,15 @@ Foco: MVP para demonstração, não sistema completo.
   - Ajustes: selo do Resumo mostra "Impedido" quando a faixa diz Impedido; sem sugestão "Prazo perdido" em Inscrito/Aprovado;
     "Registrar andamento e resultado" abre sempre fechado.
   - Não verificado em navegador (inclui o botão de copiar do st.code e a abertura dos links).
+- 14/11/2026: cartões de números (a40a83f): valores em R$ compactos (R$ 860 mil, R$ 1,2 mi; exato na ajuda), número sem quebra,
+  fonte menor e altura mínima comum (dashboard, Resultados, Captação). Startups não tem cartões de números.
+- 14/11/2026: Fase 5A (hash do edital). 230 testes.
+  - inovamatch/versioning.py: SHA-256 do arquivo e do texto normalizado (minúsculas, sem quebras e espaços extras), histórico
+    por fonte em call['versions'] (data, o que mudou). Texto mudou (ou documento associado como "Retificação"): edital "Alterado"
+    (altered, altered_at). Só o arquivo mudou: registra sem alarmar (regra da Fase 5 deste arquivo).
+  - Registro em documents.merge_analysis (toda leitura de URL/PDF) e em storage.upsert_call (cadastro novo com texto).
+  - Tela: selo âmbar "Alterado" no card e no detalhe; faixa no detalhe com "Marcar alteração como revisada"; "Histórico de versões"
+    recolhido; faixa âmbar "Edital alterado em <data>: revise o checklist" no topo do match (Intermediário+, senão cartão de bloqueio);
+    alerta "Edital alterado" (Equipe e Startups com match) na página Alertas; Início lista editais alterados no lugar da nota antiga.
+  - "Simular retificação" só na demonstração (detalhe do edital fictício): muda o texto e dispara o fluxo. Não aparece no modo real.
+  - Não verificado: leitura real de URL/PDF reenviado com texto diferente (só teste unitário e simulação); aparência no navegador.

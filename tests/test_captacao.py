@@ -148,3 +148,27 @@ def test_alertas_simulados_por_plano():
     app.session_state['plan'] = 'Gratuito'
     app.run()
     assert len(app.code) == 2 and any('Disponível no plano Básico' in h.value for h in app.get('html'))
+
+
+def test_hash_do_edital_e_retificacao_simulada():
+    import sys
+    from pathlib import Path
+    from streamlit.testing.v1 import AppTest
+    from inovamatch import versioning
+    sys.path.insert(0, str(Path(__file__).parent))
+    from nav import goto
+    call = versioning.register({'id': 'c'}, 'fonte', 'a1', [{'text': 'Prazo  ATÉ\n10/12'}])
+    assert call['versions'][0]['changed'] == versioning.FIRST and not call.get('altered')
+    same_text = versioning.register(call, 'fonte', 'a2', [{'text': 'prazo até 10/12'}])  # só o arquivo (e a formatação)
+    assert same_text['versions'][-1]['changed'] == versioning.FILE and not same_text.get('altered')
+    changed = versioning.register(same_text, 'fonte', 'a3', [{'text': 'prazo até 20/12'}])
+    assert changed['altered'] and changed['versions'][-1]['changed'] == versioning.BOTH
+    app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
+    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    from inovamatch.demo import simulate_rectification
+    simulate_rectification(Store(app.session_state['demo_data']), 'demo-call-2')
+    goto(app, 'Alertas')
+    assert any('Edital alterado' in t.label for t in app.tabs) and any('foi alterado em' in c.value for c in app.code)
+    app.session_state['active_match'] = 'demo-call-2:project-demo-fora'
+    goto(app, 'Matches')
+    assert any('Edital alterado em' in h.value for h in app.get('html'))

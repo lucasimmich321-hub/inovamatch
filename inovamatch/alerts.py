@@ -6,6 +6,7 @@ Tipos e destinatários:
 - Prazo chegando (7, 3 e 1 dia): fim das inscrições de match em aberto → Startup, Equipe do polo;
   datas confirmadas da captação → Equipe do polo, Parceiros
 - Documento vencido → Startup, Equipe do polo
+- Edital alterado (texto mudou ou retificação) → Equipe do polo e Startups com match nesse edital
 """
 from datetime import date
 from urllib.parse import quote
@@ -19,9 +20,9 @@ from .vault import EXPIRED, validity_status
 
 TEAM, PARTNERS, STARTUP = 'Equipe do polo', 'Parceiros', 'Startups'
 RECIPIENTS = [TEAM, PARTNERS, STARTUP]
-STRONG, NEW_CALL, DEADLINE, DOCUMENT = 'Match forte', 'Edital novo compatível', 'Prazo chegando', 'Documento vencido'
-TYPES = [STRONG, NEW_CALL, DEADLINE, DOCUMENT]
-FEATURE = {STRONG: None, NEW_CALL: 'requirements', DEADLINE: 'manage', DOCUMENT: 'manage'}  # plano mínimo via plans.FEATURES
+STRONG, NEW_CALL, DEADLINE, DOCUMENT, ALTERED = 'Match forte', 'Edital novo compatível', 'Prazo chegando', 'Documento vencido', 'Edital alterado'
+TYPES = [STRONG, NEW_CALL, DEADLINE, ALTERED, DOCUMENT]
+FEATURE = {STRONG: None, NEW_CALL: 'requirements', DEADLINE: 'manage', ALTERED: 'manage', DOCUMENT: 'manage'}  # plano mínimo via plans.FEATURES
 SIGNATURE = '— Escritório de projetos (InovaMatch)'
 
 
@@ -89,6 +90,17 @@ def build(store, on=None):
                                   f"atende às regras registradas para o projeto \"{project['name']}\". "
                                   f"Inscrições até {_day(call['deadline'])}. Quer que o escritório abra um match?",
                                   is_demo(call) or is_demo(org)))
+    for call in calls.values():
+        if not call.get('altered'):
+            continue
+        changed_on = _day(call['altered_at'][:10]) if call.get('altered_at') else 'data não registrada'
+        names = sorted({orgs[projects[a['project_id']]['startup_id']]['name'] for a in applications.values()
+                        if a.get('call_id') == call['id'] and a.get('project_id') in projects
+                        and projects[a['project_id']]['startup_id'] in orgs})
+        out.append(_alert(ALTERED, [TEAM] + ([STARTUP] if names else []), f"{call['title']} · alterado em {changed_on}",
+                          f"Atenção: o edital \"{call['title']}\" foi alterado em {changed_on} ({call.get('altered_what', 'texto')}). "
+                          + (f"Matches afetados: {', '.join(names)}. " if names else '')
+                          + 'Revise os critérios e o checklist antes de seguir com a inscrição.', is_demo(call)))
     for doc in store.all('documents'):
         org = orgs.get(doc.get('startup_id'))
         if org and validity_status(doc) == EXPIRED:

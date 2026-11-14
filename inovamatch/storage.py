@@ -77,4 +77,8 @@ class Store:
             # Uma nova coleta nunca sobrescreve a revisão humana.
             existing['last_seen_at'] = now_iso()
             return self.save('calls', existing), False
+        if call.get('pages'):
+            from .versioning import register  # primeira versão (hash do arquivo e do texto) já no cadastro
+            call = register(call, call.get('url') or call.get('source_label') or 'Documento sem URL',
+                            call.get('document_sha256') or '', call['pages'])
         return self.save('calls', {**call, 'dedup_key': key}), True

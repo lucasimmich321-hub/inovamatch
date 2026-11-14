@@ -111,6 +111,10 @@ def merge_analysis(call, imported, kind='Edital / documento'):
     result['conflicts'] = detect_conflicts(criteria, result.get('conflicts'), result['deadline_candidates'])
     if not same_analysis:
         result['criteria_complete'] = False
+    if pages:
+        # Hash do arquivo e do texto normalizado; texto diferente marca o edital como "Alterado".
+        from .versioning import register
+        result = register(result, source, imported.get('document_sha256') or digest, pages, retification=kind == 'Retificação')
     return result
 
 

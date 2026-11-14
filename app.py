@@ -35,6 +35,8 @@ from inovamatch import plans
 from inovamatch import score as scoring
 from inovamatch import dashboard
 from inovamatch import alerts
+from inovamatch import versioning
+from inovamatch.demo import simulate_rectification
 from inovamatch import attention
 from inovamatch.filters import STATUS_FILTERS
 from inovamatch.origin import DEMO, LABELS as ORIGIN_LABELS, badge_html as origin_badge, is_demo, label as origin_label
@@ -752,9 +754,39 @@ def publication_panel(store, call):
                 st.rerun()
 
 
+def altered_text(call):
+    return date.fromisoformat(call['altered_at'][:10]).strftime('%d/%m/%Y') if call.get('altered_at') else 'data não registrada'
+
+
+def versions_view(store, call):
+    """Selo "Alterado", histórico de versões (recolhido) e, só na demonstração, "Simular retificação"."""
+    if versioning.is_altered(call):
+        st.html(band('warn', f'Edital alterado em {altered_text(call)} ({call.get("altered_what", "texto")}): revise os critérios e o checklist dos matches.'))
+        if st.button('Marcar alteração como revisada', key='reviewed_' + call['id'], icon=':material/task_alt:'):
+            store.save('calls', versioning.mark_reviewed(call))
+            st.session_state.flash = 'Alteração marcada como revisada; o histórico continua guardado.'
+            st.rerun()
+    versions = call.get('versions') or []
+    with st.expander(f'Histórico de versões · {len(versions)}', expanded=False):
+        if versions:
+            st.dataframe([{'Data': when(v['read_at']), 'O que mudou': v['changed'], 'Fonte': v['source'],
+                           'SHA-256 do arquivo': (v['file_sha256'] or '—')[:16] + '…', 'SHA-256 do texto': v['text_sha256'][:16] + '…'}
+                          for v in reversed(versions)], hide_index=True, width='stretch')
+            st.caption('Texto normalizado (sem caixa, quebras e espaços extras). Só o arquivo mudou: registra sem alarmar.')
+        else:
+            st.caption('Nenhuma leitura de documento registrada ainda. A primeira leitura (URL ou PDF) cria a versão 1.')
+    if CTX.get('simulated') and is_demo(call):
+        if st.button('Simular retificação', key='simulate_rect_' + call['id'], icon=':material/edit_document:',
+                     help='Só na demonstração: muda o texto deste edital fictício e dispara o aviso de edital alterado.'):
+            simulate_rectification(store, call['id'])
+            st.session_state.flash = 'Retificação simulada: o edital fictício ficou "Alterado".'
+            st.rerun()
+
+
 def call_detail(store, call):
     st.subheader(call['title'])
-    st.html(status_badge(call) + origin_badge(call))
+    st.html(status_badge(call) + origin_badge(call) + (' ' + chip('Alterado') if versioning.is_altered(call) else ''))
+    versions_view(store, call)
     info = deadline_info(call)
     if info['status'] in ('soon', 'expired'):
         st.warning(info['label'])
@@ -1017,6 +1049,8 @@ def call_card(call):
         chips.append(chip('Demonstração'))
     if review_state(call) != PUBLISHED and not is_demo(call):
         chips.append(chip('Aguardando revisão', 'warn'))
+    if versioning.is_altered(call):
+        chips.append(chip('Alterado'))
     value = funding_value(call)
     return card(call['title'], call.get('institution') or 'Órgão não informado', chips,
                 [('calendar', deadline_text(call)), ('wallet', brl(value) if value is not None else 'Valor não informado')],
@@ -1638,6 +1672,11 @@ def match_manage(store, record, simulated):
         close.button('Fechar', key='match_close', on_click=set_active_match, args=(None,), icon=':material/close:')
         # O que importa primeiro: impedimento, pendências e próximo prazo. Detalhes ficam nas abas.
         attention_bands(*info)
+        if versioning.is_altered(call):
+            if can('manage'):
+                st.html(band('warn', f'Edital alterado em {altered_text(call)}: revise o checklist.'))
+            else:
+                locked_card('manage', 'lk_altered')
         st.caption('Próximo prazo: ' + next_deadline(store, application, call))
         tab_summary, tab_check, tab_docs, tab_cap, tab_ai = st.tabs(['Resumo', 'Checklist', 'Documentos', 'Captação', 'Copiloto de IA'])
         with tab_summary:
@@ -1897,7 +1936,12 @@ def home_operations(store, calls):
             st.button('Revisar', key='home_review_' + call['id'], on_click=go, args=('Editais', call['id']), icon=':material/fact_check:')
         if not awaiting:
             st.caption('Nada aguardando revisão.')
-        st.caption('Aviso de edital alterado (comparação de versões) ainda não implementado.')
+        altered = [c for c in calls if versioning.is_altered(c)]
+        for call in altered[:4]:
+            st.html(f'<div class="im-chips">{chip("Alterado")}</div><div>{escape(call["title"][:90])} · em {altered_text(call)}</div>')
+            st.button('Ver alteração', key='home_altered_' + call['id'], on_click=go, args=('Editais', call['id']), icon=':material/history:')
+        if not altered:
+            st.caption('Nenhum edital alterado: a cada nova leitura o InovaMatch compara o hash do arquivo e do texto.')
     with col_pending, st.container(border=True):
         st.markdown(f'**Pendências** · {len(pending) + len(blocked)}')
         st.caption('Matches impedidos, documentos faltando ou vencidos e matches sem resultado.')

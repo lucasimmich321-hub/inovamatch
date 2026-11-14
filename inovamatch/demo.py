@@ -173,3 +173,24 @@ def demo_matches(store):
             captacao.add_task(store, application, 'Abrir conta específica do projeto', day(-1), 'Startup (fictícia)')
         created.append(record['id'])
     return created
+
+
+def simulate_rectification(store, call_id):
+    """Só na demonstração: muda o texto de um edital fictício e registra a nova versão (fica "Alterado")."""
+    import hashlib
+    from datetime import datetime, timedelta as delta
+    from .domain import now_iso
+    from .versioning import register
+    call = store.get('calls', call_id)
+    if not call or call.get('origem') != 'demo':
+        raise ValueError('Retificação simulada só existe para editais da demonstração.')
+    source = 'SIMULADO · texto do regulamento'
+    base = [{'page': 1, 'text': (call.get('summary') or '') + ' ' + ' '.join(c.get('evidence', '') for c in call.get('criteria', []))}]
+    if not any(v['source'] == source for v in call.get('versions') or []):
+        first = (datetime.fromisoformat(now_iso()) - delta(days=7)).isoformat(timespec='seconds')
+        call = register(call, source, hashlib.sha256(repr(base).encode()).hexdigest(), base, when=first)
+    number = sum(v['source'] == source for v in call['versions'])
+    pages = base + [{'page': 2, 'text': f'RETIFICAÇÃO SIMULADA nº {number}: alterado o item de documentos exigidos '
+                                         f'(inclusão de declaração fictícia nº {number}).'}]
+    call = register(call, source, hashlib.sha256(repr(pages).encode()).hexdigest(), pages)
+    return store.save('calls', call)

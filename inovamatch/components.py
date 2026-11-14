@@ -8,7 +8,7 @@ CHIP = {'Aberto': ('ok', 'check'), 'Fluxo contínuo': ('info', 'refresh'), 'Futu
         'Demonstração': ('warn', 'flask'),
         # Captação: estado e procedência de cada data importante.
         'A confirmar': ('warn', 'help'), 'Confirmada': ('ok', 'check'), 'Do edital': ('info', 'file'), 'Manual': ('muted', 'tag'),
-        'Aprovado': ('ok', 'check'), 'Impedido': ('fail', 'alert')}
+        'Aprovado': ('ok', 'check'), 'Impedido': ('fail', 'alert'), 'Alterado': ('warn', 'refresh')}
 
 
 def chip(text, kind=None, icon_name=None):
