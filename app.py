@@ -30,7 +30,8 @@ from inovamatch.applications import (STATUSES, REASONS, SUGGESTED, PREPARING, SU
                                      migrate_statuses, suggest_reason, update_application)
 from inovamatch import captacao
 from inovamatch.office_stats import DEFINITIONS, PERIODS, compute as compute_office, demo_applications, period_bounds, to_csv as office_csv
-from inovamatch.components import card, chip, empty_state
+from inovamatch.components import band, card, chip, empty_state
+from inovamatch import attention
 from inovamatch.filters import STATUS_FILTERS
 from inovamatch.origin import DEMO, LABELS as ORIGIN_LABELS, badge_html as origin_badge, is_demo, label as origin_label
 from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN, DECLARABLE
@@ -95,6 +96,10 @@ h1,h2,h3 {font-family:var(--im-font);letter-spacing:-.02em;color:var(--im-dark);
 .im-chip {display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;border:1px solid transparent;}
 .im-chip-ok {background:#DDF3E4;color:#14532D;} .im-chip-info {background:#E3ECFF;color:#0A3A9E;}
 .im-chip-muted {background:#ECEFF5;color:#3A4560;} .im-chip-warn {background:#FDECC8;color:#7A3E06;border-color:#7A3E06;}
+.im-chip-fail {background:#FBE0DC;color:#8A1C12;border-color:#8A1C12;}
+.im-band {display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 14px;margin:4px 0 8px;border:1px solid;font-size:14px;}
+.im-band ul {margin:4px 0 0;padding-left:18px;} .im-band li {margin:2px 0;} .im-band .im-icon {flex:none;margin-top:1px;}
+.im-band-fail {background:#FBE0DC;color:#8A1C12;border-color:#8A1C12;} .im-band-warn {background:#FDECC8;color:#7A3E06;border-color:#7A3E06;}
 .im-card-title {font-size:17px;font-weight:800;color:var(--im-dark);line-height:1.35;margin-top:4px;}
 .im-card-sub {font-size:13px;color:#4A5670;font-weight:600;}
 .im-facts {display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#22304F;}
@@ -668,7 +673,7 @@ def dimensions_view(result):
 
 def portfolio_view(store):
     st.caption('Startups, projetos e matches em uma visão de gestão da captação.')
-    if st.button('Recalcular todo o portfólio', type='primary'):
+    if st.button('Recalcular todo o portfólio'):
         with st.spinner('Comparando os projetos com os editais analisados…'):
             count = recalculate(store)
         st.success(f'{count} comparação(ões) registrada(s).')
@@ -996,14 +1001,14 @@ ESSENTIAL_COLUMNS = ['Requisito', 'Resultado', 'Obrigatório', 'Exigência', 'Da
 
 def result_table(result, key):
     rows = [{'Requisito': r['requirement'], 'Escopo': {'startup': 'Empresa', 'project': 'Projeto', 'call': 'Edital'}[r['scope']],
-             'Exigência': requirement_text(r), 'Dados declarados': display(r['actual']), 'Resultado': r['status'],
+             'Exigência': requirement_text(r), 'Dados declarados': display(r['actual']), 'Resultado': attention.requirement_state(r),
              'Obrigatório': 'Obrigatório' if r['mandatory'] else 'Opcional', 'Justificativa': r['reason'], 'Fonte': r['source'],
              'Página': r['page'], 'Evidência': r['evidence']} for r in result['rows']]
     for target, row in zip(rows, result['rows']):
         target['Dimensão'] = DIMENSIONS.get(row.get('dimension'), 'Elegibilidade obrigatória')
         target['Pré-comparação (exigência não validada)'] = row.get('provisional_status', PENDING) if row['status'] == PENDING else '—'
     show_all = st.toggle('Mostrar todas as colunas (fonte, página, evidência, dimensão)', key='all_cols_' + key)
-    st.dataframe(rows, hide_index=True, width='stretch', column_order=None if show_all else ESSENTIAL_COLUMNS)
+    st.dataframe(styled_requirements(rows), hide_index=True, width='stretch', column_order=None if show_all else ESSENTIAL_COLUMNS)
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=list(rows[0]))
     writer.writeheader()
@@ -1013,11 +1018,31 @@ def result_table(result, key):
     st.download_button('Baixar análise em CSV', '\ufeff' + output.getvalue(), 'inovamatch-analise.csv', 'text/csv')
 
 
+# Cores da coluna Resultado: os mesmos pares de .v-fail / .v-pending / .v-ok do CSS (contraste ≥ 4,5:1).
+RESULT_STYLE = {'fail': 'background-color:#FBE0DC;color:#8A1C12;font-weight:700',
+                'warn': 'background-color:#FDECC8;color:#7A3E06;font-weight:700', 'ok': 'color:#14532D'}
+
+
+def styled_requirements(rows):
+    import pandas as pd  # vem com o Streamlit
+    frame = pd.DataFrame(rows)
+    return frame.style.map(lambda v: RESULT_STYLE.get(attention.SEVERITY.get(v), ''), subset=['Resultado'])
+
+
+def attention_bands(reason, items, pend):
+    """Topo do match: vermelho para o que impede, âmbar para o que falta preencher. Nunca só texto cinza."""
+    if reason:
+        st.html(band('fail', f'Impedido: {reason}', items))
+    if pend:
+        st.html(band('warn', f'{len(pend)} pendência(s)', pend, prefix='Falta preencher: '))
+
+
 def verdict_banner(result):
-    if result['blockers']:
-        st.error(f"{result['verdict']} · {result['blockers']} requisito(s) obrigatório(s) não atendido(s).")
+    reason, items = attention.impediments(result)
+    if reason:
+        st.html(band('fail', f'Impedido: {reason}', items))
     elif result['pending']:
-        st.warning(f"{result['verdict']} · {result['pending']} pendência(s) para verificar.")
+        st.html(band('warn', f"{result['verdict']} · {result['pending']} item(ns) a verificar"))
     else:
         st.success('Potencialmente elegível segundo as regras registradas e os dados declarados.')
 
@@ -1059,13 +1084,14 @@ def save_analysis(store, call, startup, project, result):
                             'fingerprint': fingerprint(call, startup, project), 'result': result})
 
 
-def link_detail(store, call, startup, project, show_checklist=True):
+def link_detail(store, call, startup, project, show_checklist=True, compact=False):
     """Um match edital × startup: resultado, motivo de cada critério, checklist e andamento."""
     result = match(call, startup, project)
     st.html(f'<div class="section-head">{escape(startup["name"])} · {escape(project["name"])}</div>')
     application = store.get('applications', f'{call["id"]}:{project["id"]}')
     st.html(verdict_badge(result) + origin_badge(application or (call if is_demo(call) else startup)))
-    verdict_banner(result)
+    if not compact:  # no painel do match, impedimentos e pendências já estão no topo
+        verdict_banner(result)
     a, b, c = st.columns(3)
     a.metric('Critérios atendidos', result['attended'])
     b.metric('Não atendidos (obrigatórios)', result['blockers'])
@@ -1078,9 +1104,7 @@ def link_detail(store, call, startup, project, show_checklist=True):
         save_analysis(store, call, startup, project, result)
         st.session_state.flash = 'Match criado (em preparação).'
         st.rerun()
-    if result['blockers']:
-        st.warning('Revise os itens não atendidos antes de investir neste match. Sede, idade do CNPJ, natureza jurídica e prazo podem inviabilizar a inscrição.')
-    with st.expander('Justificativas e evidências da comparação', expanded=True):
+    with st.expander('Justificativas e evidências da comparação', expanded=not compact):
         result_table(result, 'match')
     if show_checklist:
         with st.expander('Checklist do match', expanded=True):
@@ -1389,14 +1413,21 @@ def startup_matches(store, startup):
 
 
 def startups_list(store):
-    portfolio_view(store)
     startups = [s for s in store.all('startups') if org_kind(s) == 'Startup']
-    if not startups:
-        return
-    st.html('<div class="section-head">Perfil</div>')
+    if startups:
+        startup_profile(store, startups)
+    # Visão geral e acompanhamento ficam recolhidos: o topo da tela é a startup escolhida.
+    with st.expander('Visão do portfólio e acompanhamento por edital', expanded=not startups):
+        portfolio_view(store)
+
+
+def startup_profile(store, startups):
     startup = pick('Startup', startups, 'profile_startup')
     if is_demo(startup):
         st.html(origin_badge(startup) + ' <span class="muted">Startup fictícia, criada para demonstração.</span>')
+    gaps = attention.startup_gaps(startup, [p for p in store.all('projects') if p['startup_id'] == startup['id']])
+    if gaps:
+        st.html(band('warn', f'{len(gaps)} pendência(s) no cadastro', gaps, prefix='Falta preencher: '))
     docs = startup_documents(store, startup['id'])
     expired = sum(validity_status(d) == EXPIRED for d in docs)
     a, b, c = st.columns(3)
@@ -1474,14 +1505,34 @@ def match_documents(store, startup, simulated):
         st.caption('Nenhum arquivo real para compactar.')
 
 
-def match_header(application, org, call, eyebrow=''):
-    chips = chip(application.get('status', 'Em preparação'), 'info') + (chip('Demonstração') if is_demo(application) else '')
+def match_attention(store, application, call, org, project):
+    """(motivo do impedimento, itens, pendências) de um match. Mesma regra no card e no painel."""
+    result = match(call, org, project)
+    reason, items = attention.impediments(result, application)
+    pend = attention.pendencies(result, application, checklist_summary(match_checklist(store, call, org, project)),
+                                captacao.dates(store, application['id']), captacao.tasks(store, application['id']))
+    return reason, items, pend
+
+
+def next_deadline(store, application, call):
+    """Próximo prazo do match: data confirmada da captação (se aprovado) ou prazo de inscrição do edital."""
+    if application.get('status') == APPROVED:
+        upcoming = [d for d in captacao.dates(store, application['id']) if d['estado'] == captacao.CONFIRMED and d['data'] >= today().isoformat()]
+        return f"{upcoming[0]['titulo']} · {fmt_day(upcoming[0]['data'])}" if upcoming else 'Nenhuma data confirmada'
+    return 'Inscrições: ' + deadline_label(call)
+
+
+def match_header(application, org, call, eyebrow='', attention_info=None):
+    reason, _, pend = attention_info or ('', [], [])
+    chips = (chip(application.get('status', 'Em preparação'), 'info') + (chip('Impedido') if reason else '')
+             + (chip(f'{len(pend)} pendência(s)', 'warn', 'alert') if pend else '') + (chip('Demonstração') if is_demo(application) else ''))
     return ((f'<div class="eyebrow">{escape(eyebrow)}</div>' if eyebrow else '')
             + f'<div class="im-card-title">{escape(org["name"])} · {escape(call["title"])}</div><div class="im-chips">{chips}</div>')
 
 
 def match_manage(store, record, simulated):
     application, call, org, project = record
+    info = match_attention(store, application, call, org, project)
     st.html('<div id="im-match-ativo"></div>')
     if st.session_state.pop('scroll_to_match', False):
         # O Streamlit mantém a rolagem no rerun; sem isto o usuário continua onde clicou e não vê o painel.
@@ -1489,11 +1540,14 @@ def match_manage(store, record, simulated):
                         '?.scrollIntoView({behavior: "smooth", block: "start"}), 150);</script>', height=0)
     with st.container(border=True):
         top, close = st.columns([5, 1])
-        top.html(match_header(application, org, call, 'Match ativo'))
+        top.html(match_header(application, org, call, 'Match ativo', info))
         close.button('Fechar', key='match_close', on_click=set_active_match, args=(None,), icon=':material/close:')
+        # O que importa primeiro: impedimento, pendências e próximo prazo. Detalhes ficam nas abas.
+        attention_bands(*info)
+        st.caption('Próximo prazo: ' + next_deadline(store, application, call))
         tab_summary, tab_check, tab_docs, tab_cap = st.tabs(['Resumo', 'Checklist', 'Documentos', 'Captação'])
         with tab_summary:
-            link_detail(store, call, org, project, show_checklist=False)
+            link_detail(store, call, org, project, show_checklist=False, compact=True)
         with tab_check:
             link_checklist_view(store, call, org, project)
         with tab_docs:
@@ -1661,7 +1715,7 @@ def matches_list(store, simulated):
     for match_id, (application, call, org, project) in records.items():
         with st.container(border=True):
             text, action = st.columns([5, 1])
-            text.html(match_header(application, org, call))
+            text.html(match_header(application, org, call, attention_info=match_attention(store, application, call, org, project)))
             action.button('Gerenciar', key='manage_' + match_id, on_click=set_active_match, args=(match_id,),
                           type='primary' if match_id == active else 'secondary', icon=':material/tune:')
 
@@ -1693,6 +1747,11 @@ def inicio(store):
     soon.sort(key=lambda c: deadline_info(c)['days'])
     awaiting = [c for c in sort_calls(calls) if review_state(c) != PUBLISHED and not c.get('simulated') and status_group(c) != 'Encerrado']
     pending = home_pendencies(store)
+    blocked = []
+    for application, call, org, project in usable_matches(store).values():
+        reason, _, _ = match_attention(store, application, call, org, project)
+        if reason:
+            blocked.append(f"{org['name']} · {call['title'][:60]}: {reason}")
     col_deadline, col_review, col_pending = st.columns(3)
     with col_deadline, st.container(border=True):
         st.markdown(f'**Prazos que vencem** · {len(soon)}')
@@ -1712,14 +1771,17 @@ def inicio(store):
             st.caption('Nada aguardando revisão.')
         st.caption('Aviso de edital alterado (comparação de versões) ainda não implementado.')
     with col_pending, st.container(border=True):
-        st.markdown(f'**Pendências** · {len(pending)}')
-        st.caption('Documentos faltando ou vencidos e matches sem resultado.')
+        st.markdown(f'**Pendências** · {len(pending) + len(blocked)}')
+        st.caption('Matches impedidos, documentos faltando ou vencidos e matches sem resultado.')
+        for text in blocked[:5]:
+            st.html(f'<div class="im-chips">{chip("Impedido")}</div><div>{escape(text)}</div>')
         for text in pending[:8]:
             st.markdown('- ' + md_escape(text))
-        if not pending:
+        if not pending and not blocked:
             st.caption('Nenhuma pendência registrada.')
-        if pending:
-            st.button('Abrir matches', key='home_candidacies', on_click=go, args=('Matches',), icon=':material/assignment:')
+        if pending or blocked:
+            # Ação principal do Início: resolver o que está parado.
+            st.button('Abrir matches', key='home_candidacies', on_click=go, args=('Matches',), icon=':material/assignment:', type='primary')
     approved = {a['id']: a for a in store.all('applications') if a.get('status') == APPROVED}
     cap = captacao.reminders(store, application_ids=set(approved))
     if cap:
@@ -1729,9 +1791,10 @@ def inicio(store):
             for r in cap[:8]:
                 st.markdown('- ' + md_escape(f"{approved[r['application_id']].get('call_title', '')[:50]} · {reminder_text(r)}"))
             st.button('Abrir matches', key='home_captacao', on_click=go, args=('Matches',), icon=':material/assignment:')
-    st.html('<div class="soon"><span class="tag demo">Em breve</span><div class="section-head">Visão da startup</div>'
-            'Cada startup verá, só para leitura, os editais que o escritório direcionou a ela e o checklist do match. '
-            'Ainda não disponível: hoje o InovaMatch é operado pelo escritório de projetos.</div>')
+    with st.expander('Em breve: visão da startup'):
+        st.html('<div class="soon"><span class="tag demo">Em breve</span><div class="section-head">Visão da startup</div>'
+                'Cada startup verá, só para leitura, os editais que o escritório direcionou a ela e o checklist do match. '
+                'Ainda não disponível: hoje o InovaMatch é operado pelo escritório de projetos.</div>')
 
 
 def home_pendencies(store):

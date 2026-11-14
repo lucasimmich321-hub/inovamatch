@@ -104,4 +104,4 @@ def test_password_click_analysis_review_compare_and_cache_with_mock_transport(mo
     button(app, 'Comparar com startups').click().run()
     clean(app)
     # "Comparar com startups" abre o edital na aba de startups compatíveis (st.navigation; a chave antiga é consumida).
-    assert any('Resultado' in frame.value.columns and 'ATENDIDO' in frame.value['Resultado'].tolist() for frame in app.dataframe)
+    assert any('Resultado' in frame.value.columns and 'Atendido' in frame.value['Resultado'].tolist() for frame in app.dataframe)

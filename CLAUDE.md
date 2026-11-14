@@ -111,3 +111,15 @@ Foco: MVP para demonstração, não sistema completo.
     atende Saúde e Impacto e segue "Não atende" no Inovação Catarinense, por área. Só o match Aprovado usa o edital encerrado
     (por isso ele aparece "Com impedimentos" por prazo). Teste de contagem de elegíveis atualizado (1→2, 0→1).
   - Não verificado em navegador: a aparência das colunas novas.
+- 14/11/2026: clareza e simplicidade (UX). 226 testes.
+  - inovamatch/attention.py: regra única de impedimento (obrigatório não atendido, sem dado obrigatório, edital encerrado;
+    só para matches Sugerido/Em preparação) e de "Falta preencher" (dados da startup/projeto, documentos do checklist,
+    vencidos, valor solicitado, datas e responsáveis da captação; cadastro e projeto da startup).
+  - components.band (faixa vermelha "Impedido: <motivo>" com a lista; faixa âmbar "N pendência(s)" com "Falta preencher: …")
+    e selo "Impedido" (im-chip-fail). Card da lista de Matches: selos Impedido e N pendência(s).
+  - Gerenciar: no topo, faixas + "Próximo prazo"; aba Resumo compacta (justificativas recolhidas, sem faixa repetida).
+  - Tabela de requisitos: Resultado em texto (Atendido / Não atendido / Opcional não atendido / Sem dado / A verificar),
+    Não atendido em vermelho, os demais não atendidos em âmbar (Styler do pandas). Teste do ai_ui ajustado ("Atendido").
+  - Início: matches impedidos em vermelho no topo de Pendências; "Abrir matches" é a ação principal; "Em breve" recolhido.
+  - Startups: perfil escolhido e "Falta preencher" no topo; portfólio e acompanhamento em expansor (aberto só sem startups).
+  - Não verificado em navegador: cores, faixas e reflow em tela estreita (teste de tela não rodado).

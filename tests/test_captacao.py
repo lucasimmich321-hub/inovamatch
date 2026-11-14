@@ -64,3 +64,22 @@ def test_exigencia_com_contexto_e_primeiro_match_da_demo_atende():
     assert texts['Contrapartida financeira'].startswith('mínimo de 10% de contrapartida')
     assert texts['Prazo de inscrição'].startswith('até ')
     assert ui.requirement_text({'expected': 5, 'field': 'trl', 'op': 'min', 'mandatory': False}) == 'mínimo de TRL 5'
+
+
+def test_impedido_e_pendencias_visiveis_na_demo():
+    import sys
+    from pathlib import Path
+    from streamlit.testing.v1 import AppTest
+    sys.path.insert(0, str(Path(__file__).parent))
+    from nav import goto
+    app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
+    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    goto(app, 'Matches')
+    html = ' '.join(h.value for h in app.get('html'))
+    assert 'im-chip-fail' in html and 'Impedido' in html and 'pendência(s)' in html  # selos no card
+    app.session_state['active_match'] = 'demo-call-1:project-demo-pendente'  # Semente Lab: faltam dados
+    app.run()
+    html = ' '.join(h.value for h in app.get('html'))
+    assert 'Impedido: falta dado obrigatório para avaliar' in html and 'Falta preencher: dados da startup' in html
+    table = next(d for d in app.dataframe if 'Exigência' in d.value.columns).value
+    assert 'Sem dado' in table['Resultado'].tolist()

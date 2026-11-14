@@ -8,11 +8,11 @@ CHIP = {'Aberto': ('ok', 'check'), 'Fluxo contínuo': ('info', 'refresh'), 'Futu
         'Demonstração': ('warn', 'flask'),
         # Captação: estado e procedência de cada data importante.
         'A confirmar': ('warn', 'help'), 'Confirmada': ('ok', 'check'), 'Do edital': ('info', 'file'), 'Manual': ('muted', 'tag'),
-        'Aprovado': ('ok', 'check')}
+        'Aprovado': ('ok', 'check'), 'Impedido': ('fail', 'alert')}
 
 
-def chip(text, kind=None):
-    css, name = CHIP.get(text, (kind or 'muted', 'tag'))
+def chip(text, kind=None, icon_name=None):
+    css, name = CHIP.get(text, (kind or 'muted', icon_name or 'tag'))
     return f'<span class="im-chip im-chip-{css}">{icon(name, 14)}{escape(text)}</span>'
 
 
@@ -28,3 +28,11 @@ def card(title, subtitle='', chips=(), facts=(), summary=''):
 
 def empty_state(title, text):
     return f'<div class="im-empty">{icon("radar", 28)}<div class="im-empty-title">{escape(title)}</div><p>{escape(text)}</p></div>'
+
+
+def band(kind, title, items=(), prefix=''):
+    """Faixa de atenção no topo: kind 'fail' (vermelho, impedimento) ou 'warn' (âmbar, falta preencher). Ícone + texto."""
+    lis = ''.join(f'<li>{escape(prefix + i)}</li>' for i in items)
+    role = ' role="alert"' if kind == 'fail' else ''
+    return (f'<div class="im-band im-band-{kind}"{role}>{icon("alert", 18)}<div><strong>{escape(title)}</strong>'
+            + (f'<ul>{lis}</ul>' if lis else '') + '</div></div>')
