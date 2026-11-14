@@ -11,6 +11,26 @@ def _demo_schedule(days, source):
              'evidence': f'SIMULADO · {etapa}'} for etapa, start, end in rows]
 
 
+def demo_cnpj(n):
+    """CNPJ alfanumérico FICTÍCIO (prefixo DEMO) com dígitos verificadores válidos, para o cadastro passar na validação."""
+    base = f'DEMO{n:08d}'
+    nums = [ord(c) - 48 for c in base]
+    for weights in ([5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2], [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]):
+        rem = sum(a * b for a, b in zip(nums, weights)) % 11
+        nums.append(0 if rem < 2 else 11 - rem)
+    return base + ''.join(str(d) for d in nums[12:])
+
+
+# Startups em formação, de propósito (caso legítimo): sem CNPJ, data de abertura, natureza jurídica e porte.
+NO_CNPJ_IDS = ('demo-pendente',)
+
+
+def _cnpj_fields(sid):
+    if sid in NO_CNPJ_IDS:
+        return {'cnpj': '', 'sem_cnpj': True, 'opened_on': None, 'legal_type': None, 'size': None}
+    return {'cnpj': demo_cnpj(EXAMPLE_IDS.index(sid) + 1), 'sem_cnpj': False}
+
+
 def load_demo(store):
     records = [
         ('demo-verde', 'Araucária Tech', 'SC', '2020-01-10', 'Tecnologia', 30_000),
@@ -24,7 +44,9 @@ def load_demo(store):
         store.save('startups', {'id': sid, 'name': name, 'state': state, 'city': 'Joaçaba' if state == 'SC' else '',
                                'opened_on': opened, 'cnpj': '', 'legal_type': 'Sociedade Limitada', 'size': 'ME',
                                'sector': sector, 'description': 'Startup fictícia para demonstração.',
-                               'counterpart': counterpart, 'documents': ['Cartão CNPJ', 'Certidão fiscal'], 'simulated': True, 'origem': 'demo'})
+                               'counterpart': counterpart, 'simulated': True, 'origem': 'demo',
+                               'documents': ['Certidão fiscal'] if sid in NO_CNPJ_IDS else ['Cartão CNPJ', 'Certidão fiscal'],
+                               **_cnpj_fields(sid)})
         store.save('projects', {'id': 'project-' + sid, 'startup_id': sid, 'name': 'Plataforma ' + name,
                                'objective': 'Digitalizar processos de pequenas empresas.', 'description': 'Projeto simulado.',
                                'theme': sector, 'stage': 'MVP' if sid == 'demo-fora' else 'Protótipo', 'requested': 100_000, 'budget': 130_000,
@@ -123,7 +145,8 @@ def demo_matches(store):
         store.save('startups', {'id': sid, 'name': name, 'state': 'SC', 'city': 'Joaçaba', 'opened_on': opened, 'cnpj': '',
                                 'legal_type': 'Sociedade Limitada', 'size': 'ME', 'sector': sector,
                                 'description': 'Startup fictícia para demonstração.', 'counterpart': counterpart,
-                                'documents': ['Cartão CNPJ', 'Certidão fiscal'], 'simulated': True, 'origem': 'demo'})
+                                'documents': ['Cartão CNPJ', 'Certidão fiscal'], 'simulated': True, 'origem': 'demo',
+                                **_cnpj_fields(sid)})
         store.save('projects', {'id': 'project-' + sid, 'startup_id': sid, 'name': 'Projeto ' + name, 'objective': 'Projeto simulado.',
                                 'description': 'Projeto simulado.', 'theme': sector, 'stage': stage, 'requested': requested,
                                 'budget': requested + counterpart, 'expenses': ['Equipamentos', 'Bolsas'],

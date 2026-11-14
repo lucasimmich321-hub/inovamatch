@@ -33,6 +33,17 @@ OPS = {'in': 'Um dos valores', 'contains_all': 'Contém todos', 'subset': 'Somen
        'eq': 'Igual a', 'neq': 'Diferente de', 'not_in': 'Não pertence à lista',
        'contains': 'Contém', 'disjoint': 'Não contém valores proibidos'}
 
+# Startup em formação (sem CNPJ, caso legítimo): requisitos que dependem do CNPJ "não atendem por ora".
+NO_CNPJ_FIELDS = ('cnpj', 'age_months')            # sempre
+NO_CNPJ_IF_EMPTY = ('legal_type', 'size')          # só se a startup não informou (natureza e porte vêm do CNPJ)
+NO_CNPJ_ACTUAL = 'Em formação (sem CNPJ)'
+NO_CNPJ_ACTION = 'Abrir o CNPJ'
+
+
+def no_cnpj(startup):
+    return bool((startup or {}).get('sem_cnpj'))
+
+
 DIMENSIONS = {'eligibility': 'Elegibilidade obrigatória', 'alignment': 'Aderência temática e técnica',
               'readiness': 'Prontidão documental e operacional'}
 
@@ -88,6 +99,13 @@ def evaluate(criterion, startup, project, on=None):
         result['reason'] = 'Escopo incompatível com o campo. Revise o critério.'
         return result
     try:
+        field = c['field']
+        if no_cnpj(startup) and (field in NO_CNPJ_FIELDS or (field in NO_CNPJ_IF_EMPTY and missing(startup.get(field)))):
+            result.update(actual=NO_CNPJ_ACTUAL, provisional_status=FAIL, no_cnpj=True)
+            validated = c.get('confirmed') and c.get('source') and c.get('evidence') and not c.get('conflict')
+            result['status'] = FAIL if validated else PENDING
+            result['reason'] = f'Startup em formação, ainda sem CNPJ: não atende por ora. Ação sugerida: {NO_CNPJ_ACTION[:1].lower() + NO_CNPJ_ACTION[1:]}.'
+            return result
         actual = actual_value(c, startup, project, on or today())
         result['actual'] = actual
         if missing(actual) or (c['op'] != 'present' and missing(c.get('expected'))):

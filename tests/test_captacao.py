@@ -77,12 +77,13 @@ def test_impedido_e_pendencias_visiveis_na_demo():
     goto(app, 'Matches')
     html = ' '.join(h.value for h in app.get('html'))
     assert 'im-chip-fail' in html and 'Impedido' in html and 'pendência(s)' in html  # selos no card
-    app.session_state['active_match'] = 'demo-call-1:project-demo-pendente'  # Semente Lab: faltam dados
+    app.session_state['active_match'] = 'demo-call-1:project-demo-pendente'  # Semente Lab: em formação e faltam dados
     app.run()
     html = ' '.join(h.value for h in app.get('html'))
-    assert 'Impedido: falta dado obrigatório para avaliar' in html and 'Falta preencher: dados da startup' in html
+    assert 'Não atende por ora: CNPJ há pelo menos 24 meses (ação sugerida: abrir o CNPJ)' in html
+    assert 'Falta preencher: dados da startup' in html
     table = next(d for d in app.dataframe if 'Exigência' in d.value.columns).value
-    assert 'Sem dado' in table['Resultado'].tolist()
+    assert 'Não atende por ora' in table['Resultado'].tolist() and 'Sem dado' in table['Resultado'].tolist()
 
 
 def test_planos_simulados_liberam_e_bloqueiam():
@@ -185,7 +186,9 @@ def test_dados_reais_com_startups_de_exemplo_e_publicacao_rapida(monkeypatch):
     monkeypatch.delenv('INOVAMATCH_STORAGE', raising=False)
     app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
     assert any(s.label == 'Trocar perfil (simulação)' for s in app.selectbox)  # perfil fictício no pé da barra lateral
-    assert any('Marina Souza' in str(p.proto) for p in app.get('popover'))
+    html = ' '.join(h.value for h in app.get('html'))
+    assert 'Marina Souza' in html and 'Plano Institucional' in html  # nome e plano em duas linhas, fora do botão
+    assert any('Trocar perfil ou exportar' in str(p.proto) for p in app.get('popover'))
     goto(app, 'Startups')
     next(b for b in app.button if b.label == 'Adicionar startups de exemplo (fictícias)').click().run()
     real = app.session_state['real_data']

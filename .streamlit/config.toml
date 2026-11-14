@@ -11,3 +11,8 @@ maxUploadSize = 10
 
 [browser]
 gatherUsageStats = false
+
+[client]
+# "viewer": esconde o botão Deploy e as opções de desenvolvedor (rerun, limpar cache); mantém o menu do visitante.
+# Não afeta o botão de abrir/fechar a barra lateral.
+toolbarMode = "viewer"

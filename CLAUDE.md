@@ -203,3 +203,17 @@ Foco: MVP para demonstração, não sistema completo.
   - Detalhe do edital real em revisão: "Publicação rápida" (prazo pré-preenchido com a sugestão do cronograma + 2 confirmações
     explícitas → prazo confirmado, critérios declarados revisados e publicado).
   - Não verificado: crawler real da FAPESC nesta sessão (sem rede usada); posição fixa do bloco do usuário no navegador.
+- 14/11/2026: ajustes vistos no navegador (barra, CNPJ, bloco do usuário, log da IA). 233 testes.
+  - .streamlit/config.toml: [client] toolbarMode = "viewer" (Streamlit 1.67): some Deploy e opções de desenvolvedor; o botão da barra lateral continua.
+  - Startup sem CNPJ: caixa "Ainda não tem CNPJ (em formação)" no cadastro (campo sem_cnpj; CNPJ e caixa juntos dão erro).
+    Não vira pendência (CNPJ, data de abertura, natureza jurídica e porte saem do "Falta preencher"). Requisito de CNPJ e tempo de CNPJ
+    (e natureza/porte se vazios) → "Não atende por ora", justificativa com "Ação sugerida: abrir o CNPJ"; faixa do match lista
+    "Não atende por ora: … (ação sugerida: abrir o CNPJ)" (Básico+). Conta como impedimento (nota limitada a 4,0).
+  - Exemplo/demonstração: Semente Lab em formação (sem CNPJ, sem "Cartão CNPJ" declarado); as outras 5 com CNPJ fictício
+    alfanumérico "DEMO…" com dígitos válidos (demo.demo_cnpj). A demo perdeu o exemplo "Precisa de informações" (Semente virou impedida).
+  - Bloco do usuário: nome e "Plano X" em duas linhas ao lado do avatar; o popover virou o botão "Trocar perfil ou exportar".
+  - Log da IA no terminal (stderr): inovamatch/log_ia.py; em ai_ui.py só o import e 3 chamadas (autorizado pelo Kalil):
+    "[IA] chamando OpenAI (modelo X) para analisar o edital "Y" · bloco i de n", "[IA] concluída…", "[IA] não concluída…".
+    Só modelo, título e contagens; nada de chave, senha ou texto.
+  - Não verificado em navegador: sumiço do Deploy, bloco do usuário em duas linhas, caixa do CNPJ. Log não visto com chamada real
+    (só teste unitário; nenhuma chamada à OpenAI feita).

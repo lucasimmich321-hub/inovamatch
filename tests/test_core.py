@@ -148,8 +148,23 @@ def test_demo_three_outcomes_and_no_duplicate_load():
     outcomes = []
     for p in store.all('projects'):
         outcomes.append(match(call, store.get('startups', p['startup_id']), p)['verdict'])
-    assert outcomes == ['Potencialmente elegível', 'Com impedimentos', 'Precisa de informações']
+    # Semente Lab está em formação (sem CNPJ, de propósito): tempo de CNPJ "não atende por ora" → impedimento.
+    assert outcomes == ['Potencialmente elegível', 'Com impedimentos', 'Com impedimentos']
     assert all(c['simulated'] for c in store.all('calls'))
+
+
+def test_startup_sem_cnpj_nao_atende_por_ora_e_nao_vira_pendencia():
+    from inovamatch import attention
+    store = Store()
+    load_demo(store)
+    call, startup = store.get('calls', 'demo-call-1'), store.get('startups', 'demo-pendente')
+    assert startup['sem_cnpj'] and not startup['cnpj']
+    rows = [r for r in match(call, startup, store.get('projects', 'project-demo-pendente'))['rows'] if r.get('field') == 'age_months']
+    assert rows and attention.requirement_state(rows[0]) == 'Não atende por ora' and 'abrir o CNPJ' in rows[0]['reason']
+    gaps = ' '.join(attention.startup_gaps(startup, [1]))
+    assert 'CNPJ' not in gaps and 'data de abertura' not in gaps
+    others = [s for s in store.all('startups') if s['id'] != 'demo-pendente']
+    assert all(valid_cnpj(s['cnpj']) for s in others)
 
 
 def test_checklist_tracks_blockers_pending_documents_and_sources():
@@ -255,3 +270,13 @@ def test_official_page_exposes_unique_pdf_attachments_for_review(monkeypatch):
     assert len(call['attachments']) == 2
     assert call['attachments'][0]['url'] == 'https://fapesc.sc.gov.br/edital.pdf'
     assert not call['deadline_confirmed'] and not call['criteria_complete']
+
+
+def test_log_da_ia_no_terminal_sem_texto_do_edital(capsys):
+    from inovamatch import log_ia
+    call = {'title': 'Edital Nascer 24/2026', 'text': 'TEXTO SIGILOSO DO EDITAL'}
+    log_ia.calling('gpt-teste', call, 'bloco 1 de 2 · páginas 1, 2')
+    log_ia.finished(call, {'new_api_calls': 2, 'cached_chunks': 0})
+    err = capsys.readouterr().err
+    assert '[IA] chamando OpenAI (modelo gpt-teste) para analisar o edital "Edital Nascer 24/2026"' in err
+    assert '[IA] concluída' in err and 'SIGILOSO' not in err

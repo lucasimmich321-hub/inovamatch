@@ -107,6 +107,9 @@ h1,h2,h3 {font-family:var(--im-font);letter-spacing:-.02em;color:var(--im-dark);
 .im-chip-muted {background:#ECEFF5;color:#3A4560;} .im-chip-warn {background:#FDECC8;color:#7A3E06;border-color:#7A3E06;}
 .im-avatar {width:36px;height:36px;border-radius:50%;background:var(--im-dark);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
 /* Bloco do usuário fixo no pé da barra lateral. */
+.im-user {display:flex;flex-direction:column;line-height:1.3;min-width:0;}
+.im-user strong, .im-user span {overflow-wrap:anywhere;}
+.im-user span {font-size:13px;color:var(--im-muted);}
 .st-key-user_block {position:sticky;bottom:0;background:#fff;border-top:1px solid var(--im-border);padding:10px 0 6px;margin-top:24px;z-index:2;}
 .im-chip-fail {background:#FBE0DC;color:#8A1C12;border-color:#8A1C12;}
 .im-band {display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 14px;margin:4px 0 8px;border:1px solid;font-size:14px;}
@@ -373,6 +376,8 @@ def startup_form(store, simulated):
         a, b = st.columns(2)
         name = a.text_input('Nome da startup *', old.get('name', ''))
         cnpj = b.text_input('CNPJ', old.get('cnpj', ''), help='Deixe vazio se ainda não confirmado; isso gera pendência nas regras que o exigirem.')
+        no_cnpj_box = b.checkbox('Ainda não tem CNPJ (em formação)', value=bool(old.get('sem_cnpj')),
+                                 help='Caso legítimo: empresa em formação. Não vira pendência; requisitos que exigem CNPJ ficam "Não atende por ora".')
         city = a.text_input('Cidade', old.get('city', ''))
         state_options = [''] + STATES
         state = b.selectbox('Estado', state_options, index=state_options.index(old.get('state') or ''), format_func=lambda s: s or 'Não informado')
@@ -394,7 +399,7 @@ def startup_form(store, simulated):
         saved = st.form_submit_button('Salvar startup', type='primary')
     if saved:
         try:
-            record = {**old, 'name': name.strip(), 'cnpj': cnpj.strip(), 'city': city.strip(), 'state': state or None,
+            record = {**old, 'name': name.strip(), 'cnpj': cnpj.strip(), 'sem_cnpj': no_cnpj_box, 'city': city.strip(), 'state': state or None,
                       'opened_on': opened.isoformat() if opened else None, 'legal_type': legal.strip(), 'size': size.strip(),
                       'sector': sector.strip(), 'description': description, 'counterpart': counterpart,
                       'documents': lines(docs), 'notes': notes, 'simulated': simulated, 'organization_type': organization_type.strip()}
@@ -1608,7 +1613,7 @@ def startup_profile(store, startups):
     expired = sum(validity_status(d) == EXPIRED for d in docs)
     a, b, c = st.columns(3)
     a.markdown(f"**Sede**  \n{md_escape(display(startup.get('city')))} / {md_escape(display(startup.get('state')))}")
-    b.markdown(f"**CNPJ**  \n{md_escape(display(startup.get('cnpj')))}")
+    b.markdown(f"**CNPJ**  \n{'Em formação (ainda sem CNPJ)' if startup.get('sem_cnpj') else md_escape(display(startup.get('cnpj')))}")
     c.markdown(f"**Documentos no cofre**  \n{len(docs)}" + (f' · {expired} vencido(s)' if expired else ''))
     st.html('<div class="section-head">Editais compatíveis</div>')
     startup_matches(store, startup)
@@ -2136,9 +2141,11 @@ def user_block(store, simulated):
     plan = current_plan()
     name, role = plans.PERSONAS[plan]
     with st.container(key='user_block'):
-        avatar, menu = st.columns([1, 4], vertical_alignment='center')
+        # Nome e plano em duas linhas (antes "Nome · Plano" no botão, cortado com reticências na barra estreita).
+        avatar, who = st.columns([1, 4], vertical_alignment='center')
         avatar.html(f'<div class="im-avatar" aria-hidden="true">{plans.initials(name)}</div>')
-        with menu.popover(f'{name} · {plan}', width='stretch'):
+        who.html(f'<div class="im-user"><strong>{escape(name)}</strong><span>Plano {escape(plan)}</span></div>')
+        with st.popover('Trocar perfil ou exportar', icon=':material/manage_accounts:', width='stretch'):
             st.html(f'<div class="im-chips">{chip("Demonstração")}</div><strong>{escape(name)}</strong><br>'
                     f'<span class="muted">{escape(role)} · plano {escape(plan)}</span>')
             st.caption('Perfil fictício para mostrar o que cada plano libera. Não é login real; nada é salvo.')

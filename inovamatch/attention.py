@@ -3,11 +3,13 @@
 Regras únicas, usadas no card da lista, no topo do painel, na tabela de requisitos, no Início e em Startups.
 """
 from .applications import APPROVED, PREPARING, SUGGESTED
-from .matching import DIMENSIONS, FAIL, FIELDS, PASS, PENDING
+from .matching import DIMENSIONS, FAIL, FIELDS, NO_CNPJ_ACTION, PASS, PENDING, no_cnpj
 
 OPEN = (SUGGESTED, PREPARING)  # depois da inscrição, prazo encerrado ou requisito não impede mais nada
 MET, NOT_MET, OPTIONAL_NOT_MET, NO_DATA, TO_CHECK = 'Atendido', 'Não atendido', 'Opcional não atendido', 'Sem dado', 'A verificar'
-SEVERITY = {NOT_MET: 'fail', OPTIONAL_NOT_MET: 'warn', NO_DATA: 'warn', TO_CHECK: 'warn', MET: 'ok'}
+NOT_YET = 'Não atende por ora'  # startup em formação, sem CNPJ: dado informado, não pendência
+SEVERITY = {NOT_MET: 'fail', NOT_YET: 'fail', OPTIONAL_NOT_MET: 'warn', NO_DATA: 'warn', TO_CHECK: 'warn', MET: 'ok'}
+NO_CNPJ_GAPS = ('cnpj', 'opened_on', 'legal_type', 'size')  # não são pendência de startup em formação
 STARTUP_FIELDS = {'state': 'estado', 'city': 'cidade', 'opened_on': 'data de abertura', 'cnpj': 'CNPJ', 'sector': 'área de atuação',
                   'legal_type': 'natureza jurídica', 'size': 'porte', 'counterpart': 'contrapartida disponível'}
 
@@ -40,6 +42,8 @@ def for_application(result, application=None):
 
 def requirement_state(row):
     """Texto da coluna Resultado. "Sem dado" só quando falta o dado da startup/projeto; o resto pendente é "A verificar"."""
+    if row.get('no_cnpj'):
+        return NOT_YET
     if row['status'] == FAIL:
         return NOT_MET if row.get('mandatory', True) else OPTIONAL_NOT_MET
     if row['status'] == PENDING:
@@ -53,11 +57,14 @@ def impediments(result, application=None):
         return '', []
     closed = [r for r in result['rows'] if r['id'] == 'deadline' and r['status'] == FAIL]
     failed = [r for r in result['rows'] if r['id'] != 'deadline' and r['status'] == FAIL and r.get('mandatory', True)]
+    not_yet = [r for r in result['rows'] if r.get('mandatory', True) and requirement_state(r) == NOT_YET]
+    failed = [r for r in failed if not r.get('no_cnpj')]
     no_data = [r for r in result['rows'] if r.get('mandatory', True) and requirement_state(r) == NO_DATA]
     items = (['Edital encerrado (' + r['reason'].lower() + ')' for r in closed] + ['Não atende: ' + r['requirement'] for r in failed]
+             + [f'Não atende por ora: {r["requirement"]} (ação sugerida: {_first_lower(NO_CNPJ_ACTION)})' for r in not_yet]
              + ['Sem dado para avaliar: ' + r['requirement'] for r in no_data])
     reason = ('edital encerrado' if closed else 'requisito obrigatório não atendido' if failed
-              else 'falta dado obrigatório para avaliar' if no_data else '')
+              else 'startup ainda sem CNPJ' if not_yet else 'falta dado obrigatório para avaliar' if no_data else '')
     return reason, items
 
 
@@ -87,7 +94,8 @@ def pendencies(result, application=None, checklist_totals=None, dates=None, task
 
 def startup_gaps(startup, projects):
     """O que falta no cadastro da startup para os matches serem avaliados."""
-    out = [label for field, label in STARTUP_FIELDS.items() if _missing(startup.get(field))]
+    skip = NO_CNPJ_GAPS if no_cnpj(startup) else ()
+    out = [label for field, label in STARTUP_FIELDS.items() if field not in skip and _missing(startup.get(field))]
     gaps = [f'cadastro ({", ".join(out)})'] if out else []
     if not projects:
         gaps.append('projeto (nenhum cadastrado)')

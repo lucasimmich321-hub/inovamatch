@@ -54,6 +54,8 @@ def validate_startup(record):
     r = dict(record)
     if not r.get('name', '').strip():
         raise ValueError('Informe o nome da startup.')
+    if r.get('sem_cnpj') and r.get('cnpj'):
+        raise ValueError('Marque "Ainda não tem CNPJ" ou informe o CNPJ, não os dois.')
     if r.get('cnpj') and not valid_cnpj(r['cnpj']):
         raise ValueError('CNPJ inválido. Corrija ou deixe em branco para registrar uma pendência.')
     if r.get('state') and r['state'] not in STATES:

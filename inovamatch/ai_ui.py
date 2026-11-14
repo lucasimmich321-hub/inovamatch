@@ -6,6 +6,7 @@ from .ai_config import load_config, SessionAccess, MAX_SESSION_CALLS, MODEL
 from .ai_engine import (AIError, analyze_document, attach_analysis, plan_document, MAX_PAGES,
                         INPUT_USD_PER_MILLION, OUTPUT_USD_PER_MILLION)
 from .call_status import call_situation
+from . import log_ia
 from .matching import FIELDS, OPS
 
 FACT_LABELS = {'institution': 'Instituição', 'title': 'Nome do edital', 'objective': 'Objetivo',
@@ -120,7 +121,12 @@ def render_ai(store, call):
                         try:
                             with st.spinner('A IA está analisando as páginas selecionadas…'):
                                 status = st.empty()
-                                analysis = analyze_document(doc, pages, access, config, progress=status.caption)
+
+                                def progress(message):  # chamado só antes de cada chamada real (bloco fora do cache)
+                                    log_ia.calling(config.model, call, message.removeprefix('IA: '))
+                                    status.caption(message)
+                                analysis = analyze_document(doc, pages, access, config, progress=progress)
+                                log_ia.finished(call, analysis)
                                 updated = attach_analysis(call, analysis)
                                 if not updated.get('documents'):
                                     updated['documents'] = docs
@@ -130,8 +136,10 @@ def render_ai(store, call):
                             st.session_state['flash'] = 'Análise com IA concluída. Confira as citações e valide os critérios aplicáveis antes da candidatura.'
                             st.rerun()
                         except AIError as exc:
+                            log_ia.failed(call, str(exc))
                             st.error(str(exc))
                         except Exception:
+                            log_ia.failed(call, 'erro ao salvar a análise')
                             st.error('Não foi possível salvar a análise com segurança. Os detalhes técnicos e credenciais não são exibidos.')
             if access.usage:
                 with st.expander('Consumo registrado nesta sessão'):

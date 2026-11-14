@@ -40,7 +40,8 @@ def test_all_pages_and_demo_matching_and_copilot():
     summary = next(d for d in app.dataframe if 'Motivo principal' in d.value.columns)
     # As 3 startups fictícias: elegível, pendente e impedida (mesma semântica do match reverso antigo).
     # 6 startups fictícias (3 originais + 3 da demonstração ampliada): duas atendem, uma pendente, três não atendem.
-    assert summary.value['Resultado'].tolist() == ['Atende', 'Atende', 'Pendente de verificação', 'Não atende', 'Não atende', 'Não atende']
+    # Semente Lab (em formação, sem CNPJ) passou de "Pendente" para "Não atende" (por ora).
+    assert summary.value['Resultado'].tolist() == ['Atende', 'Atende', 'Não atende', 'Não atende', 'Não atende', 'Não atende']
     task = next(c for c in app.checkbox if (c.key or '').startswith('chk_'))
     task.check().run()
     clean(app)
