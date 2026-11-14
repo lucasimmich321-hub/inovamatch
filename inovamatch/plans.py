@@ -44,3 +44,17 @@ def allows(plan, feature):
 
 def required(feature):
     return FEATURES[feature]
+
+# Pessoa fictícia de cada plano (perfil de DEMONSTRAÇÃO; não é login real).
+PERSONAS = {
+    'Gratuito': ('Lucas Andrade', 'Fundador de startup'),
+    'Básico': ('Beatriz Lima', 'Sócia de startup'),
+    'Intermediário': ('Rafael Costa', 'Analista de captação'),
+    'Premium': ('Juliana Prado', 'Consultora de projetos'),
+    'Institucional': ('Marina Souza', 'Coordenadora do escritório de projetos'),
+}
+
+
+def initials(name):
+    parts = name.split()
+    return (parts[0][0] + (parts[-1][0] if len(parts) > 1 else '')).upper()

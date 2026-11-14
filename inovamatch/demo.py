@@ -194,3 +194,39 @@ def simulate_rectification(store, call_id):
                                          f'(inclusão de declaração fictícia nº {number}).'}]
     call = register(call, source, hashlib.sha256(repr(pages).encode()).hexdigest(), pages)
     return store.save('calls', call)
+
+
+EXAMPLE_IDS = ('demo-verde', 'demo-fora', 'demo-pendente', 'demo-agro', 'demo-energia', 'demo-bio')
+
+
+def add_example_startups(store):
+    """Modo Dados reais: copia as 6 startups e projetos FICTÍCIOS da demonstração (rotulados "Demonstração").
+    Não copia editais nem matches: os editais continuam os reais do crawler."""
+    from .storage import Store
+    from .vault import demo_documents
+    sample = Store({})
+    load_demo(sample)
+    demo_documents(sample)
+    demo_matches(sample)  # cria as 3 startups extras (os matches e editais fictícios ficam só nesta cópia temporária)
+    added = 0
+    for kind in ('startups', 'projects', 'documents'):
+        for record in sample.all(kind):
+            owner = record['id'] if kind == 'startups' else record.get('startup_id')
+            if owner in EXAMPLE_IDS and not store.get(kind, record['id']):
+                store.save(kind, {**record, 'simulated': True, 'origem': 'demo'})
+                added += kind == 'startups'
+    return added
+
+
+def remove_example_startups(store):
+    """Tira as startups de exemplo (e seus projetos, documentos e matches) da base real."""
+    projects = {p['id'] for p in store.all('projects') if p.get('startup_id') in EXAMPLE_IDS}
+    for a in store.all('applications'):
+        if a.get('project_id') in projects:
+            store.delete('applications', a['id'])
+    for kind in ('documents', 'projects'):
+        for r in store.all(kind):
+            if r.get('startup_id') in EXAMPLE_IDS:
+                store.delete(kind, r['id'])
+    for sid in EXAMPLE_IDS:
+        store.delete('startups', sid)

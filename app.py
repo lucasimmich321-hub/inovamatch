@@ -36,7 +36,7 @@ from inovamatch import score as scoring
 from inovamatch import dashboard
 from inovamatch import alerts
 from inovamatch import versioning
-from inovamatch.demo import simulate_rectification
+from inovamatch.demo import EXAMPLE_IDS, add_example_startups, remove_example_startups, simulate_rectification
 from inovamatch import attention
 from inovamatch.filters import STATUS_FILTERS
 from inovamatch.origin import DEMO, LABELS as ORIGIN_LABELS, badge_html as origin_badge, is_demo, label as origin_label
@@ -105,6 +105,9 @@ h1,h2,h3 {font-family:var(--im-font);letter-spacing:-.02em;color:var(--im-dark);
 .im-chip {display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;border:1px solid transparent;}
 .im-chip-ok {background:#DDF3E4;color:#14532D;} .im-chip-info {background:#E3ECFF;color:#0A3A9E;}
 .im-chip-muted {background:#ECEFF5;color:#3A4560;} .im-chip-warn {background:#FDECC8;color:#7A3E06;border-color:#7A3E06;}
+.im-avatar {width:36px;height:36px;border-radius:50%;background:var(--im-dark);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+/* Bloco do usuário fixo no pé da barra lateral. */
+.st-key-user_block {position:sticky;bottom:0;background:#fff;border-top:1px solid var(--im-border);padding:10px 0 6px;margin-top:24px;z-index:2;}
 .im-chip-fail {background:#FBE0DC;color:#8A1C12;border-color:#8A1C12;}
 .im-band {display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 14px;margin:4px 0 8px;border:1px solid;font-size:14px;}
 .im-band ul {margin:4px 0 0;padding-left:18px;} .im-band li {margin:2px 0;} .im-band .im-icon {flex:none;margin-top:1px;}
@@ -748,10 +751,40 @@ def publication_panel(store, call):
         else:
             for item in blockers:
                 st.caption('Falta: ' + item)
+            if blockers and not call.get('source_closed'):
+                quick_publish(store, call)
             if st.button('Publicar para as startups', type='primary', disabled=bool(blockers), key='publish_' + call['id']):
                 store.save('calls', {**call, 'review_state': PUBLISHED, 'published_at': now_iso()})
                 st.session_state.flash = 'Edital publicado para as startups.'
                 st.rerun()
+
+
+def quick_publish(store, call):
+    """Atalho para edital aberto: confirmar o prazo (sugerido pelo cronograma, se houver) e publicar em um passo.
+    Nada é presumido: o escritório marca que conferiu o prazo na fonte e declara a revisão dos critérios."""
+    with st.expander('Publicação rápida: confirmar prazo e publicar', expanded=False):
+        suggested = date.fromisoformat(call['deadline']) if call.get('deadline') else None
+        with st.form('quick_publish_' + call['id']):
+            day = st.date_input('Prazo de inscrição', value=suggested, format='DD/MM/YYYY', min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
+            if call.get('deadline_evidence'):
+                st.caption('Sugestão lida do documento: ' + call['deadline_evidence'][:200])
+            checked = st.checkbox('Conferi o prazo na fonte oficial (e nas retificações)')
+            reviewed = st.checkbox('Revisei os critérios registrados (ou aceito publicar com critérios a completar)')
+            go_publish = st.form_submit_button('Confirmar e publicar', type='primary')
+        if go_publish:
+            if not (day and checked and reviewed):
+                st.error('Informe o prazo e marque as duas confirmações.')
+                return
+            evidence = call.get('deadline_evidence') or f'Prazo confirmado pelo escritório na fonte em {today():%d/%m/%Y}.'
+            updated = {**call, 'deadline': day.isoformat(), 'deadline_confirmed': True, 'deadline_evidence': evidence,
+                       'criteria_complete': True, 'quick_published': True}
+            missing = publication_blockers(updated)
+            if missing:
+                st.error('Ainda falta: ' + ' '.join(missing))
+                return
+            store.save('calls', {**updated, 'review_state': PUBLISHED, 'published_at': now_iso()})
+            st.session_state.flash = 'Prazo confirmado e edital publicado. Veja as startups compatíveis.'
+            st.rerun()
 
 
 def altered_text(call):
@@ -1530,7 +1563,29 @@ def startup_matches(store, startup):
     link_detail(store, results[chosen][0], startup, project)
 
 
+def example_startups_panel(store):
+    """Só em Dados reais: startups FICTÍCIAS para testar matches com os editais reais do crawler."""
+    present = any(store.get('startups', sid) for sid in EXAMPLE_IDS)
+    with st.container(border=True):
+        if not present:
+            st.markdown('**Testar com editais reais**')
+            st.caption('Adiciona 6 startups e projetos fictícios (selo Demonstração). Os editais continuam os reais; '
+                       'matches com essas startups também saem como Demonstração.')
+            if st.button('Adicionar startups de exemplo (fictícias)', icon=':material/group_add:', key='add_examples'):
+                count = add_example_startups(store)
+                st.session_state.flash = f'{count} startups de exemplo adicionadas (fictícias).'
+                st.rerun()
+        else:
+            st.html(f'<div class="im-chips">{chip("Demonstração")}</div>Startups de exemplo (fictícias) presentes nesta base.')
+            if st.button('Remover startups de exemplo', icon=':material/group_remove:', key='remove_examples'):
+                remove_example_startups(store)
+                st.session_state.flash = 'Startups de exemplo removidas (com projetos, documentos e matches delas).'
+                st.rerun()
+
+
 def startups_list(store):
+    if not CTX.get('simulated'):
+        example_startups_panel(store)
     startups = [s for s in store.all('startups') if org_kind(s) == 'Startup']
     if startups:
         startup_profile(store, startups)
@@ -2072,6 +2127,32 @@ def planos_page():
     st.caption('“Em breve” = ainda não construído. Troque o plano em “Plano (simulação)”, na barra lateral.')
 
 
+def change_profile(key):
+    st.session_state.plan = st.session_state[key]
+
+
+def user_block(store, simulated):
+    """Canto inferior da barra lateral: perfil fictício (plano) e exportação. Simulação, não é login real."""
+    plan = current_plan()
+    name, role = plans.PERSONAS[plan]
+    with st.container(key='user_block'):
+        avatar, menu = st.columns([1, 4], vertical_alignment='center')
+        avatar.html(f'<div class="im-avatar" aria-hidden="true">{plans.initials(name)}</div>')
+        with menu.popover(f'{name} · {plan}', width='stretch'):
+            st.html(f'<div class="im-chips">{chip("Demonstração")}</div><strong>{escape(name)}</strong><br>'
+                    f'<span class="muted">{escape(role)} · plano {escape(plan)}</span>')
+            st.caption('Perfil fictício para mostrar o que cada plano libera. Não é login real; nada é salvo.')
+            key = '_profile_widget_' + plan  # chave amarrada ao valor, como o seletor de base
+            st.selectbox('Trocar perfil (simulação)', plans.PLANS, index=plans.PLANS.index(plan), key=key,
+                         format_func=lambda p: f'{plans.PERSONAS[p][0]} · {plans.PERSONAS[p][1]} ({p})',
+                         on_change=change_profile, args=(key,))
+            st.download_button('Exportar dados da sessão (JSON)', store.export(),
+                               'inovamatch-demo.json' if simulated else 'inovamatch-dados.json', 'application/json',
+                               width='stretch', icon=':material/download:')
+            st.caption('Baixa tudo desta sessão (startups, editais, matches e tarefas) para guardar uma cópia: '
+                       'os dados somem ao recarregar ou fechar o site.')
+
+
 def _page(title):
     def render():
         store, simulated = CTX['store'], CTX['simulated']
@@ -2110,12 +2191,6 @@ def main():
         st.session_state.dataset = dataset
         st.button('Carregar demonstração', on_click=demo_activate, width='stretch', icon=':material/play_circle:')
         st.caption('6 startups, 3 editais e 8 matches fictícios para experimentar o fluxo completo.')
-        # Plano: simulação, sem login e sem persistência. Mesmo padrão de chave da base de dados.
-        plan = current_plan()
-        chosen = st.selectbox('Plano (simulação)', plans.PLANS, index=plans.PLANS.index(plan), key='_plan_widget_' + plan,
-                              help='Demonstração: mostra o que cada plano libera. Sem login, sem cobrança, não é salvo.')
-        st.session_state.plan = chosen
-        st.caption('Plano simulado para demonstração.')
     simulated = dataset == ORIGIN_LABELS[DEMO]
     if simulated:
         store = Store(st.session_state.setdefault('demo_data', {}))
@@ -2127,12 +2202,9 @@ def main():
         path = os.environ.get('INOVAMATCH_DB', 'data/inovamatch.db') if storage_mode == 'sqlite' else None
         store = Store(st.session_state.setdefault('real_data', {}), path=path)
     with st.sidebar:
-        if simulated or not store.path:
-            st.caption('Dados nesta sessão. Podem ser perdidos ao desconectar, recarregar ou reiniciar o site. Exporte uma cópia antes de sair.')
-        else:
-            st.caption('SQLite local ativo. Use somente em ambiente privado: os cadastros são compartilhados entre sessões deste servidor.')
-        st.download_button('Exportar dados em JSON', store.export(), 'inovamatch-demo.json' if simulated else 'inovamatch-dados.json',
-                           'application/json', width='stretch', icon=':material/download:')
+        st.caption('Dados só nesta sessão: exporte antes de sair.' if simulated or not store.path
+                   else 'SQLite local: dados compartilhados neste servidor.')
+        user_block(store, simulated)
     goto = st.session_state.pop('goto', None)
     if goto in pages:
         st.switch_page(pages[goto])

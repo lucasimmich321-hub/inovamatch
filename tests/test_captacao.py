@@ -172,3 +172,31 @@ def test_hash_do_edital_e_retificacao_simulada():
     app.session_state['active_match'] = 'demo-call-2:project-demo-fora'
     goto(app, 'Matches')
     assert any('Edital alterado em' in h.value for h in app.get('html'))
+
+
+def test_dados_reais_com_startups_de_exemplo_e_publicacao_rapida(monkeypatch):
+    import sys
+    from datetime import timedelta
+    from pathlib import Path
+    from streamlit.testing.v1 import AppTest
+    from inovamatch.domain import today
+    sys.path.insert(0, str(Path(__file__).parent))
+    from nav import goto
+    monkeypatch.delenv('INOVAMATCH_STORAGE', raising=False)
+    app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
+    assert any(s.label == 'Trocar perfil (simulação)' for s in app.selectbox)  # perfil fictício no pé da barra lateral
+    assert any('Marina Souza' in str(p.proto) for p in app.get('popover'))
+    goto(app, 'Startups')
+    next(b for b in app.button if b.label == 'Adicionar startups de exemplo (fictícias)').click().run()
+    real = app.session_state['real_data']
+    assert len(real['startups']) == 6 and all(s['origem'] == 'demo' for s in real['startups'].values())
+    Store(real).save('calls', {'id': 'real-1', 'title': 'Edital real de teste', 'institution': 'FAPESC', 'url': 'https://fapesc.sc.gov.br/x',
+                               'origem': 'real', 'deadline': (today() + timedelta(days=20)).isoformat(), 'deadline_confirmed': False,
+                               'deadline_evidence': 'Cronograma, p. 3: submissão até a data.', 'criteria': []})
+    goto(app, 'Editais')
+    next(c for c in app.checkbox if c.label.startswith('Conferi o prazo')).check()
+    next(c for c in app.checkbox if c.label.startswith('Revisei os critérios')).check()
+    next(b for b in app.button if b.label == 'Confirmar e publicar').click().run()
+    call = real['calls']['real-1']
+    assert call['review_state'] == 'Publicado' and call['deadline_confirmed'] and call['origem'] == 'real'
+    assert not app.exception

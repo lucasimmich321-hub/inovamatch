@@ -190,3 +190,16 @@ Foco: MVP para demonstração, não sistema completo.
     alerta "Edital alterado" (Equipe e Startups com match) na página Alertas; Início lista editais alterados no lugar da nota antiga.
   - "Simular retificação" só na demonstração (detalhe do edital fictício): muda o texto e dispara o fluxo. Não aparece no modo real.
   - Não verificado: leitura real de URL/PDF reenviado com texto diferente (só teste unitário e simulação); aparência no navegador.
+- 14/11/2026: Fase 6 (usuário na lateral e dados reais com startups de exemplo). Decisão 5A mantida (só texto marca "Alterado"). 231 testes.
+  - IA (ai_*.py, não alterados): OpenAI (SDK openai, Responses API), modelo padrão gpt-6-luna. Espera OPENAI_API_KEY,
+    INOVAMATCH_DEMO_PASSWORD (≥ 12 caracteres) e, opcional, OPENAI_MODEL, lidos de st.secrets (.streamlit/secrets.toml) ou do
+    ambiente. .env, .env.* e .streamlit/secrets.toml já estavam no .gitignore.
+  - Barra lateral: bloco do usuário fixo no pé (avatar com iniciais, pessoa fictícia e plano; popover com "Trocar perfil (simulação)"
+    e "Exportar dados da sessão (JSON)"). Pessoas em plans.PERSONAS (Lucas/Gratuito, Beatriz/Básico, Rafael/Intermediário,
+    Juliana/Premium, Marina/Institucional). Saíram da lateral o seletor de plano e o botão de exportar; aviso de sessão encurtado.
+  - Dados reais: Startups › "Adicionar startups de exemplo (fictícias)" (demo.add_example_startups: 6 startups, projetos e documentos
+    com selo Demonstração; editais continuam os reais) e "Remover startups de exemplo". Match edital real × startup de exemplo sai
+    como Demonstração (regra de origem existente).
+  - Detalhe do edital real em revisão: "Publicação rápida" (prazo pré-preenchido com a sugestão do cronograma + 2 confirmações
+    explícitas → prazo confirmado, critérios declarados revisados e publicado).
+  - Não verificado: crawler real da FAPESC nesta sessão (sem rede usada); posição fixa do bloco do usuário no navegador.
