@@ -419,8 +419,9 @@ def test_panel_screen_with_demo_and_empty_state():
     goto(app, 'Matches')
     clean(app)
     metrics = {m.label: m.value for m in app.metric}
-    assert metrics['Captado'] == 'R$ 230.000,00' and metrics['Deixou de captar'] == 'R$ 410.000,00'
-    assert metrics['Taxa de aprovação'] == '50%' and metrics['Em andamento'] == '2'
+    # 10 históricos simulados + 3 matches de demonstração (sugerido, em preparação, aprovado com R$ 90.000).
+    assert metrics['Captado'] == 'R$ 320.000,00' and metrics['Deixou de captar'] == 'R$ 410.000,00'
+    assert metrics['Taxa de aprovação'] == '57%' and metrics['Em andamento'] == '4'
     assert any('Dados de demonstração' in i.value for i in app.info)
     assert any(e.label == 'Como cada número é calculado' for e in app.expander)
     assert any(b.label == 'Exportar matches (CSV)' for b in app.get('download_button'))

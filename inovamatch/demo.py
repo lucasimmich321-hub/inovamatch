@@ -59,3 +59,65 @@ def load_demo(store):
                              'schedule': _demo_schedule(days, source),
                              'review_state': 'Publicado', 'relevance': 'Relevante',
                              'summary': 'Edital fictício, sem oportunidade real de financiamento.'})
+
+
+def demo_matches(store):
+    """3 matches FICTÍCIOS prontos para a página Matches (só na base de demonstração, via "Carregar demonstração").
+
+    1. Recém-criado (Sugerido), checklist vazio.  2. Em preparação, checklist e documentos pela metade.
+    3. Aprovado num edital fictício encerrado, com datas, tarefas e lembretes na aba Captação.
+    """
+    from .applications import APPROVED, PREPARING, SUGGESTED, update_application
+    from .link_checklist import DOCS, build_checklist
+    from .portfolio import register_application
+    from .vault import startup_documents
+    from . import captacao
+
+    if not store.get('calls', 'demo-call-1'):
+        return []
+    day = lambda n: (today() + timedelta(days=n)).isoformat()
+    if not store.get('calls', 'demo-call-3'):
+        # Edital fictício já encerrado: o match aprovado precisa de um edital com resultado divulgado.
+        base = store.get('calls', 'demo-call-1')
+        source = 'SIMULADO · regulamento de demonstração 3'
+        store.save('calls', {**base, 'id': 'demo-call-3', 'title': '[SIMULADO] Subvenção Inovação (encerrado)', 'source_label': source,
+                             'deadline': day(-60), 'opening_date': day(-100), 'deadline_evidence': 'SIMULADO · inscrições encerradas.',
+                             'opening_evidence': 'SIMULADO · inscrições abertas de 100 a 60 dias atrás.',
+                             'schedule': [{'etapa': e, 'inicio': a, 'fim': b, 'page': None, 'source': source, 'continuous': False,
+                                           'evidence': f'SIMULADO · {e}'} for e, a, b in
+                                          [('Submissão das propostas', day(-100), day(-60)), ('Divulgação do resultado final', day(-20), day(-20)),
+                                           ('Assinatura do termo de outorga', day(3), day(3))]],
+                             'summary': 'Edital fictício encerrado, usado só para demonstrar a gestão da captação.'})
+    plan = [('demo-call-2', 'demo-fora', SUGGESTED), ('demo-call-1', 'demo-pendente', PREPARING), ('demo-call-3', 'demo-verde', APPROVED)]
+    created = []
+    for call_id, startup_id, status in plan:
+        call, startup, project = store.get('calls', call_id), store.get('startups', startup_id), store.get('projects', 'project-' + startup_id)
+        if not (call and startup and project) or store.get('applications', f'{call_id}:{project["id"]}'):
+            continue
+        record = register_application(store, call, startup, project)
+        store.save('applications', {**record, 'simulated': True, 'origem': 'demo'})
+        if status == SUGGESTED:
+            update_application(store, record['id'], status=SUGGESTED)
+        elif status == PREPARING:
+            # Metade do checklist marcada e um documento do cofre vinculado.
+            items = [i for i in build_checklist(store, call, startup, project) if i['marcavel']]
+            for item in items[:len(items) // 2]:
+                store.save('tasks', {'id': f'{call_id}:{project["id"]}:chk:{item["id"]}', 'call_id': call_id, 'project_id': project['id'],
+                                     'criterion_id': item['id'], 'kind': 'checklist', 'done': True, 'origem': 'demo'})
+            doc_item = next((i for i in items if i['secao'] == DOCS), None)
+            docs = startup_documents(store, startup_id)
+            if doc_item and docs:
+                store.save('tasks', {'id': f'{call_id}:{project["id"]}:link:{doc_item["id"]}', 'kind': 'doc_link', 'call_id': call_id,
+                                     'project_id': project['id'], 'doc_id': docs[0]['id'], 'origem': 'demo'})
+        else:
+            application = update_application(store, record['id'], status=APPROVED, data_submissao=day(-62), data_resultado=day(-20),
+                                             valor_captado=90_000)
+            for s in captacao.suggested_dates(call, today()):
+                captacao.add_date(store, application, s['titulo'], s['data'], captacao.EDITAL, s['fonte'], True, s['sugestao'])
+            captacao.add_date(store, application, 'Liberação de parcela · 1ª parcela', day(30))
+            captacao.add_date(store, application, 'Prestação de contas', day(200), confirmada=False)
+            task = captacao.tasks(store, application['id'])[0]
+            captacao.update_task(store, task['id'], responsavel='Equipe do escritório (fictícia)', status='Em andamento')
+            captacao.add_task(store, application, 'Abrir conta específica do projeto', day(-1), 'Startup (fictícia)')
+        created.append(record['id'])
+    return created

@@ -12,7 +12,7 @@ import requests
 import streamlit as st
 import streamlit.components.v1 as components
 
-from inovamatch.demo import load_demo
+from inovamatch.demo import demo_matches, load_demo
 from inovamatch.domain import STATES, deadline_info, now_iso, today
 from inovamatch.matching import FIELDS, OPS, FAIL, PASS, PENDING, DIMENSIONS, dimension_for, fingerprint, match
 from inovamatch.radar import import_url, pdf_call
@@ -129,6 +129,7 @@ def demo_activate():
     load_demo(Store(data))
     demo_documents(Store(data))
     demo_applications(Store(data))
+    demo_matches(Store(data))  # 3 matches prontos (sugerido, em preparação, aprovado com captação)
     st.session_state.dataset = ORIGIN_LABELS[DEMO]
     st.session_state.goto = 'Início'
 

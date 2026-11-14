@@ -30,3 +30,19 @@ def test_captacao_smoke():
     ics = captacao.to_ics(store, application, 'Startup, edital; teste')
     assert ics.startswith('BEGIN:VCALENDAR') and ics.count('BEGIN:VEVENT') == 4 and 'TRIGGER:-P7D' in ics
     assert 'Startup\\, edital\\; teste' in ics.replace('\r\n ', '') and '[Demonstração]' in ics
+
+
+def test_demo_carrega_3_matches_so_na_demonstracao():
+    import sys
+    from pathlib import Path
+    from streamlit.testing.v1 import AppTest
+    sys.path.insert(0, str(Path(__file__).parent))
+    from nav import goto
+    app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
+    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    goto(app, 'Matches')
+    assert not app.exception
+    assert len([b for b in app.button if b.label == 'Gerenciar']) == 3
+    statuses = {a['status'] for a in app.session_state['demo_data']['applications'].values() if a['id'].startswith('demo-call-')}
+    assert statuses == {apps.SUGGESTED, apps.PREPARING, apps.APPROVED}
+    assert not app.session_state['real_data'].get('applications')  # nada no modo real

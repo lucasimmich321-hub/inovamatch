@@ -45,7 +45,7 @@ Foco: MVP para demonstração, não sistema completo.
 ## Dados: real x demonstração
 - Todo registro tem origem = "real" ou "demo". Match é demo se o edital ou a startup for demo. Interface: seletor "Dados reais"/"Demonstração", aviso amarelo em demo e selo laranja "Demonstração".
 - Real: crawler da FAPESC (inovamatch/crawler.py), import por URL ou PDF (inovamatch/radar.py), entrada manual; armazenado na sessão ou em SQLite (inovamatch/storage.py).
-- Demonstração: gerada por código Python (inovamatch/demo.py com 2 editais e 3 startups, vault.demo_documents, office_stats.demo_applications com 10 matches históricos). Os JSON em docs/ e tests/fixtures/ são só registros de verificação; o app não os lê.
+- Demonstração: gerada por código Python (inovamatch/demo.py com 2 editais abertos e 3 startups; demo_matches cria um 3º edital encerrado e 3 matches prontos, vault.demo_documents, office_stats.demo_applications com 10 matches históricos). Os JSON em docs/ e tests/fixtures/ são só registros de verificação; o app não os lê.
 - Tabela completa em docs/ESTADO_REAL.md.
 - Editais de referência (PDFs reais da FAPESC): Nascer 24/2026 (inscrições 05/05 a 15/06/2026), GCUB 53/2026 (04/09 a 05/10/2026) e FAPESC 54/2026 (10/09 a 20/10/2026). Bons para dados reais e para testar a extração.
 
@@ -89,3 +89,13 @@ Foco: MVP para demonstração, não sistema completo.
   servidor do Kalil (porta 8502, sessão nova e isolada): Editais → Criar match → Criar match → Gerenciar abre o painel.
   Causa NÃO encontrada no código; nenhuma correção feita. Pendente: o Kalil reiniciar o servidor da 8502 (iniciado 12:19,
   antes do ecba337) e recarregar a aba, e, se continuar, abrir o console do navegador (F12) e me passar o erro.
+- 14/11/2026: causa provável do "Gerenciar sem efeito": na demonstração a página Matches vinha vazia (os 10 matches
+  históricos de office_stats.demo_applications apontam para editais demo-hist-* que não existem, então não são listados).
+  Agora "Carregar demonstração" também roda demo.demo_matches: 3 matches fictícios marcados como demonstração
+  (Saúde e Impacto × Horizonte Digital: Sugerido, checklist vazio; Inovação Catarinense × Semente Lab: Em preparação,
+  metade do checklist marcada e 1 documento vinculado; Subvenção Inovação (encerrado, edital demo-call-3) × Araucária Tech:
+  Aprovado, R$ 90.000, datas do cronograma + manuais, tarefas e lembretes em 3 dias e uma tarefa atrasada).
+  Só entra na base de demonstração. Painel de resultados da demo passou a contar o aprovado (teste atualizado). 224 testes.
+  Fluxo real Editais → Criar match → Criar match → Matches: lido no código e reproduzido antes pelo protocolo websocket;
+  cria e lista o match. Exige startup com projeto (sem projeto aparece "Novo projeto →").
+  Não verificado em navegador: o clique em "Gerenciar" e a rolagem.
