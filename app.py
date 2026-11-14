@@ -12,7 +12,7 @@ import streamlit as st
 
 from inovamatch.demo import load_demo
 from inovamatch.domain import STATES, deadline_info, now_iso, today
-from inovamatch.matching import FIELDS, OPS, FAIL, PASS, PENDING, DIMENSIONS, dimension_for, checklist, fingerprint, match
+from inovamatch.matching import FIELDS, OPS, FAIL, PASS, PENDING, DIMENSIONS, dimension_for, fingerprint, match
 from inovamatch.radar import import_url, pdf_call
 from inovamatch.storage import Store
 from inovamatch.documents import merge_analysis, automatic_analysis
@@ -20,6 +20,10 @@ from inovamatch.portfolio import overview, matrix, recalculate, register_applica
 from inovamatch.filters import filter_calls, funding_value, sort_calls, status_group
 from inovamatch.crawler import crawl, summary_line, publication_blockers, AWAITING, PUBLISHED
 from inovamatch.ai_ui import render_ai
+from inovamatch.vault import (DOC_TYPES, DEMO_NOTICE, EXPIRED, SOON, OK as OK_VALID, NO_DATE, add_document, demo_documents,
+                              read_document, remove_document, replace_document, startup_documents, validity_status)
+from inovamatch.link_checklist import (DOCS as CHK_DOCS, DATA as CHK_DATA, MANUAL as CHK_MANUAL, DEADLINE as CHK_DEADLINE,
+                                       build_checklist, summary as checklist_summary, to_csv as checklist_csv, to_pdf as checklist_pdf)
 from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN, DECLARABLE
 
 st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon='◈', layout='wide')
@@ -92,6 +96,7 @@ def go(page, call_id=None):
 def demo_activate():
     data = st.session_state.setdefault('demo_data', {})
     load_demo(Store(data))
+    demo_documents(Store(data))
     st.session_state.dataset = 'Demonstração'
     st.session_state.page = 'Vínculos'
 
@@ -923,29 +928,6 @@ def save_analysis(store, call, startup, project, result):
                             'fingerprint': fingerprint(call, startup, project), 'result': result})
 
 
-def candidacy_tasks(store, call, startup, project, result):
-    """Checklist operacional da candidatura (antigo Copiloto)."""
-    sig = fingerprint(call, startup, project) + '_' + today().isoformat()
-    tasks = checklist(result)
-    completed = 0
-    for task in tasks:
-        key = f'{call["id"]}:{project["id"]}:{sig}:{task["id"]}'
-        saved = store.get('tasks', key)
-        with st.container(border=True):
-            st.caption(task['category'])
-            done = st.checkbox(task['text'], value=bool(saved and saved.get('done')), key='task_' + key)
-            if bool(saved and saved.get('done')) != done:
-                store.save('tasks', {'id': key, 'call_id': call['id'], 'project_id': project['id'],
-                                     'criterion_id': task['id'], 'fingerprint': sig, 'done': done})
-            completed += int(done)
-            st.caption('Fonte: ' + (task['source'] or 'Referência não registrada') + (f" · p. {task['page']}" if task.get('page') else ''))
-            if task['evidence']:
-                with st.expander('Ver trecho de evidência'):
-                    st.write(task['evidence'])
-    if tasks:
-        st.progress(completed / len(tasks), text=f'{completed} de {len(tasks)} tarefas concluídas')
-
-
 def link_detail(store, call, startup, project):
     """Um vínculo edital × startup: resultado, motivo de cada critério, checklist e candidatura."""
     result = match(call, startup, project)
@@ -968,8 +950,8 @@ def link_detail(store, call, startup, project):
         st.warning('Revise os itens não atendidos antes de investir na candidatura. Sede, idade do CNPJ, natureza jurídica e prazo podem inviabilizar a inscrição.')
     with st.expander('Justificativas e evidências da comparação', expanded=True):
         result_table(result, 'match')
-    with st.expander('Checklist da candidatura'):
-        candidacy_tasks(store, call, startup, project, result)
+    with st.expander('Checklist do vínculo', expanded=True):
+        link_checklist_view(store, call, startup, project)
     with st.expander('Resumo por dimensão'):
         dimensions_view(result)
     st.caption('“Atende” refere-se às regras registradas e aos dados declarados, sem auditoria documental. Não é aprovação nem chance de aprovação.')
@@ -1052,13 +1034,122 @@ def vinculos(store):
         links_by_startup(store)
 
 
+VALIDITY_MARK = {EXPIRED: '🔴', SOON: '🟡', OK_VALID: '🟢', NO_DATE: '⚪'}
+
+
+def vault_view(store, simulated):
+    st.caption('O escritório envia e mantém os documentos de cada startup. O checklist dos vínculos marca Enviado / Falta / Vencido a partir daqui.')
+    startups = store.all('startups')
+    if not startups:
+        st.info('Cadastre uma startup para guardar os documentos dela.')
+        return
+    startup = pick('Startup', startups, 'vault_startup')
+    if simulated:
+        st.info(DEMO_NOTICE + ' O envio de arquivos fica desativado na demonstração.')
+    else:
+        st.warning('Versão sem login e sem criptografia: não envie documentos reais ou confidenciais. Use arquivos de teste.')
+        with st.form('vault_upload_' + startup['id'], clear_on_submit=True):
+            a, b = st.columns(2)
+            tipo = a.selectbox('Tipo de documento', DOC_TYPES)
+            validade = b.date_input('Validade (opcional)', value=None, format='DD/MM/YYYY', min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
+            file = st.file_uploader('Arquivo (PDF, PNG, JPG ou DOCX, até 5 MB)', type=['pdf', 'png', 'jpg', 'jpeg', 'docx'])
+            sent = st.form_submit_button('Enviar documento', type='primary')
+        if sent:
+            if file is None:
+                st.error('Selecione um arquivo.')
+            else:
+                try:
+                    add_document(store, startup['id'], tipo, file.name, file.getvalue(), validade)
+                    st.session_state.flash = 'Documento guardado no cofre.'
+                    st.rerun()
+                except ValueError as exc:
+                    st.error(str(exc))
+    docs = startup_documents(store, startup['id'])
+    if not docs:
+        st.info('Nenhum documento no cofre desta startup.')
+        return
+    st.dataframe([{'Tipo': d['tipo'], 'Nome': d['nome'] + (' · demonstração' if d.get('demo') else ''),
+                   'Validade': date.fromisoformat(d['validade']).strftime('%d/%m/%Y') if d.get('validade') else '—',
+                   'Situação': VALIDITY_MARK[validity_status(d)] + ' ' + validity_status(d), 'Enviado em': when(d.get('enviado_em'))}
+                  for d in sorted(docs, key=lambda d: DOC_TYPES.index(d['tipo']))], hide_index=True, width='stretch')
+    by_id = {d['id']: d for d in docs}
+    chosen = st.selectbox('Gerenciar documento', list(by_id), key='vault_doc_' + startup['id'],
+                          format_func=lambda i: by_id[i]['tipo'] + ' · ' + by_id[i]['nome'])
+    doc = by_id[chosen]
+    a, b = st.columns(2)
+    data = read_document(doc)
+    if data is not None:
+        # Sempre como anexo e octet-stream: o navegador não renderiza o conteúdo dentro do app.
+        a.download_button('Baixar arquivo', data, doc['nome'], 'application/octet-stream', key='vault_dl_' + chosen)
+    if not simulated and b.button('Remover documento', key='vault_rm_' + chosen):
+        remove_document(store, chosen)
+        st.session_state.flash = 'Documento removido.'
+        st.rerun()
+    if not simulated:
+        with st.form('vault_replace_' + chosen, clear_on_submit=True):
+            new_file = st.file_uploader('Substituir por outro arquivo', type=['pdf', 'png', 'jpg', 'jpeg', 'docx'], key='vault_new_' + chosen)
+            new_validade = st.date_input('Nova validade (opcional)', value=None, format='DD/MM/YYYY', key='vault_val_' + chosen,
+                                         min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
+            replace = st.form_submit_button('Substituir documento')
+        if replace and new_file is not None:
+            try:
+                replace_document(store, chosen, new_file.name, new_file.getvalue(), new_validade)
+                st.session_state.flash = 'Documento substituído.'
+                st.rerun()
+            except ValueError as exc:
+                st.error(str(exc))
+
+
+def link_checklist_view(store, call, startup, project):
+    items = build_checklist(store, call, startup, project)
+    totals = checklist_summary(items)
+    st.caption(f"Documentos obrigatórios: {totals['docs_sent']} de {totals['docs_total']} enviados · {totals['docs_missing']} faltando · "
+               f"{totals['docs_expired']} vencido(s). Itens de decisão humana podem ser marcados como feitos.")
+    done = {}
+    show_all = st.toggle('Mostrar todos os pontos manuais', key=f'chk_all_{call["id"]}_{project["id"]}')
+    for section in (CHK_DOCS, CHK_DATA, CHK_MANUAL, CHK_DEADLINE):
+        rows = [i for i in items if i['secao'] == section]
+        if section == CHK_MANUAL and not show_all and len(rows) > 15:
+            st.caption(f'{len(rows) - 15} ponto(s) manual(is) ocultos; ative "Mostrar todos os pontos manuais".')
+            rows = rows[:15]
+        if not rows:
+            continue
+        st.markdown('**' + section + '**')
+        for item in rows:
+            key = f'{call["id"]}:{project["id"]}:chk:{item["id"]}'
+            saved = store.get('tasks', key)
+            done[item['id']] = bool(saved and saved.get('done'))
+            with st.container(border=True):
+                title = md_escape(item['item']) + ' — ' + md_escape(item['situacao'])
+                if item['marcavel']:
+                    value = st.checkbox(title, value=done[item['id']], key='chk_' + key)
+                    if value != done[item['id']]:
+                        store.save('tasks', {'id': key, 'call_id': call['id'], 'project_id': project['id'],
+                                             'criterion_id': item['id'], 'kind': 'checklist', 'done': value})
+                        done[item['id']] = value
+                else:
+                    st.markdown(title)
+                st.caption(f"Cadastrado: {item['cadastrado']} · Edital pede: {item['exigido']} · Página {item['pagina'] or 'web'}")
+                if item['trecho']:
+                    with st.expander('Ver trecho do edital'):
+                        st.text(str(item['trecho'])[:2000])
+    name = f"checklist-{startup['name']}-{call['title'][:40]}"
+    safe = ''.join(ch if ch.isalnum() else '-' for ch in name).strip('-').lower()
+    a, b = st.columns(2)
+    a.download_button('Exportar checklist (CSV)', checklist_csv(items, done), safe + '.csv', 'text/csv', key='chk_csv_' + call['id'] + project['id'])
+    b.download_button('Exportar checklist (PDF)', checklist_pdf(items, f"Checklist · {call['title']}", f"{startup['name']} · {project['name']}", done),
+                      safe + '.pdf', 'application/pdf', key='chk_pdf_' + call['id'] + project['id'])
+
+
 def startups_page(store, simulated):
     heading('Startups', 'As startups que o escritório atende, seus projetos e o acompanhamento das candidaturas.')
-    tab_startup, tab_project, tab_follow = st.tabs(['Cadastro da startup', 'Projetos', 'Acompanhamento'])
+    tab_startup, tab_project, tab_docs, tab_follow = st.tabs(['Cadastro da startup', 'Projetos', 'Documentos', 'Acompanhamento'])
     with tab_startup:
         startup_form(store, simulated)
     with tab_project:
         project_form(store, simulated)
+    with tab_docs:
+        vault_view(store, simulated)
     with tab_follow:
         portfolio_view(store)
 

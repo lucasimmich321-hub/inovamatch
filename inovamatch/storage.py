@@ -6,7 +6,7 @@ import uuid
 from pathlib import Path
 from .domain import now_iso, validate_project, validate_startup
 
-COLLECTIONS = ('startups', 'projects', 'calls', 'analyses', 'tasks', 'scans', 'applications')
+COLLECTIONS = ('startups', 'projects', 'calls', 'analyses', 'tasks', 'scans', 'applications', 'documents')
 
 
 class Store:
@@ -49,6 +49,14 @@ class Store:
         else:
             self.data[kind][r['id']] = r
         return r
+
+    def delete(self, kind, record_id):
+        self._kind(kind)
+        if self.path:
+            with self._connect() as conn:
+                conn.execute('DELETE FROM records WHERE kind=? AND id=?', (kind, str(record_id)))
+        else:
+            self.data[kind].pop(str(record_id), None)
 
     @staticmethod
     def _kind(kind):
