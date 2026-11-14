@@ -144,3 +144,15 @@ def test_radar_status_pills_filter_the_list():
     clean(app)
     titles = next(t for t in app.dataframe if 'Título' in t.value.columns).value['Título'].tolist()
     assert titles == ['Inova Talentos']
+
+
+# T3 ---------------------------------------------------------------------
+
+def test_status_badge_has_text_and_color_class():
+    import app as ui
+    for call, text, css in [({'recurring_schedule': True}, CONTINUOUS_PENDING, 's-flow-pending'),
+                            (dict(CONFIRMED_FLOW), CONTINUOUS, 's-flow'), ({}, UNKNOWN, 's-unknown')]:
+        html = ui.status_badge(call)
+        assert css in html and f'Inscrições: {text}' in html
+        assert ui.status_text(call).endswith(text)
+    assert ui.deadline_label(dict(CONFIRMED_FLOW)) == 'Sem data-limite · fluxo contínuo'

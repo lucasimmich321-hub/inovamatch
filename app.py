@@ -20,7 +20,7 @@ from inovamatch.portfolio import overview, matrix, recalculate, register_applica
 from inovamatch.sources import SOURCES
 from inovamatch.filters import filter_calls, funding_value, STATUS_FILTERS
 from inovamatch.ai_ui import render_ai
-from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, DECLARABLE
+from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN, DECLARABLE
 
 st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon='◈', layout='wide')
 
@@ -54,6 +54,13 @@ h1,h2,h3 {font-family:'Manrope',sans-serif;letter-spacing:-.035em;}
 .section-head {font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;margin:26px 0 4px;}
 .steps {background:#edf4f1;border-radius:14px;padding:23px 26px;margin-top:26px;color:#45655b;line-height:1.9;}
 .footer {font-size:11px;color:#81918b;border-top:1px solid #e1e8e4;margin-top:30px;padding-top:15px;}
+.status {display:inline-block;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;border:1px solid transparent;}
+.s-open {background:#e4f4ec;color:#14583f;}
+.s-flow {background:#e3eefb;color:#1d4f8a;}
+.s-flow-pending {background:#fff;color:#1d4f8a;border:1px dashed #1d4f8a;}
+.s-closed {background:#fbe5e3;color:#8a1f17;}
+.s-future {background:#f2eafb;color:#5e3d80;}
+.s-unknown {background:#eef1f0;color:#44524e;}
 [data-testid="stForm"] {background:#fff;border-color:#e2eae5;border-radius:14px;}
 .stButton button {border-radius:9px;}
 @media(max-width:700px) {.hero {padding:24px}.hero h2 {font-size:25px}.block-container {padding:1.2rem;}}
@@ -117,6 +124,22 @@ def deadline_label(call):
     if continuous_confirmed(call):
         return 'Sem data-limite · fluxo contínuo'
     return deadline_info(call)['label']
+
+
+# Selo de situação: cor e texto juntos, nunca só cor. Marcador também na tabela, que não aceita HTML.
+STATUS_STYLE = {'Aberto': ('s-open', '🟢'), CONTINUOUS: ('s-flow', '🔵'), CONTINUOUS_PENDING: ('s-flow-pending', '🔹'),
+                'Encerrado': ('s-closed', '🔴'), 'Futuro': ('s-future', '🟣'), UNKNOWN: ('s-unknown', '⚪')}
+
+
+def status_text(call):
+    situation = call_situation(call)
+    return STATUS_STYLE.get(situation, STATUS_STYLE[UNKNOWN])[1] + ' ' + situation
+
+
+def status_badge(call):
+    situation = call_situation(call)
+    css = STATUS_STYLE.get(situation, STATUS_STYLE[UNKNOWN])[0]
+    return f'<span class="status {css}">Inscrições: {escape(situation)}</span>'
 
 
 def call_badge(call):
@@ -557,6 +580,7 @@ def portfolio_view(store):
 
 def call_detail(store, call):
     st.subheader(call['title'])
+    st.html(status_badge(call))
     info = deadline_info(call)
     if info['status'] in ('soon', 'expired'):
         st.warning(info['label'])
@@ -747,7 +771,7 @@ def radar(store, simulated):
         st.info('Nenhum edital corresponde ao filtro.')
         return
     st.caption(f'{len(filtered)} edital(is) · A abertura de uma chamada não garante elegibilidade.')
-    st.dataframe([{'Instituição': c.get('institution'), 'Título': c['title'], 'Situação das inscrições': call_situation(c), 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_label(c),
+    st.dataframe([{'Instituição': c.get('institution'), 'Título': c['title'], 'Situação das inscrições': status_text(c), 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_label(c),
                    'Análise de requisitos': 'Revisão integral declarada' if c.get('criteria_complete') else c.get('requirements_status', 'Não analisado'),
                    'Valor identificado': brl(funding_value(c)), 'Última verificação': c.get('last_seen_at') or c.get('discovered_at'),
                    'Fonte oficial': c.get('url'), 'PDF': c.get('pdf_url') or c.get('document_url')} for c in filtered], hide_index=True, width='stretch')
