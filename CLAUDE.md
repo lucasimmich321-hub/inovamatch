@@ -359,3 +359,7 @@ Foco: MVP para demonstração, não sistema completo.
   a fonte não tem data de inscrição). Isso vale só no data/teste_match.db, não no arquivo de curadoria.
   Resultado real na base (compatibility.build): Alfa Saúde Digital "Faz match" (10,0); as outras 6 empresas "Não faz match" (4,0, com impedimento).
   Não verificado no navegador. Conferência de escopo: a validação em lote é minha, não uma leitura do PDF por você.
+- 14/11/2026: roteiro de teste do fluxo completo em docs/ROTEIRO_TESTE.md (do cadastro à captação; rótulos lidos do código, não vistos em navegador).
+  data/roteiro.db versionado (exceção no .gitignore) a pedido do Kalil, para continuar o teste em outro PC: editais públicos da FAPESC,
+  4 startups e 3 projetos digitados pelo Kalil (fictícios), 65/2025 publicado com PRAZO DE TESTE 14/12/2026, 3 matches. Sem arquivos do cofre.
+  Achado no teste: "Documentos disponíveis" é texto livre e precisa do nome exato do edital ("os 4 acima" deu Não atende); proposta: trocar por seleção.

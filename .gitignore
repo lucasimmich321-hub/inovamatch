@@ -6,6 +6,8 @@ __pycache__/
 *.db-*
 data/*
 !data/curadoria/
+# Base do roteiro de teste (dados fictícios + editais públicos da FAPESC), versionada a pedido do Kalil para usar em outro PC.
+!data/roteiro.db
 .env
 .streamlit/secrets.toml
 *.zip
