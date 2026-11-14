@@ -45,6 +45,10 @@ def call_situation(call, on=None):
         status = call.get('registration_status')
         if status in ('Aberto', 'Encerrado', 'Futuro'):
             return status
+    # A própria FAPESC lista em "em andamento"/"encerradas": fato da fonte, só serve para encerrar.
+    # Estar em "chamadas abertas" nunca comprova abertura nem prazo.
+    if call.get('source_closed'):
+        return 'Encerrado'
     # Pista textual da extração: sinaliza, mas não confirma.
     if call.get('recurring_schedule'):
         return CONTINUOUS_PENDING

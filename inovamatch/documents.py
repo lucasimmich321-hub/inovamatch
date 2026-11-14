@@ -106,9 +106,13 @@ def merge_analysis(call, imported, kind='Edital / documento'):
     return result
 
 
-def automatic_analysis(store, call, selected_url=None):
+def automatic_analysis(store, call, selected_url=None, fetcher=None):
     from .radar import import_url
-    imported = import_url(selected_url or call['url'])
+
+    def read(url):
+        # O crawler passa um fetcher com cache; o uso manual mantém a chamada simples.
+        return import_url(url) if fetcher is None else import_url(url, fetcher=fetcher)
+    imported = read(selected_url or call['url'])
     combined = merge_analysis(call, imported)
     if imported.get('attachments') and not selected_url:
         from .domain import normalize
@@ -118,7 +122,7 @@ def automatic_analysis(store, call, selected_url=None):
         candidates.sort(key=lambda a: not any(k in normalize(a['title']) for k in ['edital completo', 'acesse o edital', 'texto completo']))
         if candidates:
             selected = candidates[0]
-            combined = merge_analysis(combined, import_url(selected['url']), kind='Edital principal')
+            combined = merge_analysis(combined, read(selected['url']), kind='Edital principal')
         else:
             combined.setdefault('extraction_warnings', []).append('Nenhum PDF principal foi reconhecido com segurança. Selecione o documento correto na aba Fonte; resultados e manuais não foram tratados como edital.')
     return store.save('calls', combined)

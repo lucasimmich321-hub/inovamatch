@@ -7,6 +7,16 @@ from .call_status import call_situation, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN
 STATUS_FILTERS = ('Aberto', 'Fluxo contínuo', 'Encerrado', 'Futuro', 'Não confirmado')
 
 
+RELEVANCE_ORDER = {'Relevante': 0, 'Talvez': 1, None: 1, 'Fora do foco': 2}
+STATUS_ORDER = {'Aberto': 0, 'Fluxo contínuo': 1, 'Futuro': 2, 'Não confirmado': 3, 'Encerrado': 4}
+
+
+def sort_calls(calls, on=None):
+    """Relevância primeiro, depois situação; empate pela descoberta mais recente."""
+    ordered = sorted(calls, key=lambda c: c.get('discovered_at') or '', reverse=True)
+    return sorted(ordered, key=lambda c: (RELEVANCE_ORDER.get(c.get('relevance'), 1), STATUS_ORDER[status_group(c, on)]))
+
+
 def status_group(call, on=None):
     situation = call_situation(call, on)
     if situation in (CONTINUOUS, CONTINUOUS_PENDING):
@@ -30,10 +40,15 @@ def funding_value(call):
 
 
 def filter_calls(calls, institutions=None, area='', state='', min_value=None, max_days=None,
-                 verdict=None, startup=None, project=None, statuses=None, on=None):
+                 verdict=None, startup=None, project=None, statuses=None, on=None,
+                 include_closed=True, include_off_focus=True):
     result = []
     for call in calls:
         if statuses and status_group(call, on) not in statuses:
+            continue
+        if not include_closed and status_group(call, on) == 'Encerrado':
+            continue
+        if not include_off_focus and call.get('relevance') == 'Fora do foco':
             continue
         if institutions and call.get('institution') not in institutions:
             continue

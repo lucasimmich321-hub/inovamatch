@@ -128,22 +128,23 @@ def test_status_groups_with_official_fixtures():
     assert set(STATUS_FILTERS) == {'Aberto', 'Fluxo contínuo', 'Encerrado', 'Futuro', 'Não confirmado'}
 
 
-def test_radar_status_pills_filter_the_list():
-    from inovamatch.filters import STATUS_FILTERS
+def test_radar_hides_closed_and_off_focus_until_chips_are_used():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
     data = {}
     store = Store(data)
-    store.save('calls', fixture_call('fapesc_54_2024', title='Inova Talentos'))
-    store.save('calls', fixture_call('fapesc_66_2025', title='Horizonte Europa', recurring_schedule=False))
+    store.save('calls', fixture_call('fapesc_54_2024', title='Inova Talentos', relevance='Relevante'))
+    store.save('calls', fixture_call('fapesc_66_2025', id='closed', title='Encerrado na fonte', source_closed=True, relevance='Relevante'))
+    store.save('calls', fixture_call('fapesc_66_2025', id='off', title='Pós-graduação', recurring_schedule=False, relevance='Fora do foco'))
     app.session_state['real_data'] = data
     app.sidebar.radio[0].set_value('Radar de Editais').run()
     clean(app)
-    pills = next(p for p in app.get('button_group') if p.label == 'Situação das inscrições')
-    assert list(pills.options) == list(STATUS_FILTERS)
-    pills.set_value(['Fluxo contínuo']).run()
+    titles = lambda: next(t for t in app.dataframe if 'Título' in t.value.columns).value['Título'].tolist()
+    assert titles() == ['Inova Talentos']
+    pills = next(p for p in app.get('button_group') if p.label == 'Mostrar também')
+    pills.set_value(['Incluir encerrados', 'Mostrar fora do foco']).run()
     clean(app)
-    titles = next(t for t in app.dataframe if 'Título' in t.value.columns).value['Título'].tolist()
-    assert titles == ['Inova Talentos']
+    # Ordem: relevância, depois situação (encerrado por último entre os relevantes).
+    assert titles() == ['Inova Talentos', 'Encerrado na fonte', 'Pós-graduação']
 
 
 # T3 ---------------------------------------------------------------------
@@ -164,26 +165,25 @@ def test_timestamps_and_scan_headers_in_portuguese():
     import app as ui
     assert ui.when('2026-11-14T09:05:33-03:00') == '14/11/2026 09:05'
     assert ui.when(None) == 'Não registrada' and ui.when('ontem') == 'ontem'
-    rows = ui.scan_rows({'results': [{'institution': 'FAPESC', 'url': 'https://x', 'found': 3, 'added': 2,
-                                      'status': 'Consulta concluída', 'error': ''}]})
-    assert list(rows[0]) == ['Instituição', 'Links encontrados', 'Novos', 'Situação da consulta', 'Erro', 'Página consultada']
 
 
-def test_scan_progress_caption_is_cleared(monkeypatch):
-    from inovamatch import radar
+def test_update_progress_is_collapsed_and_summary_formatted(monkeypatch):
+    from inovamatch import crawler
 
-    def fake_scan(store, notices, source_ids=None, progress=None):
-        progress('Consultando FAPESC…')
-        return {'sources': [], 'found': 0, 'added': 0, 'errors': [], 'searched_at': '2026-11-14T09:05:00-03:00',
-                'results': [{'institution': 'FAPESC', 'url': 'https://x', 'found': 0, 'added': 0, 'status': 'Consulta concluída', 'error': ''}]}
-    monkeypatch.setattr(radar, 'scan', fake_scan)
+    def fake_crawl(store, progress=None, **kwargs):
+        progress('Lendo a lista "abertas" da FAPESC…')
+        report = {'searched_at': '2026-11-14T09:05:00-03:00', 'found': 12, 'editais': 10, 'added': 3, 'open': 2, 'read': 2,
+                  'ignored': {'Resultado': 2}, 'too_old': 0, 'errors': [], 'results': []}
+        store.save('scans', report)
+        return report
+    monkeypatch.setattr(crawler, 'crawl', fake_crawl)
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
     app.sidebar.radio[0].set_value('Radar de Editais').run()
-    next(b for b in app.button if b.label == 'Buscar editais agora').click().run()
+    next(b for b in app.button if b.label == 'Atualizar editais').click().run()
     clean(app)
     captions = [c.value for c in app.caption]
-    assert not any('Consultando' in c for c in captions)
-    assert any(c.startswith('Última busca: 14/11/2026 09:05') for c in captions)
+    assert not any(c.startswith('Lendo a lista') for c in captions)
+    assert any(c.startswith('Última atualização: 14/11/2026 09:05 · 12 encontrados, 10 editais, 3 novos, 2 abertos') for c in captions)
 
 
 # T5 ---------------------------------------------------------------------

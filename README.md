@@ -63,12 +63,14 @@ O arquivo será `data/inovamatch.db`. `INOVAMATCH_DB` permite alterar o caminho.
 3. Na aba **Match reverso**, compare o edital com todo o portfólio.
 4. Abra o **Copiloto de Captação**, escolha uma candidatura e marque tarefas. As tarefas não alteram a elegibilidade. Alterações no cadastro, critérios ou dia de análise criam uma nova revisão das tarefas.
 5. Selecione **Meus dados**. Cadastre uma startup e um projeto ao vivo. Só o nome e o vínculo são obrigatórios; dados ausentes geram pendências quando exigidos.
-6. No **Radar de Editais**, clique em **Buscar editais agora** para consultar a página oficial da FAPESC. Internet é necessária apenas para buscas, importação de URLs e acesso às fontes.
+6. No **Radar de Editais**, clique em **Atualizar editais** para consultar as listas oficiais da FAPESC. Internet é necessária apenas para buscas, importação de URLs e acesso às fontes.
 7. Selecione um edital e clique em **Analisar requisitos automaticamente**. O PDF principal é lido e os critérios aparecem preenchidos. Na aba **Fonte**, leia outros PDFs ou associe anexos e retificações.
 8. Na aba **Requisitos**, selecione um critério gerado, confira o campo, operador, valor e evidência e marque a validação; descarte sugestões inaplicáveis. Resolva divergências entre documentos. Na aba **Resumo**, confirme o prazo e declare a revisão integral somente após ler edital, anexos e retificações.
 9. Faça o match e baixe o CSV. O cadastro, as regras, a demonstração, os PDFs locais e o copiloto funcionam sem APIs pagas.
 
 ## Busca e leitura das fontes
+
+**Atualizar editais (FAPESC).** Um botão lê as listas oficiais `chamadas-abertas`, `chamadas-em-andamento` e `chamadas-encerradas` (diagnóstico em [docs/DIAGNOSTICO_BUSCA_FAPESC.md](docs/DIAGNOSTICO_BUSCA_FAPESC.md)). Cada link é classificado antes de qualquer download (edital, retificação, resultado, notícia, outro); só editais seguem. Somente os editais da página de abertas têm o PDF principal lido (até 8 por atualização, 40 requisições no total). Em andamento e encerradas entram como **Encerrado pela fonte**, sem baixar PDF, e ficam atrás do chip "Incluir encerrados". Estar em "chamadas abertas" não comprova abertura nem prazo. Editais de anos anteriores ao corte (padrão: ano atual e o anterior; `INOVAMATCH_MIN_YEAR`) são ignorados, exceto os da página de abertas. A relevância (Relevante / Talvez / Fora do foco, por palavras-chave) só ordena a lista; "Mostrar fora do foco" exibe o restante. Todo edital novo entra como **Aguardando revisão** e só é publicado às startups quando o escritório confirma prazo (ou fluxo contínuo) e declara a revisão integral dos critérios. O crawler só segue `fapesc.sc.gov.br`, revalida redirecionamentos e guarda cache em disco por URL com hash do conteúdo (`INOVAMATCH_CACHE`, padrão `data/cache`, fora de pasta pública; HTML por 30 min, PDF por 7 dias).
 
 - Adaptadores independentes para FAPESC (e comunicados), FINEP, CNPq, EMBRAPII, SEBRAE, BNDES, BRDE e BADESC. Selecione as fontes no radar. A FAPESC é a seleção padrão. A situação verificada de cada fonte está no [relatório](docs/VALIDACAO_EXTRACAO.md#fontes-adicionais). Páginas dinâmicas ou sem links reconhecíveis mostram limitação individual; as demais fontes continuam funcionando. Listagens podem conter editais históricos ou resultados e não comprovam inscrições abertas.
 - A busca é **manual, sob demanda**, sem cron, alertas por e-mail ou monitoramento em segundo plano.
@@ -142,7 +144,7 @@ Aceitação com busca real e dois PDFs oficiais, em base temporária isolada:
 python scripts/validate_live.py --output work/aceitacao-real.json
 ```
 
-O comando compara os PDFs com os hashes de referência e executa 20 conferências parciais. Se o documento mudar, exige atualizar a referência após leitura humana; não considera a nova interpretação validada. Os registros fictícios do ensaio não entram no site. A suíte normal (`pytest -q`) tem 140 testes e roda sem rede e sem API paga.
+O comando compara os PDFs com os hashes de referência e executa 20 conferências parciais. Se o documento mudar, exige atualizar a referência após leitura humana; não considera a nova interpretação validada. Os registros fictícios do ensaio não entram no site. A suíte normal (`pytest -q`) tem 153 testes e roda sem rede e sem API paga.
 
 Os resultados reais dependem da disponibilidade e estrutura do site na hora da execução. `VALIDACAO.md` mantém o registro inicial; [docs/VALIDACAO_EXTRACAO.md](docs/VALIDACAO_EXTRACAO.md) registra a evolução e os limites atuais.
 

@@ -13,12 +13,12 @@ import streamlit as st
 from inovamatch.demo import load_demo
 from inovamatch.domain import STATES, deadline_info, now_iso, today
 from inovamatch.matching import FIELDS, OPS, FAIL, PASS, PENDING, DIMENSIONS, dimension_for, checklist, fingerprint, match
-from inovamatch.radar import import_url, pdf_call, scan
+from inovamatch.radar import import_url, pdf_call
 from inovamatch.storage import Store
 from inovamatch.documents import merge_analysis, automatic_analysis
 from inovamatch.portfolio import overview, matrix, recalculate, register_application
-from inovamatch.sources import SOURCES
-from inovamatch.filters import filter_calls, funding_value, STATUS_FILTERS
+from inovamatch.filters import filter_calls, funding_value, sort_calls
+from inovamatch.crawler import crawl, summary_line, publication_blockers, AWAITING, PUBLISHED
 from inovamatch.ai_ui import render_ai
 from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN, DECLARABLE
 
@@ -101,14 +101,6 @@ def when(value, fallback='Não registrada'):
         return datetime.fromisoformat(str(value)).strftime('%d/%m/%Y %H:%M')
     except ValueError:
         return str(value)
-
-
-SCAN_COLUMNS = {'institution': 'Instituição', 'found': 'Links encontrados', 'added': 'Novos', 'status': 'Situação da consulta',
-                'error': 'Erro', 'url': 'Página consultada'}
-
-
-def scan_rows(report):
-    return [{label: r.get(key, '') for key, label in SCAN_COLUMNS.items()} for r in report.get('results', [])]
 
 
 def lines(value):
@@ -608,6 +600,30 @@ def portfolio_view(store):
     st.button('Cadastrar outro projeto →', on_click=go, args=('Cadastrar Projeto',))
 
 
+def review_state(call):
+    return PUBLISHED if call.get('review_state') == PUBLISHED else AWAITING
+
+
+def publication_panel(store, call):
+    if call.get('simulated'):
+        return
+    state = review_state(call)
+    blockers = publication_blockers(call)
+    with st.container(border=True):
+        st.markdown(f'**{state}**' + (' · visível para as startups' if state == PUBLISHED else ' · ainda não visível para as startups'))
+        if state == PUBLISHED:
+            if st.button('Voltar para revisão', key='unpublish_' + call['id']):
+                store.save('calls', {**call, 'review_state': AWAITING})
+                st.rerun()
+        else:
+            for item in blockers:
+                st.caption('Falta: ' + item)
+            if st.button('Publicar para as startups', type='primary', disabled=bool(blockers), key='publish_' + call['id']):
+                store.save('calls', {**call, 'review_state': PUBLISHED, 'published_at': now_iso()})
+                st.session_state.flash = 'Edital publicado para as startups.'
+                st.rerun()
+
+
 def call_detail(store, call):
     st.subheader(call['title'])
     st.html(status_badge(call))
@@ -619,6 +635,7 @@ def call_detail(store, call):
     if call.get('deadline_confirmed'):
         st.caption('Data-limite confirmada na revisão: ' + date.fromisoformat(call['deadline']).strftime('%d/%m/%Y'))
     source_link(call)
+    publication_panel(store, call)
     render_ai(store, call)
     if call.get('url') and not call.get('simulated'):
         if st.button('Analisar requisitos automaticamente', type='primary', key='auto_' + call['id']):
@@ -698,44 +715,47 @@ def call_detail(store, call):
                 st.text(page['text'])
 
 
+def update_panel(store):
+    """Botão único de coleta: FAPESC, com progresso, resumo e falhas mostradas sem quebrar a tela."""
+    left, right = st.columns([3, 2])
+    with left:
+        if st.button('Atualizar editais', type='primary', help='Lê as listas oficiais da FAPESC e o PDF dos editais abertos.'):
+            scans = store.all('scans')
+            last = scans[-1] if scans else None
+            elapsed = (datetime.fromisoformat(now_iso()) - datetime.fromisoformat(last['searched_at'])).total_seconds() if last else 999
+            if elapsed < 60:
+                st.warning('Aguarde 60 segundos entre atualizações para respeitar a fonte.')
+            else:
+                with st.status('Atualizando editais da FAPESC…', expanded=True) as box:
+                    try:
+                        report = crawl(store, progress=box.write)
+                        box.update(label='Atualização concluída: ' + summary_line(report), state='complete', expanded=False)
+                        st.session_state.scan_report = report
+                    except Exception as exc:  # fronteira da interface: rede/disco nunca derrubam a tela
+                        box.update(label='Não foi possível atualizar agora.', state='error')
+                        st.error(f'Falha ao consultar a FAPESC ({type(exc).__name__}). Tente novamente em alguns minutos ou importe o PDF manualmente.')
+        report = st.session_state.get('scan_report') or (store.all('scans')[-1] if store.all('scans') else None)
+        if report:
+            line = summary_line(report) if 'editais' in report else f"{report['found']} links encontrados · {report['added']} novos"
+            st.caption(f"Última atualização: {when(report['searched_at'])} · {line}")
+            ignored = report.get('ignored') or {}
+            if ignored or report.get('too_old'):
+                parts = [f'{n} {k.lower()}' for k, n in ignored.items()] + ([f"{report['too_old']} de anos anteriores"] if report.get('too_old') else [])
+                st.caption('Ignorados: ' + ', '.join(parts) + '.')
+            for error in report['errors']:
+                st.warning(error)
+    with right:
+        st.markdown('**Como funciona**')
+        st.caption('A coleta é acionada por você. Novos editais entram como “Aguardando revisão” e só aparecem para as startups depois que o escritório confirma prazo e critérios.')
+        st.link_button('Ver chamadas na FAPESC ↗', 'https://fapesc.sc.gov.br/chamadas-abertas/')
+
+
 def radar(store, simulated):
     heading('Radar de Editais', 'Fontes públicas, referências visíveis e prazos confirmados por revisão.')
     if simulated:
         st.info('Você está vendo editais simulados. Selecione “Meus dados” na barra lateral para consultar a FAPESC.')
     else:
-        left, right = st.columns([3, 2])
-        with left:
-            source_ids = st.multiselect('Fontes oficiais para consultar', list(SOURCES), default=['fapesc'], format_func=lambda key: SOURCES[key].institution)
-            notices = st.checkbox('Incluir a página de comunicados da FAPESC', value=False)
-            if st.button('Buscar editais agora', type='primary'):
-                scans = store.all('scans')
-                last = scans[-1] if scans else None
-                elapsed = (datetime.fromisoformat(now_iso()) - datetime.fromisoformat(last['searched_at'])).total_seconds() if last else 999
-                if not source_ids and not notices:
-                    st.warning('Selecione ao menos uma fonte.')
-                elif elapsed < 60:
-                    st.warning('Aguarde 60 segundos entre buscas para respeitar a fonte.')
-                else:
-                    status = st.empty()
-                    try:
-                        with st.spinner('Consultando a fonte oficial…'):
-                            report = scan(store, notices, source_ids=source_ids, progress=status.caption)
-                    finally:
-                        status.empty()  # a legenda de progresso some ao concluir
-                    st.session_state.scan_report = report
-            report = st.session_state.get('scan_report') or (store.all('scans')[-1] if store.all('scans') else None)
-            if report:
-                st.caption(f"Última busca: {when(report['searched_at'])} · {report['found']} links encontrados · {report['added']} novos")
-                for error in report['errors']:
-                    st.error(error)
-                if report.get('results'):
-                    st.dataframe(scan_rows(report), hide_index=True, width='stretch')
-                if not report['errors']:
-                    st.success('Consulta concluída. Revise os documentos antes de usar os critérios.')
-        with right:
-            st.markdown('**Coleta sob demanda**')
-            st.caption('Não há monitoramento contínuo. A lista de chamadas abertas não comprova o prazo de cada edital.')
-            st.link_button('Consultar FAPESC ↗', 'https://fapesc.sc.gov.br/chamadas-abertas/')
+        update_panel(store)
         with st.expander('Adicionar edital por URL, PDF ou cadastro manual'):
             method = st.radio('Origem', ['URL oficial', 'Upload de PDF', 'Cadastro manual'], horizontal=True)
             if method == 'URL oficial':
@@ -778,8 +798,8 @@ def radar(store, simulated):
         st.info('Nenhum edital cadastrado. Faça uma busca ou importe uma fonte para começar.')
         return
     query = st.text_input('Filtrar editais por título ou instituição', key='call_search_' + str(simulated))
-    statuses = st.pills('Situação das inscrições', STATUS_FILTERS, selection_mode='multi', key='status_filter_' + str(simulated),
-                        help='Sem seleção, mostra todas. “Fluxo contínuo” inclui os ainda a confirmar; o selo de cada edital indica qual é.')
+    extra = st.pills('Mostrar também', ['Incluir encerrados', 'Mostrar fora do foco'], selection_mode='multi', key='extra_filter_' + str(simulated),
+                     help='Por padrão a lista mostra editais abertos, em fluxo contínuo ou com situação a confirmar, do mais relevante ao menos relevante.')
     with st.expander('Filtros de instituição, área, estado, valor, prazo e elegibilidade'):
         a, b = st.columns(2)
         institutions = a.multiselect('Instituições', sorted({c.get('institution', 'Não informado') for c in calls}))
@@ -798,13 +818,16 @@ def radar(store, simulated):
         st.caption('Área, estado e valores identificados podem ser sugestões ainda não validadas. Valores ausentes não são estimados. O filtro de prazo usa apenas datas confirmadas.')
     filtered = filter_calls(calls, institutions=institutions, area=area, state=state, min_value=min_value, max_days=max_days,
                             verdict=None if eligibility == 'Todas' else eligibility, startup=selected_startup, project=selected_project,
-                            statuses=statuses)
+                            include_closed='Incluir encerrados' in extra, include_off_focus='Mostrar fora do foco' in extra)
+    filtered = sort_calls(filtered)
     filtered = [c for c in filtered if query.casefold() in (c['title'] + c.get('institution', '')).casefold()]
     if not filtered:
-        st.info('Nenhum edital corresponde ao filtro.')
+        hidden = len(calls)
+        st.info(f'Nenhum edital aberto corresponde ao filtro ({hidden} no total). Use “Incluir encerrados” ou “Mostrar fora do foco” para ver os demais.')
         return
-    st.caption(f'{len(filtered)} edital(is) · A abertura de uma chamada não garante elegibilidade.')
-    st.dataframe([{'Instituição': c.get('institution'), 'Título': c['title'], 'Situação das inscrições': status_text(c), 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_label(c),
+    st.caption(f'{len(filtered)} de {len(calls)} edital(is) · A abertura de uma chamada não garante elegibilidade.')
+    st.dataframe([{'Instituição': c.get('institution'), 'Título': c['title'], 'Situação das inscrições': status_text(c),
+                   'Relevância': c.get('relevance') or 'Não avaliada', 'Revisão': review_state(c), 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_label(c),
                    'Análise de requisitos': 'Revisão integral declarada' if c.get('criteria_complete') else c.get('requirements_status', 'Não analisado'),
                    'Valor identificado': brl(funding_value(c)), 'Última verificação': when(c.get('last_seen_at') or c.get('discovered_at')),
                    'Fonte oficial': c.get('url'), 'PDF': c.get('pdf_url') or c.get('document_url')} for c in filtered], hide_index=True, width='stretch')

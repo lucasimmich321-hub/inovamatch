@@ -171,13 +171,15 @@ def scan(store, include_notices=False, source_ids=None, progress=None):
     return report
 
 
-def import_url(url):
+def import_url(url, fetcher=None):
     from .extraction import extract_pdf, suggest
-    fetcher = Fetcher()
+    own = fetcher is None
+    fetcher = fetcher or Fetcher()
     try:
         body, content_type, resolved = fetcher.fetch(url, MAX_PDF)
     finally:
-        fetcher.close()
+        if own:
+            fetcher.close()
     if body.startswith(b'%PDF') or 'application/pdf' in content_type:
         pages = extract_pdf(body)
         title = urlsplit(resolved).path.split('/')[-1] or 'Documento PDF'
