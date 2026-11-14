@@ -14,7 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from inovamatch import curadoria, matching  # noqa: E402
 from inovamatch.crawler import CacheOnlyFetcher, crawl  # noqa: E402
-from inovamatch.domain import today  # noqa: E402
+from inovamatch.crawler import PUBLISHED  # noqa: E402
+from inovamatch.domain import now_iso, today  # noqa: E402
 from inovamatch.storage import Store  # noqa: E402
 
 CALL_TITLE_PART = '65/2025'
@@ -55,6 +56,17 @@ def seed(store):
                                 'project_documents': project_docs, 'duration_months': 18, 'execution_state': 'SC', 'team': 'Equipe fictícia', 'simulated': True, 'origem': 'demo'})
 
 
+def prepare_call(store, call):
+    """Só na base do pitch: prazo de TESTE (a fonte não traz data de inscrição), divergência de datas marcada como resolvida e
+    edital publicado, como a Publicação rápida faria. Tudo rotulado como teste no próprio registro."""
+    conflicts = [{**c, 'resolved': True, 'resolution': 'Marcado como resolvido a pedido do Kalil para o pitch; a divergência de datas '
+                  'entre site e PDF não foi analisada.', 'reviewed_at': now_iso()} for c in call.get('conflicts', [])]
+    return store.save('calls', {**call, 'conflicts': conflicts, 'deadline': (today() + timedelta(days=30)).isoformat(),
+                                'deadline_confirmed': True, 'criteria_complete': True, 'quick_published': True,
+                                'deadline_evidence': 'PRAZO DE TESTE definido pelo Kalil para o pitch (hoje + 30 dias): a fonte não traz data de inscrição.',
+                                'review_state': PUBLISHED, 'published_at': now_iso()})
+
+
 def main():
     path = sys.argv[1] if len(sys.argv) > 1 else 'data/teste_match.db'
     store = Store(path=path)
@@ -63,7 +75,7 @@ def main():
     if not call:
         sys.exit(f'Edital "{CALL_TITLE_PART}" com critérios não achado no cache local.')
     curadoria.apply(store)  # critérios curados (data/curadoria); nenhum vem validado
-    call = store.get('calls', call['id'])
+    call = prepare_call(store, store.get('calls', call['id']))
     seed(store)
     print(f'Curadoria: {curadoria.counts(call["criteria"])}')
     print(f'Base: {path}\nEdital: {call["title"][:90]}\n(critérios ainda NÃO validados: o app mostra "Precisa de informações" até a revisão;'

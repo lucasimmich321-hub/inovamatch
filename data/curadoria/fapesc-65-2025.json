@@ -1,5 +1,5 @@
 {
- "estado": "pendente de conferência humana",
+ "estado": "todos os critérios conferidos",
  "edital": "EDITAL SUPLEMENTAR DE SUBVENÇÃO ECONÔMICA FAPESC N.º 65/2025 PROGRAMA HORIZONTE EUROPA (2026–2027)",
  "dedup_key": "https://fapesc.sc.gov.br/edital-suplementar-de-subvencao-economica-fapesc-n-o-65-2025-programa-horizonte-europa-2026-2027",
  "url": "https://fapesc.sc.gov.br/edital-suplementar-de-subvencao-economica-fapesc-n-o-65-2025-programa-horizonte-europa-2026-2027/",
@@ -7,7 +7,8 @@
  "correcoes": [
   "Porte: MEI não admitido (item 5.1.11); a regra de negação do extrator já lê \"não será admitida\" como not_in.",
   "Removido \"Documentos: Plano de Trabalho\" da startup (item 9.1.3 não o exige da startup; o Plano de Trabalho como documento do projeto, item 5.4.5, continua).",
-  "2026-11-14: Critérios de revisão humana descartados do match (fora da comparação automática). (118)"
+  "2026-11-14: Critérios de revisão humana descartados do match (fora da comparação automática). (118)",
+  "2026-11-14: Critérios comparáveis validados em lote pelo Kalil, após conferência. (15)"
  ],
  "criteria": [
   {
@@ -38,12 +39,13 @@
    ],
    "confidence": "Alta",
    "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-6487f06e5dea4fd75b93",
@@ -140,12 +142,13 @@
    ],
    "confidence": "Alta",
    "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-589c566738c1a7529d5e",
@@ -172,12 +175,13 @@
    ],
    "confidence": "Média",
    "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-368b2948f2997817ff07",
@@ -402,12 +406,13 @@
    ],
    "confidence": "Alta",
    "confidence_note": "Verifica presença, não regularidade cadastral.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-ac89ae0d0ba22b7be6eb",
@@ -614,12 +619,13 @@
    ],
    "confidence": "Média",
    "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-784ca374e502b738ee87",
@@ -646,12 +652,13 @@
    ],
    "confidence": "Média",
    "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-2bd44633c3df49d03a17",
@@ -828,12 +835,13 @@
    ],
    "confidence": "Média",
    "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-456f7e7ec7e31125fdb9",
@@ -920,12 +928,13 @@
    ],
    "confidence": "Alta",
    "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-44b8e68fb55489b5278d",
@@ -1007,12 +1016,13 @@
    ],
    "confidence": "Média",
    "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-f80bb918915f4c1aad5b",
@@ -1282,12 +1292,13 @@
    ],
    "confidence": "Alta",
    "confidence_note": "Prorrogações e condições excepcionais exigem revisão.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-a82ab19b0ccbc4b10daf",
@@ -1702,12 +1713,13 @@
    ],
    "confidence": "Alta",
    "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-b3d51867ea2f8a1a73d7",
@@ -2076,12 +2088,13 @@
    ],
    "confidence": "Média",
    "confidence_note": "Categorias reconhecidas na cláusula; confira a lista integral, o tipo de gasto e as exceções.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-5060ea2a62be79354a23",
@@ -2108,12 +2121,13 @@
    ],
    "confidence": "Média",
    "confidence_note": "Categorias reconhecidas na cláusula; confira a lista integral, o tipo de gasto e as exceções.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-d7d25d0bc423e4ee96ea",
@@ -3400,12 +3414,13 @@
    ],
    "confidence": "Média",
    "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-735e6580c5a1ad3f4025",
@@ -3502,12 +3517,13 @@
    ],
    "confidence": "Média",
    "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
-   "confirmed": false,
-   "validation_status": "pending",
-   "review_status": "Pendente de revisão",
+   "confirmed": true,
+   "validation_status": "validated",
+   "review_status": "Validado em lote após conferência",
    "extracted": true,
    "extractor_version": "2.1",
-   "document_id": "6c26b752580e32089cb74a87"
+   "document_id": "6c26b752580e32089cb74a87",
+   "reviewed_at": "2026-11-14T16:28:44-03:00"
   },
   {
    "id": "auto-061a50bb3eaaf9eb23ed",

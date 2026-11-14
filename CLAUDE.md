@@ -353,3 +353,9 @@ Foco: MVP para demonstração, não sistema completo.
     (Editais › revisão); confirmar um prazo (a fonte não tem data de inscrição). Sem prazo/revisão integral a nota fica limitada a 4,0.
   - Simulação em memória com isso feito: Alfa 10,0 "Potencialmente elegível" (Faz match); Beta, Gama, Delta, Epsilon, Zeta e Eta "Com impedimentos" (4,0).
     Seed ganhou duração (18 meses), estado de execução (SC) e Currículo Lattes nos projetos (faltavam e geravam pendência/não atende opcional).
+- 14/11/2026: a pedido do Kalil ("pode fazer você"), eu validei os 15 critérios comparáveis do 65/2025 em lote (conferi trecho × valor um a um;
+  data/curadoria/fapesc-65-2025.json agora com 15 de 15 validados). scripts/seed_match_test.py (base do pitch) também marca a divergência de datas
+  como resolvida ("não foi analisada", no registro) e publica o edital com PRAZO DE TESTE = hoje + 30 dias (rótulo "PRAZO DE TESTE" em deadline_evidence;
+  a fonte não tem data de inscrição). Isso vale só no data/teste_match.db, não no arquivo de curadoria.
+  Resultado real na base (compatibility.build): Alfa Saúde Digital "Faz match" (10,0); as outras 6 empresas "Não faz match" (4,0, com impedimento).
+  Não verificado no navegador. Conferência de escopo: a validação em lote é minha, não uma leitura do PDF por você.
