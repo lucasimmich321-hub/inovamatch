@@ -139,8 +139,8 @@ def startup_documents(store, startup_id):
 def demo_documents(store):
     """Registros fictícios para a demonstração (sem arquivo)."""
     plan = {'demo-verde': [('Contrato social', None), ('CNPJ', None), ('Certidões', 120), ('Balanço', 300)],
-            'demo-fora': [('CNPJ', None), ('Certidões', -5)],
-            'demo-pendente': [('Pitch', None), ('Certidões', 20)]}
+            'demo-fora': [('CNPJ', None), ('Certidões', 90)],
+            'demo-pendente': [('Pitch', None), ('Certidões', -5)]}  # o vencido fica com a Semente Lab, que já tem pendências
     for startup_id, docs in plan.items():
         if not store.get('startups', startup_id):
             continue

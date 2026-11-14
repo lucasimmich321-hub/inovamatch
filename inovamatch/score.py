@@ -4,7 +4,7 @@ Regra:
 - Cada requisito vale um peso: obrigatório 2, opcional 1.
 - Atendido ganha o peso inteiro; pendente (sem dado ou a verificar) ganha metade; não atendido ganha zero.
 - Nota = 10 × pontos ganhos ÷ pontos possíveis, com 1 casa decimal.
-- Impedimento (requisito obrigatório não atendido, inclusive prazo encerrado) limita a nota a 4,0.
+- Impedimento (obrigatório não atendido, inclusive prazo encerrado, ou sem dado obrigatório) limita a nota a 4,0.
 - Match já inscrito, aprovado, reprovado ou desistente: o prazo de inscrição sai da conta.
 """
 from .matching import FAIL, PASS, PENDING
@@ -17,12 +17,12 @@ LABEL = 'calculado por regras'
 
 def compute(result, application=None):
     """Com o match já inscrito (ou depois), o prazo de inscrição encerrado não pesa mais na nota."""
-    from .attention import OPEN
+    from .attention import NO_DATA, OPEN, requirement_state
     rows = result.get('rows') or []
     if application and application.get('status') not in OPEN:
         rows = [r for r in rows if r.get('id') != 'deadline']
     possible = earned = 0.0
-    counts = {'mandatory_met': 0, 'mandatory_total': 0, 'optional_met': 0, 'optional_total': 0, 'pending': 0, 'blockers': 0}
+    counts = {'mandatory_met': 0, 'mandatory_total': 0, 'optional_met': 0, 'optional_total': 0, 'pending': 0, 'blockers': 0, 'missing_mandatory': 0}
     for row in rows:
         mandatory = row.get('mandatory', True)
         weight = MANDATORY_WEIGHT if mandatory else OPTIONAL_WEIGHT
@@ -36,8 +36,10 @@ def compute(result, application=None):
             counts['pending'] += 1
         elif row['status'] == FAIL and mandatory:
             counts['blockers'] += 1
+        if mandatory and requirement_state(row) == NO_DATA:
+            counts['missing_mandatory'] += 1
     raw = round(10 * earned / possible, 1) if possible else 0.0
-    capped = counts['blockers'] > 0 and raw > BLOCKER_CAP
+    capped = (counts['blockers'] > 0 or counts['missing_mandatory'] > 0) and raw > BLOCKER_CAP  # mesma regra do "Impedido"
     value = BLOCKER_CAP if capped else raw
     return {'value': value, 'raw': raw, 'capped': capped, 'strong': value >= STRONG, **counts}
 
@@ -53,5 +55,5 @@ def explanation(info):
              f"Pendentes (sem dado ou a verificar): {info['pending']}, valem metade do peso.",
              'Não atendidos valem zero.']
     if info['capped']:
-        lines.append(f"Há impedimento: a nota {text(info['raw'])} foi limitada a {text(BLOCKER_CAP)}.")
+        lines.append(f"Há impedimento (requisito obrigatório não atendido ou sem dado): a nota {text(info['raw'])} foi limitada a {text(BLOCKER_CAP)}.")
     return lines

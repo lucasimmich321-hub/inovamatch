@@ -150,3 +150,11 @@ Foco: MVP para demonstração, não sistema completo.
     Tecnologia e Saúde. Testes ajustados ao tamanho novo: test_app (6 linhas de compatibilidade), test_office (painel da demo),
     test_captacao (8 matches).
   - Não verificado em navegador: aparência do dashboard e do gráfico (o Kalil vai mandar prints).
+- 14/11/2026: ajustes após prints (nota, demonstração, Início). 228 testes.
+  - Nota: falta de dado obrigatório agora também limita a 4,0 (antes só "não atendido"; não era proposital).
+  - Demonstração: editais fictícios ganharam critérios preferenciais (opcionais) e o encerrado mais 3 próprios; estágios,
+    documentos e responsáveis fictícios ajustados. Notas: 8,6 / 4,0 (Semente, impedida) / 7,0 / 9,5 / 4,0 (Oeste, reprovada) /
+    8,3 / 9,1 / 8,7. Sem pendência: Horizonte, Araucária e os 2 da Vale Agro. Documento vencido passou para a Semente Lab.
+  - Início (Institucional): "Operação do dia" num expansor fechado; "Em breve: visão da startup" fica fora dele.
+  - Captado na demo: R$ 150.000 (90 mil Araucária + 60 mil Serra Biotec).
+  - Não verificado em navegador.

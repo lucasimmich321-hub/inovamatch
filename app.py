@@ -1131,7 +1131,7 @@ def link_detail(store, call, startup, project, show_checklist=True, compact=Fals
     info = scoring.compute(result, application)
     n, a, b, c = st.columns(4)
     n.metric(f'Nota ({scoring.LABEL})', f"{scoring.text(info['value'])} / 10",
-             help='Obrigatórios pesam 2, opcionais 1; pendente vale metade; impedimento limita a nota a 4,0.')
+             help='Obrigatórios pesam 2, opcionais 1; pendente vale metade; impedimento (inclusive falta de dado obrigatório) limita a nota a 4,0.')
     a.metric('Critérios atendidos', result['attended'])
     b.metric('Não atendidos (obrigatórios)', result['blockers'])
     c.metric('Pendentes de verificação', result['pending'])
@@ -1582,7 +1582,7 @@ def next_deadline(store, application, call):
 
 
 def score_chip(info):
-    kind = 'fail' if info['capped'] or info['blockers'] else 'ok' if info['strong'] else 'warn'
+    kind = 'fail' if info['capped'] or info['blockers'] or info['missing_mandatory'] else 'ok' if info['strong'] else 'warn'
     return chip(f"Nota {scoring.text(info['value'])}/10", kind, 'check' if kind == 'ok' else 'alert')
 
 
@@ -1831,7 +1831,18 @@ def inicio(store):
         return
     if can('multi_startup'):  # só o plano Institucional vê o dashboard; os outros mantêm o Início simples
         institutional_dashboard(store)
-        st.html('<div class="section-head">Operação do dia</div>')
+        with st.expander('Operação do dia: prazos, editais para revisar e pendências'):
+            home_operations(store, calls)
+    else:
+        home_operations(store, calls)
+    with st.expander('Em breve: visão da startup'):
+        st.html('<div class="soon"><span class="tag demo">Em breve</span><div class="section-head">Visão da startup</div>'
+                'Cada startup verá, só para leitura, os editais que o escritório direcionou a ela e o checklist do match. '
+                'Ainda não disponível: hoje o InovaMatch é operado pelo escritório de projetos.</div>')
+
+
+def home_operations(store, calls):
+    """Início simples: prazos que vencem, editais para revisar, pendências e lembretes da captação."""
     soon = [c for c in calls if not continuous_confirmed(c) and deadline_info(c)['days'] is not None and 0 <= deadline_info(c)['days'] <= 30]
     soon.sort(key=lambda c: deadline_info(c)['days'])
     awaiting = [c for c in sort_calls(calls) if review_state(c) != PUBLISHED and not c.get('simulated') and status_group(c) != 'Encerrado']
@@ -1880,10 +1891,6 @@ def inicio(store):
             for r in cap[:8]:
                 st.markdown('- ' + md_escape(f"{approved[r['application_id']].get('call_title', '')[:50]} · {reminder_text(r)}"))
             st.button('Abrir matches', key='home_captacao', on_click=go, args=('Matches',), icon=':material/assignment:')
-    with st.expander('Em breve: visão da startup'):
-        st.html('<div class="soon"><span class="tag demo">Em breve</span><div class="section-head">Visão da startup</div>'
-                'Cada startup verá, só para leitura, os editais que o escritório direcionou a ela e o checklist do match. '
-                'Ainda não disponível: hoje o InovaMatch é operado pelo escritório de projetos.</div>')
 
 
 def institutional_dashboard(store):
