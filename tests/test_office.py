@@ -357,7 +357,7 @@ def test_follow_up_table_by_call_with_documents_count(tmp_path, monkeypatch):
     started(store)
     app = open_app(data, 'Startups')
     table = next(d for d in app.dataframe if 'Documentos' in d.value.columns).value
-    assert table.to_dict('records') == [{'Origem': 'Dados reais', 'Startup': 'Startup SC', 'Projeto': 'Projeto SC', 'Edital': 'Edital publicado',
+    assert table.to_dict('records') == [{'Origem': 'Real', 'Startup': 'Startup SC', 'Projeto': 'Projeto SC', 'Edital': 'Edital publicado',
                                          'Documentos': '1 de 3', 'Match': 'Em preparação', 'Solicitado': 'R$ 80.000,00',
                                          'Captado': '—', 'Motivo': '—'}]
     next(s for s in app.selectbox if s.label == 'Filtrar por edital').set_value('pub').run()

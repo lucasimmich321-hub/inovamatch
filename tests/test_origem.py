@@ -34,4 +34,40 @@ def test_modo_demonstracao_mostra_aviso_e_selo(monkeypatch):
     assert not app.exception
     assert any('Você está na Demonstração' in w.value for w in app.warning)
     table = next(d for d in app.dataframe if 'Origem' in d.value.columns).value
-    assert set(table['Origem']) == {'Demonstração'}
+    assert set(table['Origem']) == {'Fictício'}  # selo novo: "Fictício" / "Real (FAPESC)"
+
+
+def test_selo_de_origem_real_fapesc_e_ficticio():
+    from inovamatch.origin import match_provenance, provenance
+    crawler = {'title': 'Edital X', 'institution': 'FAPESC', 'source_id': 'fapesc', 'origem': 'real'}
+    assert provenance(crawler, 'call') == 'Real (FAPESC)'
+    # Coletado pelo crawler nunca vira fictício, mesmo com marca legada errada.
+    assert provenance({**crawler, 'simulated': True, 'origem': 'demo'}, 'call') == 'Real (FAPESC)'
+    demo = Store({})
+    load_demo(demo)
+    assert {provenance(c, 'call') for c in demo.all('calls')} == {'Fictício'}
+    assert {provenance(s) for s in demo.all('startups')} == {'Fictício'}
+    assert match_provenance(None, crawler, demo.get('startups', 'demo-verde')) == 'Fictício'
+    assert match_provenance(None, crawler, {'name': 'Real SA', 'origem': 'real'}) == 'Real'
+
+
+def test_dashboard_e_legenda_nos_dados_reais(monkeypatch):
+    from inovamatch import dashboard
+    from inovamatch.demo import add_example_startups
+    monkeypatch.delenv('INOVAMATCH_STORAGE', raising=False)
+    real = Store({})
+    add_example_startups(real)  # só fictícias na base real
+    assert dashboard.build(real, only_real=True)['startups'] == 0
+    demo = Store({})
+    load_demo(demo)
+    assert dashboard.build(demo)['fictitious']
+    app = AppTest.from_file(APP, default_timeout=60).run()
+    html = ' '.join(h.value for h in app.get('html'))
+    captions = ' '.join(c.value for c in app.caption)
+    assert 'Nesta base: 0 startup(s)' in captions and '8 matches fictícios' not in captions
+    app.session_state['real_data'] = real.data
+    app.run()
+    assert any('Sem dados reais ainda' in h.value for h in app.get('html'))
+    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    assert any('Valores fictícios: startups e matches de demonstração' in h.value for h in app.get('html'))
+    assert '8 matches fictícios' in ' '.join(c.value for c in app.caption)

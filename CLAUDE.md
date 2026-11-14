@@ -45,7 +45,7 @@ Foco: MVP para demonstração, não sistema completo.
 - A tabela crua do crawler vira expander "Detalhes da consulta". Fonte que não funciona não aparece como opção.
 
 ## Dados: real x demonstração
-- Todo registro tem origem = "real" ou "demo". Match é demo se o edital ou a startup for demo. Interface: seletor "Dados reais"/"Demonstração", aviso amarelo em demo e selo laranja "Demonstração".
+- Todo registro tem origem = "real" ou "demo". Match é demo se o edital ou a startup for demo. Interface: seletor "Dados reais"/"Demonstração", aviso amarelo em demo e selo de origem pequeno em cada registro: "Fictício" (laranja) ou "Real (FAPESC)" / "Real" (origin.provenance).
 - Real: crawler da FAPESC (inovamatch/crawler.py), import por URL ou PDF (inovamatch/radar.py), entrada manual; armazenado na sessão ou em SQLite (inovamatch/storage.py).
 - Demonstração: gerada por código Python (inovamatch/demo.py com 2 editais abertos e 3 startups; demo_matches cria um 3º edital encerrado, mais 3 startups e 8 matches prontos, sem órfãos; o botão não carrega mais os 10 históricos de office_stats.demo_applications, vault.demo_documents, office_stats.demo_applications com 10 matches históricos). Os JSON em docs/ e tests/fixtures/ são só registros de verificação; o app não os lê.
 - Tabela completa em docs/ESTADO_REAL.md.
@@ -230,3 +230,17 @@ Foco: MVP para demonstração, não sistema completo.
 - 14/11/2026: favicon. inovamatch_favicon.ico/.png (raiz, não apagados nem versionados) copiados para assets/favicon.ico e
   assets/favicon.png; page_icon = FAVICON no topo do app.py (.ico → .png → logo_icone.png). O .ico carrega no Streamlit 1.67
   (servido convertido em PNG, conferido pelo gerenciador de mídia, sem navegador). logo_icone.png segue como ícone da barra recolhida.
+- 14/11/2026: transparência da origem dos dados (ajuste, sem fase nova). 236 testes.
+  - Selo único e discreto (origin.provenance + badge_html, CSS .im-origin): edital real = "Real (<órgão>)" (crawler: "Real (FAPESC)"),
+    sem órgão conhecido = "Real"; startup real = "Real"; edital, startup ou match de demonstração = "Fictício" (match é fictício se
+    ele, o edital ou a startup for). Edital com source_id (crawler) é sempre real, mesmo com marca legada simulated/demo.
+  - Onde aparece: cards e detalhe do edital, tabela "Detalhes da consulta", cabeçalho e card do match, tabela de compatíveis,
+    tabela de acompanhamento, perfil da startup, painel de startups de exemplo, alertas, portfólio, editais do perfil,
+    aprovados do dashboard, seletores de startup (" · Fictício"). O chip "Demonstração" da tela Planos (planos simulados) ficou.
+  - Dashboard: na Demonstração (ou se houver qualquer registro fictício na conta), faixa "Valores fictícios: startups e matches de
+    demonstração". Em Dados reais, fictícios (startups de exemplo e seus matches) ficam fora dos números; sem startup real,
+    "Sem dados reais ainda" no lugar do dashboard.
+  - Lateral: "6 startups, 3 editais e 8 matches fictícios" só na Demonstração; em Dados reais, "Nesta base: N startup(s), N edital(is)
+    e N match(es) reais" (+ "Mais N startup(s) de exemplo (fictícias)" se houver).
+  - Não verificado: nada em navegador (aparência e tamanho do selo); "Real (FAPESC)" só em teste unitário (crawler real não rodado
+    nesta sessão); listas de texto do Início (prazos, pendências) não têm selo (a faixa do dashboard cobre o Institucional).

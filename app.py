@@ -39,7 +39,8 @@ from inovamatch import versioning
 from inovamatch.demo import EXAMPLE_IDS, add_example_startups, remove_example_startups, simulate_rectification
 from inovamatch import attention
 from inovamatch.filters import STATUS_FILTERS
-from inovamatch.origin import DEMO, LABELS as ORIGIN_LABELS, badge_html as origin_badge, is_demo, label as origin_label
+from inovamatch.origin import (DEMO, FICTITIOUS, LABELS as ORIGIN_LABELS, badge_html as origin_badge, is_demo, match_provenance,
+                               provenance)
 from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN, DECLARABLE
 
 # LOGO: único ponto de troca. Quando assets/logo_nova.jpg existir, ela é usada no menu e no favicon.
@@ -103,7 +104,11 @@ h1,h2,h3 {font-family:var(--im-font);letter-spacing:-.02em;color:var(--im-dark);
 .stButton button, .stDownloadButton button, .stLinkButton a {border-radius:10px;}
 @media(max-width:700px) {.hero {padding:22px}.hero h1 {font-size:24px}.block-container {padding:4.5rem 1rem 1.2rem;}}
 .im-card {display:flex;flex-direction:column;gap:6px;}
-.im-chips {display:flex;flex-wrap:wrap;gap:6px;}
+.im-chips {display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+/* Selo de origem: pequeno e discreto; o fictício em laranja (contraste ≥ 4,5:1). */
+.im-origin {display:inline-block;font-size:11px;font-weight:700;line-height:1.5;padding:0 7px;border-radius:999px;border:1px solid;vertical-align:middle;margin-left:4px;white-space:nowrap;}
+.im-origin-fict {background:#FDECC8;color:#7A3E06;border-color:#7A3E06;}
+.im-origin-real {background:#fff;color:#3A4560;border-color:#C5CDDC;}
 .im-chip {display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;border:1px solid transparent;}
 .im-chip-ok {background:#DDF3E4;color:#14532D;} .im-chip-info {background:#E3ECFF;color:#0A3A9E;}
 .im-chip-muted {background:#ECEFF5;color:#3A4560;} .im-chip-warn {background:#FDECC8;color:#7A3E06;border-color:#7A3E06;}
@@ -146,6 +151,14 @@ def current_plan():
 
 def can(feature):
     return plans.allows(current_plan(), feature)
+
+
+def call_origin(call):
+    return origin_badge(provenance(call, 'call'))  # "Real (FAPESC)" ou "Fictício"
+
+
+def match_origin(application, call, startup):
+    return origin_badge(match_provenance(application, call, startup))
 
 
 def locked_card(feature, key):
@@ -268,7 +281,7 @@ def pick(label, records, key, name='name', preferred=None):
     if st.session_state.get(key) not in options:
         st.session_state[key] = preferred if preferred in options else options[0]
     index = {r['id']: r for r in records}
-    chosen = st.selectbox(label, options, format_func=lambda i: index[i][name], key=key)
+    chosen = st.selectbox(label, options, format_func=lambda i: index[i][name] + (' · Fictício' if is_demo(index[i]) else ''), key=key)
     return index[chosen]
 
 
@@ -829,7 +842,7 @@ def versions_view(store, call):
 
 def call_detail(store, call):
     st.subheader(call['title'])
-    st.html(status_badge(call) + origin_badge(call) + (' ' + chip('Alterado') if versioning.is_altered(call) else ''))
+    st.html(status_badge(call) + call_origin(call) + (' ' + chip('Alterado') if versioning.is_altered(call) else ''))
     versions_view(store, call)
     info = deadline_info(call)
     if info['status'] in ('soon', 'expired'):
@@ -1066,7 +1079,7 @@ def radar(store, simulated):
         st.button(f'Mostrar mais ({len(filtered) - shown})', key='radar_more_' + sk,
                   on_click=lambda: st.session_state.update({'radar_limit_' + sk: shown + 24}))
     with st.expander('Detalhes da consulta (tabela)'):
-        st.dataframe([{'Origem': origin_label(c), 'Instituição': c.get('institution'), 'Título': c['title'], 'Situação': status_text(c),
+        st.dataframe([{'Origem': provenance(c, 'call'), 'Instituição': c.get('institution'), 'Título': c['title'], 'Situação': status_text(c),
                        'Revisão': review_state(c), 'Prazo': deadline_label(c), 'Valor identificado': brl(funding_value(c)),
                        'Última verificação': when(c.get('last_seen_at') or c.get('discovered_at')), 'Fonte oficial': c.get('url')}
                       for c in filtered], hide_index=True, width='stretch')
@@ -1089,8 +1102,7 @@ def deadline_text(call):
 def call_card(call):
     situation = status_group(call)
     chips = [chip(STATUS_LABEL.get(situation, situation))]
-    if is_demo(call):
-        chips.append(chip('Demonstração'))
+    chips.append(call_origin(call))
     if review_state(call) != PUBLISHED and not is_demo(call):
         chips.append(chip('Aguardando revisão', 'warn'))
     if versioning.is_altered(call):
@@ -1229,7 +1241,7 @@ def link_detail(store, call, startup, project, show_checklist=True, compact=Fals
     st.html(f'<div class="section-head">{escape(startup["name"])} · {escape(project["name"])}</div>')
     blocked = attention.impediments(result, application)[0]  # mesmo critério da faixa vermelha e da nota
     st.html(('<span class="status v-fail">Impedido</span>' if blocked else verdict_badge(result))
-            + origin_badge(application or (call if is_demo(call) else startup)))
+            + match_origin(application, call, startup))
     if not compact:  # no painel do match, impedimentos e pendências já estão no topo
         verdict_banner(result)
     info = scoring.compute(result, application)
@@ -1474,7 +1486,7 @@ def follow_up_view(store):
             continue
         totals = checklist_summary(match_checklist(store, call, startup, project))
         application = applications.get(f'{call_id}:{project_id}', {})
-        rows.append({'Origem': origin_label(application) if application else origin_label(call if is_demo(call) else startup),
+        rows.append({'Origem': match_provenance(application, call, startup),
                      'Startup': startup['name'], 'Projeto': project['name'], 'Edital': call['title'],
                      'Documentos': f"{totals['docs_sent']} de {totals['docs_total']}",
                      'Match': application.get('status', 'Não iniciado'),
@@ -1505,11 +1517,11 @@ def link_rows(store, call):
         application = store.get('applications', f'{call["id"]}:{project["id"]}')
         result = attention.for_application(match(call, org, project), application)
         pairs[project['id']] = (org, project)
-        rows.append({'Proponente': org['name'], 'Tipo': org_kind(org), 'Projeto': project['name'], 'Resultado': verdict_label(result),
+        rows.append({'Proponente': org['name'], 'Origem': match_provenance(application, call, org), 'Tipo': org_kind(org), 'Projeto': project['name'], 'Resultado': verdict_label(result),
                      'Motivo principal': main_reason(result), 'Pendentes': result['pending'], 'Não atendidos': result['blockers'],
                      'Match': application.get('status') if application else '—'})
     owners = {p['startup_id'] for p in store.all('projects')}
-    rows += [{'Proponente': s['name'], 'Tipo': org_kind(s), 'Projeto': 'Sem projeto cadastrado', 'Resultado': 'Pendente de verificação',
+    rows += [{'Proponente': s['name'], 'Origem': match_provenance(None, call, s), 'Tipo': org_kind(s), 'Projeto': 'Sem projeto cadastrado', 'Resultado': 'Pendente de verificação',
               'Motivo principal': 'Crie um projeto para comparar', 'Pendentes': 1, 'Não atendidos': 0, 'Match': '—'}
              for s in orgs.values() if s['id'] not in owners]
     order = {'Atende': 0, 'Pendente de verificação': 1, 'Não atende': 2}
@@ -1567,9 +1579,9 @@ def startup_matches(store, startup):
         return
     results = {c['id']: (c, attention.for_application(match(c, startup, project), store.get('applications', f"{c['id']}:{project['id']}")))
                for c in calls}
-    st.dataframe([{'Edital': c['title'], 'Situação': status_text(c), 'Prazo': deadline_label(c), 'Resultado': verdict_label(r),
+    st.dataframe([{'Edital': c['title'], 'Origem': provenance(c, 'call'), 'Situação': status_text(c), 'Prazo': deadline_label(c), 'Resultado': verdict_label(r),
                    'Motivo principal': main_reason(r)} for c, r in results.values()], hide_index=True, width='stretch',
-                 column_order=None if can('requirements') else ['Edital', 'Situação', 'Prazo', 'Resultado'])
+                 column_order=None if can('requirements') else ['Edital', 'Origem', 'Situação', 'Prazo', 'Resultado'])
     chosen = st.selectbox('Abrir match', list(results), key='profile_open_' + startup['id'], format_func=lambda cid: results[cid][0]['title'])
     link_detail(store, results[chosen][0], startup, project)
 
@@ -1587,7 +1599,7 @@ def example_startups_panel(store):
                 st.session_state.flash = f'{count} startups de exemplo adicionadas (fictícias).'
                 st.rerun()
         else:
-            st.html(f'<div class="im-chips">{chip("Demonstração")}</div>Startups de exemplo (fictícias) presentes nesta base.')
+            st.html(f'<div class="im-chips">{origin_badge(FICTITIOUS)}</div>Startups de exemplo (fictícias) presentes nesta base.')
             if st.button('Remover startups de exemplo', icon=':material/group_remove:', key='remove_examples'):
                 remove_example_startups(store)
                 st.session_state.flash = 'Startups de exemplo removidas (com projetos, documentos e matches delas).'
@@ -1613,8 +1625,7 @@ def startup_profile(store, startups):
 
 
 def startup_detail(store, startup):
-    if is_demo(startup):
-        st.html(origin_badge(startup) + ' <span class="muted">Startup fictícia, criada para demonstração.</span>')
+    st.html(origin_badge(provenance(startup)) + (' <span class="muted">Startup fictícia, criada para demonstração.</span>' if is_demo(startup) else ''))
     gaps = attention.startup_gaps(startup, [p for p in store.all('projects') if p['startup_id'] == startup['id']])
     if gaps:
         st.html(band('warn', f'{len(gaps)} pendência(s) no cadastro', gaps, prefix='Falta preencher: '))
@@ -1753,7 +1764,7 @@ def match_header(application, org, call, eyebrow='', attention_info=None, nota=N
     reason, _, pend = attention_info or ('', [], [])
     chips = (chip(application.get('status', 'Em preparação'), 'info') + (score_chip(nota) if nota else '')
              + (chip('Impedido') if reason else '')
-             + (chip(f'{len(pend)} pendência(s)', 'warn', 'alert') if pend else '') + (chip('Demonstração') if is_demo(application) else ''))
+             + (chip(f'{len(pend)} pendência(s)', 'warn', 'alert') if pend else '') + match_origin(application, call, org))
     return ((f'<div class="eyebrow">{escape(eyebrow)}</div>' if eyebrow else '')
             + f'<div class="im-card-title">{escape(org["name"])} · {escape(call["title"])}</div><div class="im-chips">{chips}</div>')
 
@@ -2071,8 +2082,15 @@ def home_operations(store, calls):
 
 def institutional_dashboard(store):
     """Dashboard institucional: portfólio, funil, recursos, aprovação, nota, prazos, pendências críticas e aprovados."""
-    data = dashboard.build(store)
+    data = dashboard.build(store, only_real=not CTX.get('simulated'))
     st.html('<div class="section-head">Dashboard institucional</div>')
+    if not CTX.get('simulated') and not data['startups']:
+        # Base "Dados reais" sem startup real: nada de número inventado (as de exemplo, fictícias, não contam).
+        st.html(empty_state('Sem dados reais ainda', 'Os números aparecem quando houver startups reais cadastradas nesta base. '
+                                                      'Startups de exemplo (fictícias) não entram no dashboard dos dados reais.'))
+        return
+    if data['fictitious']:
+        st.html(band('warn', 'Valores fictícios: startups e matches de demonstração'))
     a, b, c, d, e = st.columns(5)
     a.metric('Startups no portfólio', data['startups'])
     b.metric('Recursos solicitados', brl_short(data['requested']),
@@ -2162,7 +2180,7 @@ def alertas_page(store):
             for alert in group:
                 with st.container(border=True):
                     tags = ''.join(chip(r, 'info', 'users') for r in alert['destinatarios'])
-                    st.html(f'<div class="im-chips">{tags}{chip("Demonstração") if alert["demo"] else ""}</div>'
+                    st.html(f'<div class="im-chips">{tags}{origin_badge(FICTITIOUS if alert["demo"] else "Real")}</div>'
                             f'<div class="im-card-title">{escape(alert["titulo"])}</div>')
                     st.code(alert['texto'], language=None, wrap_lines=True)  # o ícone de copiar vem no próprio bloco
                     a, b = st.columns(2)
@@ -2201,6 +2219,17 @@ def user_block(store, simulated):
                                help='Baixa os dados desta sessão: eles somem ao recarregar ou fechar o site.')
 
 
+def sidebar_legend(store, simulated):
+    """Legenda do espaço de trabalho: o texto fixo dos fictícios só na Demonstração; em Dados reais, a contagem da base."""
+    if simulated:
+        return '6 startups, 3 editais e 8 matches fictícios para experimentar o fluxo completo.'
+    startups, calls, apps = store.all('startups'), store.all('calls'), store.all('applications')
+    real = lambda rows: sum(not is_demo(r) for r in rows)
+    text = f'Nesta base: {real(startups)} startup(s), {real(calls)} edital(is) e {real(apps)} match(es) reais.'
+    fict = len(startups) - real(startups)
+    return text + (f' Mais {fict} startup(s) de exemplo (fictícias).' if fict else '')
+
+
 def _page(title):
     def render():
         store, simulated = CTX['store'], CTX['simulated']
@@ -2234,13 +2263,14 @@ def main():
     options = [ORIGIN_LABELS['real'], ORIGIN_LABELS[DEMO]]
     current = st.session_state.get('dataset', options[0])
     dataset = current if current in options else options[0]  # sessão antiga ("Meus dados") cai em Dados reais
+    legend = None
     if can('multi_startup'):  # "Espaço de trabalho" só no Institucional; os outros perfis ficam na base atual
         with st.sidebar:
             st.caption('ESPAÇO DE TRABALHO')
             # Chave amarrada ao valor: quando a base muda (inclusive pelo botão de demonstração), nasce um seletor novo já com o valor certo.
             dataset = st.selectbox('Base de dados', options, index=options.index(dataset), key='_dataset_widget_' + dataset, label_visibility='collapsed')
             st.button('Carregar demonstração', on_click=demo_activate, width='stretch', icon=':material/play_circle:')
-            st.caption('6 startups, 3 editais e 8 matches fictícios para experimentar o fluxo completo.')
+            legend = st.empty()  # preenchida depois que a base é aberta (contagem real em "Dados reais")
     st.session_state.dataset = dataset
     simulated = dataset == ORIGIN_LABELS[DEMO]
     if simulated:
@@ -2252,6 +2282,8 @@ def main():
         storage_mode = os.environ.get('INOVAMATCH_STORAGE', 'session').lower()
         path = os.environ.get('INOVAMATCH_DB', 'data/inovamatch.db') if storage_mode == 'sqlite' else None
         store = Store(st.session_state.setdefault('real_data', {}), path=path)
+    if legend is not None:
+        legend.caption(sidebar_legend(store, simulated))
     if not can('multi_startup'):
         store = ScopedStore(store, plans.PERSONA_STARTUP[current_plan()])
     with st.sidebar:

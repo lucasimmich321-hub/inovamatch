@@ -1,7 +1,7 @@
 """Comparação em escala e indicadores derivados dos dados atuais, sem pontuações."""
 from .domain import deadline_info, now_iso, today
 from .matching import match, fingerprint, PENDING
-from .origin import DEMO, REAL, is_demo
+from .origin import DEMO, REAL, is_demo, provenance
 
 
 def matrix(store, startup_id=None, call_id=None):
@@ -37,7 +37,7 @@ def register_application(store, call, startup, project):
 
 def overview(store):
     startups, projects, calls = store.all('startups'), store.all('projects'), store.all('calls')
-    table = {s['id']: {'Startup': s['name'], 'Área de atuação': s.get('sector') or 'Não informado',
+    table = {s['id']: {'Startup': s['name'], 'Origem': provenance(s), 'Área de atuação': s.get('sector') or 'Não informado',
                       'Projetos cadastrados': sum(p['startup_id'] == s['id'] for p in projects),
                       'Oportunidades analisáveis': 0, 'Potencialmente elegíveis': 0,
                       'Com impedimentos': 0, 'Pendências': 0, 'Matches em preparação': 0} for s in startups}

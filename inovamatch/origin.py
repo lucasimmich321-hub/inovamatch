@@ -9,7 +9,14 @@ REAL, DEMO = 'real', 'demo'
 LABELS = {REAL: 'Dados reais', DEMO: 'Demonstração'}
 
 
+def from_crawler(record):
+    """Edital coletado por uma fonte automática (crawler da FAPESC): nunca é fictício, seja qual for outra marca."""
+    return bool((record or {}).get('source_id'))
+
+
 def origem(record):
+    if from_crawler(record):
+        return REAL
     value = (record or {}).get('origem')
     if value in LABELS:
         return value
@@ -24,8 +31,26 @@ def label(record):
     return LABELS[origem(record)]
 
 
-def badge_html(record):
-    """Selo HTML só para registros de demonstração (o real é o padrão e não precisa de aviso)."""
-    if not is_demo(record):
-        return ''
-    return f'<span class="tag demo" title="Registro fictício, sem valor real">{escape(LABELS[DEMO])}</span>'
+FICTITIOUS = 'Fictício'
+
+
+def provenance(record, kind=None):
+    """Texto do selo de origem: "Fictício" (demonstração), "Real (FAPESC)" (edital real com órgão conhecido) ou "Real"."""
+    if is_demo(record):
+        return FICTITIOUS
+    institution = ((record or {}).get('institution') or '').strip()
+    if kind == 'call' and institution and institution != 'Revisar instituição':
+        return f'Real ({institution})'
+    return 'Real'
+
+
+def match_provenance(application, call, startup):
+    """Match é fictício se ele, o edital ou a startup for de demonstração."""
+    return FICTITIOUS if any(is_demo(r) for r in (application, call, startup) if r) else 'Real'
+
+
+def badge_html(text):
+    """Selo pequeno e discreto de origem (texto + cor; o fictício em laranja)."""
+    css = 'fict' if text == FICTITIOUS else 'real'
+    title = 'Registro fictício, criado para demonstração' if css == 'fict' else 'Registro real'
+    return f'<span class="im-origin im-origin-{css}" title="{title}">{escape(text)}</span>'

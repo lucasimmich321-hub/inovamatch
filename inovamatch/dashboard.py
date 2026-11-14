@@ -7,15 +7,22 @@ from . import attention, captacao, score
 from .applications import APPROVED, LEGACY, LOST, REJECTED, STATUSES
 from .domain import deadline_info, today
 from .matching import match
+from .origin import is_demo
 from .vault import EXPIRED, validity_status
 
 
-def build(store, on=None):
+def build(store, on=None, only_real=False):
+    """only_real (base "Dados reais"): startups, projetos e matches fictícios (de exemplo) ficam fora de todos os números.
+    'fictitious' diz se algum número veio de startup, edital ou match fictício (a tela mostra o rótulo)."""
     on = on or today()
+    keep = (lambda r: not is_demo(r)) if only_real else (lambda r: True)
     calls = {c['id']: c for c in store.all('calls')}
-    projects = {p['id']: p for p in store.all('projects')}
-    orgs = {s['id']: s for s in store.all('startups')}
-    applications = [{**a, 'status': LEGACY.get(a.get('status'), a.get('status'))} for a in store.all('applications')]
+    orgs = {s['id']: s for s in store.all('startups') if keep(s)}
+    projects = {p['id']: p for p in store.all('projects') if keep(p) and p.get('startup_id') in orgs}
+    applications = [{**a, 'status': LEGACY.get(a.get('status'), a.get('status'))} for a in store.all('applications')
+                    if keep(a) and keep(calls.get(a.get('call_id')) or {}) and a.get('project_id') in projects]
+    fictitious = (any(is_demo(s) for s in orgs.values()) or any(is_demo(a) for a in applications)
+                  or any(is_demo(calls.get(a.get('call_id')) or {}) for a in applications))
 
     funnel = {s: sum(a['status'] == s for a in applications) for s in STATUSES}
     approved = [a for a in applications if a['status'] == APPROVED]
@@ -53,9 +60,10 @@ def build(store, on=None):
                   and projects[a['project_id']]['startup_id'] in orgs else '—',
                   'Projeto': projects[a['project_id']]['name'] if a.get('project_id') in projects else '—',
                   'Edital': a.get('call_title') or (calls.get(a.get('call_id')) or {}).get('title', '—'),
-                  'Valor aprovado': a.get('valor_captado') or 0} for a in approved]
+                  'Valor aprovado': a.get('valor_captado') or 0,
+                  'Origem': 'Fictício' if is_demo(a) or is_demo(calls.get(a.get('call_id')) or {}) else 'Real'} for a in approved]
     upcoming.sort(key=lambda r: r['Dias'])
-    return {'startups': len(orgs), 'funnel': funnel, 'applications': len(applications),
+    return {'fictitious': fictitious, 'startups': len(orgs), 'funnel': funnel, 'applications': len(applications),
             'requested': sum(a.get('valor_solicitado') or 0 for a in applications),
             'captured': sum(a.get('valor_captado') or 0 for a in approved),
             'lost': sum(a.get('valor_solicitado') or 0 for a in applications if a['status'] in LOST),
