@@ -82,3 +82,10 @@ Foco: MVP para demonstração, não sistema completo.
 - 14/11/2026: correção em Matches: "Gerenciar" abria o painel no topo, mas o rerun mantinha a rolagem e o usuário ficava na lista.
   Agora o painel ocupa o lugar da lista (botão "Voltar para todos os matches") e a página rola até ele (components.html,
   só no rerun do clique). A rolagem não foi vista em navegador real.
+- 14/11/2026: "Gerenciar" continua sem efeito no navegador (relato do Kalil). O diagnóstico do ecba337 (rolagem) foi descartado.
+  Investigado: o callback está ligado (set_active_match, app.py ~1398); a key é única e estável (manage_<id>, e no Streamlit 1.67
+  o ID do botão vem só da key); o botão não está em form; nada mais grava ou limpa active_match; o CSS não cobre o botão.
+  Reproduzido pelo protocolo websocket do Streamlit (o mesmo do navegador, sem navegador), no servidor de teste e no próprio
+  servidor do Kalil (porta 8502, sessão nova e isolada): Editais → Criar match → Criar match → Gerenciar abre o painel.
+  Causa NÃO encontrada no código; nenhuma correção feita. Pendente: o Kalil reiniciar o servidor da 8502 (iniciado 12:19,
+  antes do ecba337) e recarregar a aba, e, se continuar, abrir o console do navegador (F12) e me passar o erro.
