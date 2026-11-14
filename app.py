@@ -36,6 +36,7 @@ from inovamatch import plans
 from inovamatch import score as scoring
 from inovamatch import dashboard
 from inovamatch import compatibility
+from inovamatch import startup_docs
 from inovamatch import alerts
 from inovamatch import versioning
 from inovamatch import curadoria
@@ -450,8 +451,13 @@ def startup_form(store, simulated, fixed=None):
         counterpart = st.number_input('Capacidade de contrapartida financeira (R$)', min_value=0.0,
                                        value=float(old['counterpart']) if old.get('counterpart') is not None else None, step=1000.0,
                                        help='Em branco: desconhecida. Zero: indisponível. O percentual, quando exigido, usa a base registrada no critério.')
-        docs = st.text_area('Documentos disponíveis — um por linha', '\n'.join(old.get('documents', [])),
-                            help='Declaração de disponibilidade. A aplicação não audita a validade dos documentos.')
+        # Seleção com os nomes que os editais pedem (o match compara por esse nome); texto livre antigo que não bate vai para "Outros".
+        doc_options = startup_docs.options(store.all('calls'))
+        doc_selected, doc_others = startup_docs.split(old.get('documents', []), doc_options)
+        docs_picked = st.multiselect('Documentos disponíveis', doc_options, default=doc_selected, placeholder='Escolha os documentos que a startup tem',
+                                     help='Nomes usados nos editais. Declaração de disponibilidade: a aplicação não audita a validade dos documentos.')
+        docs_other = st.text_area('Outros documentos (fora da lista) — um por linha', '\n'.join(doc_others),
+                                  help='Use só para o que não está na lista acima. O match reconhece apenas o nome como o edital escreve.')
         notes = st.text_area('Outras informações relevantes', old.get('notes', ''))
         recalc = st.checkbox('Recalcular compatibilidade com editais analisados ao salvar', value=True)
         saved = st.form_submit_button('Salvar startup', type='primary')
@@ -460,7 +466,7 @@ def startup_form(store, simulated, fixed=None):
             record = {**old, 'name': name.strip(), 'cnpj': cnpj.strip(), 'sem_cnpj': no_cnpj_box, 'city': city.strip(), 'state': state or None,
                       'opened_on': opened.isoformat() if opened else None, 'legal_type': legal.strip(), 'size': size.strip(),
                       'sector': sector.strip(), 'description': description, 'counterpart': counterpart,
-                      'documents': lines(docs), 'notes': notes, 'simulated': simulated, 'organization_type': organization_type.strip()}
+                      'documents': startup_docs.merge(docs_picked, docs_other, doc_options), 'notes': notes, 'simulated': simulated, 'organization_type': organization_type.strip()}
             saved_record = store.save('startups', record)
             if recalc:
                 recalculate(store, startup_id=saved_record['id'])
@@ -1298,14 +1304,8 @@ def verdict_badge(result):
 
 
 def main_reason(result):
-    """A razão que mais pesa, em português claro. Não é nota nem chance de aprovação."""
-    blockers = [r for r in result['rows'] if r['status'] == FAIL and r['mandatory']]
-    pending = [r for r in result['rows'] if r['status'] == PENDING]
-    if blockers:
-        return 'Não atende: ' + blockers[0]['requirement'] + (f' (+{len(blockers) - 1})' if len(blockers) > 1 else '')
-    if pending:
-        return f'{len(pending)} item(ns) a verificar, ex.: ' + pending[0]['requirement']
-    return 'Atende a todos os critérios registrados'
+    """A razão que mais pesa, em português claro. Não é nota nem chance de aprovação (regra em compatibility.main_reason)."""
+    return compatibility.main_reason(result)
 
 
 def linkable_calls(store, include_review=False):
@@ -2116,12 +2116,14 @@ def compatibility_view(store):
                   on_click=lambda: st.session_state.update({'compat_limit': shown + COMPAT_SHOWN}))
     with st.expander(f"Não faz match · {len(data['no_match'])}"):
         if data['no_match']:
+            # st.table quebra o texto na célula; o st.dataframe (grade em canvas) cortava "Edital" e "Motivo principal".
+            show_reason = can('requirements')
             rows = [{'Startup': r['startup']['name'], 'Projeto': r['project']['name'] if r['project'] else 'Sem projeto',
                      'Edital': r['call']['title'], 'Nota': scoring.text(r['score']['value']),
-                     'Motivo principal': main_reason(r['result']),
+                     **({'Motivo principal': main_reason(r['result'])} if show_reason else {}),
                      'Origem': match_provenance(r['application'], r['call'], r['startup'])} for r in data['no_match']]
-            st.dataframe(rows, hide_index=True, width='stretch',
-                         column_order=None if can('requirements') else ['Startup', 'Projeto', 'Edital', 'Nota', 'Origem'])
+            import pandas as pd  # vem com o Streamlit
+            st.table(pd.DataFrame(rows).set_index('Startup'))
             if not can('requirements'):
                 locked_card('requirements', 'lk_compat_reason')
         else:

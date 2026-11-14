@@ -362,4 +362,20 @@ Foco: MVP para demonstração, não sistema completo.
 - 14/11/2026: roteiro de teste do fluxo completo em docs/ROTEIRO_TESTE.md (do cadastro à captação; rótulos lidos do código, não vistos em navegador).
   data/roteiro.db versionado (exceção no .gitignore) a pedido do Kalil, para continuar o teste em outro PC: editais públicos da FAPESC,
   4 startups e 3 projetos digitados pelo Kalil (fictícios), 65/2025 publicado com PRAZO DE TESTE 14/12/2026, 3 matches. Sem arquivos do cofre.
-  Achado no teste: "Documentos disponíveis" é texto livre e precisa do nome exato do edital ("os 4 acima" deu Não atende); proposta: trocar por seleção.
+  Achado no teste: "Documentos disponíveis" é texto livre e precisa do nome exato do edital ("os 4 acima" deu Não atende). RESOLVIDO na entrada abaixo (seleção).
+- 14/11/2026: documentos da startup por seleção e motivo do "Não faz match". 252 testes (`pytest -q tests`).
+  - Startups › cadastro: "Documentos disponíveis" virou st.multiselect + "Outros documentos (fora da lista)" (texto, um por linha).
+    Lista (inovamatch/startup_docs.py): vocabulário do extrator (requirements_engine.DOCUMENTS, 14 nomes; todos os critérios de documento
+    da curadoria saem dele) + nomes de critérios "documents" dos editais da base (contains_all/contains/subset, não descartados), sem duplicata.
+    Comparação: domain.normalize_name (normalize + espaços colapsados), usada também no matching (in, contains_all, subset, disjoint, eq, contains).
+  - Migração sem tocar no banco: startup["documents"] continua lista de nomes. Ao abrir o formulário, linha igual a um nome da lista (pela
+    normalização) vira seleção; o resto vai para "Outros" como foi digitado ("os 4 acima" fica lá, para a pessoa refazer). Só ao salvar
+    os reconhecidos ganham a grafia da lista. Sem conversão por semelhança (ex.: "cartão do CNPJ" fica em Outros) para não reescrever texto.
+  - "Não faz match": a tabela virou st.table (o st.dataframe do 1.67 não quebra texto e cortava Edital/Motivo).
+  - Motivo da Gamma: causa NÃO era o campo de documentos (o roteiro.db tinha "Plano de Trabalho", como no roteiro). Era o main_reason:
+    mostrava só o 1º impedimento + "(+6)" ("Não atende: Tempo mínimo de constituição (+6)"), sem dizer "sem CNPJ" nem a ação sugerida e
+    escondendo os documentos. Agora compatibility.main_reason agrupa: "Em formação, sem CNPJ (…). Ação sugerida: abrir o CNPJ",
+    "Não atende: …" e "Documentos não declarados: …". Um impedimento só continua "Não atende: X". Vale para todas as tabelas de "Motivo principal".
+  - Fica igual: "Documentos do projeto e da equipe" (formulário de projeto) continua texto livre. Cartão CNPJ de startup sem CNPJ conta
+    como documento faltando (não como "sem CNPJ").
+  - Verificado por AppTest numa cópia (data/roteiro_local.db, INOVAMATCH_DB), não no navegador: tabela, motivos e seleção das 4 startups.

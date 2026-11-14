@@ -1,7 +1,7 @@
 # Roteiro de teste: fluxo completo, do cadastro ao fim
 
 - Pergunta: roteiro para o Kalil testar a aplicação do início ao fim, começando pelo cadastro.
-- Data: 14/11/2026 · Commit: 13e943f · Branch: kalil/lote3
+- Data: 14/11/2026 · Commit: 13e943f (Parte 2B e 4.2 atualizadas: documentos por seleção e motivo do "Não faz match") · Branch: kalil/lote3
 - Como foi feito: rótulos e regras lidos no `app.py` e nos módulos. **Nada disto foi rodado no navegador.**
   Se um botão tiver outro nome ou o resultado for outro, anote na coluna "Anotação" (é exatamente o que queremos achar).
 - `data/roteiro.db` vem versionado com o teste já feito até a Compatibilidade (Alfa, Beta, Gamma, 65/2025 publicado com PRAZO DE TESTE). Para continuar de onde parou, rode o comando da Parte 0 **sem** o `rm`.
@@ -64,13 +64,10 @@ Startups › aba **Cadastrar ou editar** › "＋ Nova startup". CNPJs abaixo s�
 | 2.3 | CNPJ preenchido **e** "Ainda não tem CNPJ" marcado | "Marque … ou informe o CNPJ, não os dois." | |
 
 ### 2B. Três startups
-Documentos disponíveis (um por linha), use exatamente:
-```
-Cartão CNPJ
-Contrato social
-Formulário de consulta de elegibilidade
-Plano de Trabalho
-```
+**Documentos disponíveis** agora é uma seleção (antes era texto livre e "os 4 acima" dava Não atende). A lista traz os nomes
+que os editais pedem; marque estes quatro:
+`Cartão CNPJ`, `Contrato social`, `Formulário de consulta de elegibilidade`, `Plano de Trabalho`.
+Documento fora da lista vai no campo **Outros documentos (fora da lista)**, um por linha (o match só reconhece o nome como o edital escreve).
 
 | Campo | Roteiro Alfa (deve passar) | Roteiro Beta (deve falhar) | Roteiro Gama (em formação) |
 |---|---|---|---|
@@ -82,14 +79,16 @@ Plano de Trabalho
 | Porte | EPP | EPP | vazio |
 | Área de atuação | Saúde | Tecnologia | Agro |
 | Contrapartida (R$) | 0 | 0 | 0 |
-| **Documentos disponíveis** (campo de texto no fim do formulário; sem ele a Alfa fica com 4,0) | Cartão CNPJ / Contrato social / Formulário de consulta de elegibilidade / Plano de Trabalho (**cada nome numa linha**, nunca "os 4 acima") | idem Alfa (os 4 nomes) | Plano de Trabalho |
+| **Documentos disponíveis** (seleção no fim do formulário; sem ela a Alfa fica com 4,0) | marque Cartão CNPJ, Contrato social, Formulário de consulta de elegibilidade e Plano de Trabalho | idem Alfa (os 4) | só Plano de Trabalho |
 
 | # | Passo | Esperado | Anotação |
 |---|---|---|---|
 | 2.4 | Salvar cada uma | "Startup salva. Você já pode cadastrar um projeto…" | |
 | 2.5 | Aba **Lista e perfil** | 3 startups, selo "Real" (cadastro seu conta como real) | |
 | 2.6 | Perfil da Gama | Sem pendência de CNPJ/abertura/porte (em formação é caso legítimo) | |
-| 2.7 | Editar a Alfa (mudar cidade e voltar) | Dados mantidos, sem duplicar | |
+| 2.7 | Editar a Alfa (mudar cidade e voltar) | Dados mantidos, sem duplicar; os 4 documentos continuam marcados | |
+| 2.7b | Edite uma startup, escreva em "Outros documentos" `contrato   SOCIAL` e um nome fora da lista (ex.: Alvará municipal), salve e reabra | `Contrato social` aparece marcado na seleção (mesma normalização do match: maiúsculas, acentos, espaços); o Alvará fica em "Outros" | |
+| 2.7c | Startup salva antes desta mudança (texto livre) | O que bate com um nome da lista aparece marcado; o resto (ex.: "os 4 acima") aparece em "Outros", sem perder texto. O banco só muda quando você salva | |
 
 ### 2C. Documentos da startup (cofre)
 Use um PDF qualquer **de teste** (o app avisa: sem login e sem criptografia).
@@ -130,11 +129,11 @@ Matches › aba **Novo projeto** (Quem propõe = Startup). Um projeto por startu
 | # | Passo | Esperado | Anotação |
 |---|---|---|---|
 | 4.1 | Matches › **Compatibilidade** | "Faz match": **Roteiro Alfa × 65/2025, nota 10,0** | |
-| 4.2 | Expander "Não faz match" | Beta (motivo: estado PR) e Gama (sem CNPJ, "ação sugerida: abrir o CNPJ"), nota 4,0 | |
+| 4.2 | Expander "Não faz match" | Tabela com texto quebrado na célula (nada cortado). Beta: "Não atende: Estado". Gama: "Em formação, sem CNPJ (…). Ação sugerida: abrir o CNPJ · Documentos não declarados: Formulário de consulta de elegibilidade, Contrato social, Cartão CNPJ". Nota 4,0 | |
 | 4.3 | "Sem critérios para avaliar" | Outros editais abertos (66/2025, 54/2024…) com "Analisar edital →" | |
 | 4.4 | Editais › 65/2025 › aba **Startups compatíveis** | Mesma leitura: Alfa atende, Beta e Gama não | |
 
-Se Alfa não der 10,0, abra "Como a nota foi calculada" e anote qual linha ficou fora: provavelmente um texto de documento digitado diferente.
+Se Alfa não der 10,0, abra "Como a nota foi calculada" e anote qual linha ficou fora: provavelmente um documento não marcado ou escrito em "Outros" com outro nome.
 
 ---
 
@@ -239,7 +238,7 @@ Para ver os bloqueios de cada plano com dados, use a Parte 12.
 ## Limites conhecidos (não marque como defeito)
 - Prazo 14/12/2026 é **de teste**; a divergência de datas foi resolvida sem análise.
 - Os 15 critérios do 65/2025 foram validados por mim em lote, não por leitura sua do PDF.
-- O match confere o que a startup **declara** (documentos digitados), não audita o arquivo.
+- O match confere o que a startup **declara** (documentos marcados), não audita o arquivo.
 - Lembretes e alertas não são enviados (só aparecem na tela). Alertas está oculta.
 - Copiloto de IA: "Em breve", sem chamada à OpenAI.
 - Bugs já relatados que vale reconferir: aba ativa voltar para "Resumo" depois de salvar; "Gerenciar" sem efeito.

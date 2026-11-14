@@ -2,7 +2,7 @@
 from datetime import date
 import hashlib
 import json
-from .domain import deadline_info, missing, normalize, today
+from .domain import deadline_info, missing, normalize_name, today
 
 PASS = 'ATENDIDO'
 FAIL = 'NÃO ATENDIDO'
@@ -121,20 +121,20 @@ def evaluate(criterion, startup, project, on=None):
         elif op in ('in', 'not_in'):
             if not isinstance(expected, list):
                 raise ValueError('Esperada lista de opções')
-            ok = normalize(actual) in {normalize(x) for x in expected}
+            ok = normalize_name(actual) in {normalize_name(x) for x in expected}
             if op == 'not_in':
                 ok = not ok
         elif op in ('contains_all', 'subset', 'disjoint'):
             if not isinstance(actual, list) or not isinstance(expected, list):
                 raise ValueError('Esperadas listas')
-            aset, eset = {normalize(x) for x in actual}, {normalize(x) for x in expected}
+            aset, eset = {normalize_name(x) for x in actual}, {normalize_name(x) for x in expected}
             ok = eset <= aset if op == 'contains_all' else aset <= eset if op == 'subset' else not aset.intersection(eset)
         elif op in ('eq', 'neq'):
-            ok = actual == expected if isinstance(actual, (int, float)) and isinstance(expected, (int, float)) else normalize(actual) == normalize(expected)
+            ok = actual == expected if isinstance(actual, (int, float)) and isinstance(expected, (int, float)) else normalize_name(actual) == normalize_name(expected)
             if op == 'neq':
                 ok = not ok
         elif op == 'contains':
-            ok = normalize(expected) in ({normalize(x) for x in actual} if isinstance(actual, list) else normalize(actual))
+            ok = normalize_name(expected) in ({normalize_name(x) for x in actual} if isinstance(actual, list) else normalize_name(actual))
         else:
             ok = not missing(actual)
         result['provisional_status'] = PASS if ok else FAIL

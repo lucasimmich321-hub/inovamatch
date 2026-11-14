@@ -10,8 +10,8 @@
 """
 from . import score
 from .call_status import CONTINUOUS, call_situation
-from .domain import today
-from .matching import match
+from .domain import normalize_name, today
+from .matching import FAIL, NO_CNPJ_ACTION, PENDING, match
 
 EXCLUDED = ('Encerrado', 'Futuro')
 CONFIRMED_OPEN = ('Aberto', CONTINUOUS)
@@ -60,3 +60,41 @@ def build(store, on=None, startup_kind=None):
     scored.sort(key=lambda r: (-r['score']['value'], r['startup']['name'], r['call']['title']))
     return {'match': [r for r in scored if r['score']['faz_match']], 'no_match': [r for r in scored if not r['score']['faz_match']],
             'no_criteria': no_criteria, 'calls': len(calls), 'startups': len(startups)}
+
+
+DOC_FIELDS = ('documents', 'project_documents')
+DOC_REQUIRED_OPS = ('contains_all', 'contains')  # exige ter o documento ('disjoint'/'subset' são outra regra)
+
+
+def _missing_docs(row):
+    expected = row.get('expected') if isinstance(row.get('expected'), list) else [row.get('expected')]
+    have = {normalize_name(x) for x in row.get('actual') or []} if isinstance(row.get('actual'), list) else set()
+    return [str(x) for x in expected if x and normalize_name(x) not in have]
+
+
+def main_reason(result):
+    """Motivo principal do "Não faz match" (e das tabelas de compatibilidade), agrupado por causa.
+
+    Antes mostrava só o 1º impedimento + "(+N)": a startup em formação aparecia como "Não atende: Tempo mínimo de
+    constituição (+6)", sem dizer que a causa é a falta de CNPJ (nem a ação sugerida) e escondendo os documentos.
+    Agora: 1) sem CNPJ (com a ação), 2) demais requisitos, 3) documentos não declarados, pelo nome do edital.
+    """
+    blockers = [r for r in result['rows'] if r['status'] == FAIL and r['mandatory']]
+    pending = [r for r in result['rows'] if r['status'] == PENDING]
+    if not blockers:
+        if pending:
+            return f'{len(pending)} item(ns) a verificar, ex.: ' + pending[0]['requirement']
+        return 'Atende a todos os critérios registrados'
+    no_cnpj = [r for r in blockers if r.get('no_cnpj')]
+    docs = [r for r in blockers if not r.get('no_cnpj') and r.get('field') in DOC_FIELDS and r.get('op') in DOC_REQUIRED_OPS]
+    other = [r for r in blockers if r not in no_cnpj and r not in docs]
+    parts = []
+    if no_cnpj:
+        names = '; '.join(r['requirement'] for r in no_cnpj)
+        parts.append(f'Em formação, sem CNPJ ({names}). Ação sugerida: {NO_CNPJ_ACTION[:1].lower() + NO_CNPJ_ACTION[1:]}')
+    if other:
+        parts.append('Não atende: ' + '; '.join(r['requirement'] for r in other))
+    if docs:
+        names = list(dict.fromkeys(name for r in docs for name in _missing_docs(r) or [r['requirement']]))
+        parts.append('Documentos não declarados: ' + ', '.join(names))
+    return ' · '.join(parts)

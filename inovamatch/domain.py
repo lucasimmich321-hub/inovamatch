@@ -23,6 +23,11 @@ def normalize(value):
                    if not unicodedata.combining(c))
 
 
+def normalize_name(value):
+    """normalize + espaços internos colapsados: para comparar nomes (documentos, opções), não texto corrido de PDF."""
+    return ' '.join(normalize(value).split())
+
+
 def missing(value):
     return value is None or value == '' or value == []
 
