@@ -33,14 +33,14 @@ h1,h2,h3 {font-family:'Manrope',sans-serif;letter-spacing:-.035em;}
 [data-testid="stSidebar"] {border-right:1px solid #e3e9e8;background:#fff;}
 [data-testid="stSidebar"] .block-container {padding-top:2rem;}
 [data-testid="stMetric"] {background:white;border:1px solid #e1e9e6;border-radius:14px;padding:20px 22px;}
-[data-testid="stMetricLabel"] {color:#667b7a;font-size:13px;}
+[data-testid="stMetricLabel"] {color:#55675f;font-size:13px;}
 [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] * {white-space:normal !important;overflow:visible !important;text-overflow:clip !important;}
 [data-testid="stMetricValue"] {font-family:'Manrope',sans-serif;font-weight:800;font-size:32px;}
-.eyebrow {color:#61817b;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;}
+.eyebrow {color:#4a6a63;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;}
 .brand {display:flex;gap:11px;align-items:center;margin-bottom:27px;}
 .brand-icon {border-radius:12px;background:#087f74;color:white;font-size:27px;font-weight:800;padding:4px 12px;}
 .brand-name {font-family:'Manrope',sans-serif;font-size:23px;font-weight:800;letter-spacing:-1px;}
-.brand-sub {color:#6b8580;font-size:10px;letter-spacing:.13em;}
+.brand-sub {color:#4f6964;font-size:11px;letter-spacing:.12em;}
 .hero {border-radius:19px;background:linear-gradient(120deg,#103b38,#12584f);padding:30px 34px;margin:14px 0 26px;color:#fff;position:relative;overflow:hidden;}
 .hero:after {content:'◉';font-size:240px;position:absolute;right:2%;top:-100px;color:#a3e5bc10;}
 .hero .eyebrow {color:#a9e7bf;}
@@ -51,10 +51,10 @@ h1,h2,h3 {font-family:'Manrope',sans-serif;letter-spacing:-.035em;}
 .tag.demo {background:#f2eafb;color:#76519a;}
 .opportunity {min-height:160px;}
 .opportunity h3 {font-size:17px;letter-spacing:-.02em;margin:13px 0 10px;line-height:1.45;}
-.muted {color:#72847f;font-size:12px;}
+.muted {color:#55675f;font-size:12px;}
 .section-head {font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;margin:26px 0 4px;}
 .steps {background:#edf4f1;border-radius:14px;padding:23px 26px;margin-top:26px;color:#45655b;line-height:1.9;}
-.footer {font-size:11px;color:#81918b;border-top:1px solid #e1e8e4;margin-top:30px;padding-top:15px;}
+.footer {font-size:11px;color:#55675f;border-top:1px solid #e1e8e4;margin-top:30px;padding-top:15px;}
 .status {display:inline-block;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;border:1px solid transparent;}
 .s-open {background:#e4f4ec;color:#14583f;}
 .s-flow {background:#e3eefb;color:#1d4f8a;}
@@ -62,6 +62,8 @@ h1,h2,h3 {font-family:'Manrope',sans-serif;letter-spacing:-.035em;}
 .s-closed {background:#fbe5e3;color:#8a1f17;}
 .s-future {background:#f2eafb;color:#5e3d80;}
 .s-unknown {background:#eef1f0;color:#44524e;}
+:focus-visible, [data-baseweb] :focus-visible {outline:3px solid #087f74 !important;outline-offset:2px !important;}
+[data-testid="stSidebar"] label:has(input:focus-visible), [data-testid="stPills"] button:focus-visible {outline:3px solid #087f74 !important;outline-offset:2px;border-radius:8px;}
 [data-testid="stForm"] {background:#fff;border-color:#e2eae5;border-radius:14px;}
 .stButton button {border-radius:9px;}
 @media(max-width:700px) {.hero {padding:24px}.hero h1 {font-size:25px}.block-container {padding:4.5rem 1.2rem 1.2rem;}}
@@ -565,7 +567,7 @@ def compatibility_view(store, call):
     verdict_banner(result)
     dimensions_view(result)
     with st.expander('Justificativas e evidências da comparação'):
-        result_table(result)
+        result_table(result, 'compat_' + call['id'])
 
 
 def dimensions_view(result):
@@ -823,7 +825,10 @@ def choose_candidacy(store, prefix):
     return call, startup, project
 
 
-def result_table(result):
+ESSENTIAL_COLUMNS = ['Requisito', 'Resultado', 'Obrigatório', 'Exigência', 'Dados declarados', 'Justificativa']
+
+
+def result_table(result, key):
     rows = [{'Requisito': r['requirement'], 'Escopo': {'startup': 'Empresa', 'project': 'Projeto', 'call': 'Edital'}[r['scope']],
              'Exigência': display(r['expected']), 'Dados declarados': display(r['actual']), 'Resultado': r['status'],
              'Obrigatório': r['mandatory'], 'Justificativa': r['reason'], 'Fonte': r['source'],
@@ -831,7 +836,8 @@ def result_table(result):
     for target, row in zip(rows, result['rows']):
         target['Dimensão'] = DIMENSIONS.get(row.get('dimension'), 'Elegibilidade obrigatória')
         target['Pré-comparação (exigência não validada)'] = row.get('provisional_status', PENDING) if row['status'] == PENDING else '—'
-    st.dataframe(rows, hide_index=True, width='stretch')
+    show_all = st.toggle('Mostrar todas as colunas (fonte, página, evidência, dimensão)', key='all_cols_' + key)
+    st.dataframe(rows, hide_index=True, width='stretch', column_order=None if show_all else ESSENTIAL_COLUMNS)
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=list(rows[0]))
     writer.writeheader()
@@ -869,7 +875,8 @@ def intelligent_match(store):
             a.metric('Critérios atendidos', result['attended'])
             b.metric('Impedimentos obrigatórios', result['blockers'])
             c.metric('Pendências de verificação', result['pending'])
-            result_table(result)
+            with st.expander('Justificativas e evidências da comparação'):
+                result_table(result, 'match')
             dimensions_view(result)
             st.caption('A comparação é recalculada com os dados atuais. “Atendido” se refere à regra registrada e à informação declarada, sem auditoria documental. Não representa aprovação pelo órgão.')
     with reverse:
@@ -906,7 +913,7 @@ def copilot(store):
     verdict_banner(result)
     dimensions_view(result)
     with st.expander('Critérios atendidos, impedimentos e pendências desta candidatura'):
-        result_table(result)
+        result_table(result, 'copilot')
     if st.button('Iniciar preparação desta candidatura', type='primary'):
         register_application(store, call, startup, project)
         st.success('Candidatura em preparação registrada no portfólio.')

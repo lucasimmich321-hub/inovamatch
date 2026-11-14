@@ -184,3 +184,46 @@ def test_scan_progress_caption_is_cleared(monkeypatch):
     captions = [c.value for c in app.caption]
     assert not any('Consultando' in c for c in captions)
     assert any(c.startswith('Última busca: 14/11/2026 09:05') for c in captions)
+
+
+# T5 ---------------------------------------------------------------------
+
+def _luminance(hex_color):
+    channels = [int(hex_color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    channels = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+
+
+def contrast(fg, bg='#ffffff'):
+    high, low = sorted([_luminance(fg), _luminance(bg)], reverse=True)
+    return (high + 0.05) / (low + 0.05)
+
+
+def test_secondary_text_contrast_and_focus_visible():
+    import app as ui
+    for selector in ['.muted', '.brand-sub', '.eyebrow', '.footer', '[data-testid="stMetricLabel"]']:
+        color = re.search(re.escape(selector) + r' \{[^}]*color:(#[0-9a-f]{6})', ui.CSS).group(1)
+        assert contrast(color) >= 4.5, (selector, color)
+    for css in ['s-open', 's-flow', 's-flow-pending', 's-closed', 's-future', 's-unknown']:
+        rule = re.search(r'\.' + css + r' \{([^}]*)\}', ui.CSS).group(1)
+        fg = re.search(r'(?<!-)color:(#[0-9a-f]{6})', rule).group(1)
+        bg = re.search(r'background:(#[0-9a-f]{3,6})', rule).group(1)
+        bg = '#ffffff' if bg == '#fff' else bg
+        assert contrast(fg, bg) >= 4.5, (css, fg, bg)
+    assert ':focus-visible' in ui.CSS and 'outline:3px solid' in ui.CSS
+
+
+def test_match_justifications_in_expander_with_essential_columns():
+    app = clean(AppTest.from_file(APP, default_timeout=20).run())
+    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    app.sidebar.radio[0].set_value('Match Inteligente').run()
+    clean(app)
+    assert any(e.label == 'Justificativas e evidências da comparação' for e in app.expander)
+    toggle = next(t for t in app.toggle if t.label.startswith('Mostrar todas as colunas'))
+    table = next(d for d in app.dataframe if 'Justificativa' in d.value.columns)
+    import app as ui
+    assert list(table.proto.column_order) == ui.ESSENTIAL_COLUMNS
+    toggle.set_value(True).run()
+    clean(app)
+    table = next(d for d in app.dataframe if 'Justificativa' in d.value.columns)
+    assert list(table.proto.column_order) == []
