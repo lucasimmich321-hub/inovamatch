@@ -47,7 +47,9 @@ ASSETS = Path(__file__).parent / 'assets'
 LOGO = ASSETS / 'logo_nova.jpg' if (ASSETS / 'logo_nova.jpg').exists() else ASSETS / 'logo.svg'
 # Ícone da aba e da barra recolhida: só o símbolo (a logo inteira fica ilegível em 16 px).
 ICON = ASSETS / 'logo_icone.png' if (ASSETS / 'logo_icone.png').exists() else LOGO
-st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon=str(ICON) if ICON.suffix != '.svg' else '◈', layout='wide')
+# Ícone da aba (favicon do Kalil, cópia de inovamatch_favicon.* da raiz): .ico, depois .png, depois o símbolo.
+FAVICON = next((ASSETS / n for n in ('favicon.ico', 'favicon.png') if (ASSETS / n).exists()), ICON)
+st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon=str(FAVICON) if FAVICON.suffix != '.svg' else '◈', layout='wide')
 
 CSS = '''
 <style>

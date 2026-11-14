@@ -227,3 +227,6 @@ Foco: MVP para demonstração, não sistema completo.
     Sem bloco do espaço de trabalho, sem Resultados, sem filtro de destinatário. Se a startup do perfil não existe na base
     (ex.: Dados reais sem as startups de exemplo), Início e Minha startup mostram estado vazio pedindo o perfil Institucional.
   - Não verificado em navegador (só AppTest: os 5 perfis × 5 páginas × 2 bases sem exceção).
+- 14/11/2026: favicon. inovamatch_favicon.ico/.png (raiz, não apagados nem versionados) copiados para assets/favicon.ico e
+  assets/favicon.png; page_icon = FAVICON no topo do app.py (.ico → .png → logo_icone.png). O .ico carrega no Streamlit 1.67
+  (servido convertido em PNG, conferido pelo gerenciador de mídia, sem navegador). logo_icone.png segue como ícone da barra recolhida.
