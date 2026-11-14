@@ -34,6 +34,7 @@ from inovamatch.components import band, card, chip, empty_state, locked
 from inovamatch import plans
 from inovamatch import score as scoring
 from inovamatch import dashboard
+from inovamatch import alerts
 from inovamatch import attention
 from inovamatch.filters import STATUS_FILTERS
 from inovamatch.origin import DEMO, LABELS as ORIGIN_LABELS, badge_html as origin_badge, is_demo, label as origin_label
@@ -1128,7 +1129,9 @@ def link_detail(store, call, startup, project, show_checklist=True, compact=Fals
     # Depois da inscrição, prazo encerrado não conta (mesma regra da nota e do "Impedido").
     result = attention.for_application(match(call, startup, project), application)
     st.html(f'<div class="section-head">{escape(startup["name"])} · {escape(project["name"])}</div>')
-    st.html(verdict_badge(result) + origin_badge(application or (call if is_demo(call) else startup)))
+    blocked = attention.impediments(result, application)[0]  # mesmo critério da faixa vermelha e da nota
+    st.html(('<span class="status v-fail">Impedido</span>' if blocked else verdict_badge(result))
+            + origin_badge(application or (call if is_demo(call) else startup)))
     if not compact:  # no painel do match, impedimentos e pendências já estão no topo
         verdict_banner(result)
     info = scoring.compute(result, application)
@@ -1317,9 +1320,10 @@ def application_form(store, application, call, result, totals):
     """Registro de andamento e resultado do match. O motivo sugerido nunca é salvo sozinho."""
     status = application.get('status', PREPARING)
     probe = application if status in LOST else {**application, 'status': NOT_SUBMITTED if deadline_info(call)['status'] == 'expired' else REJECTED}
-    hint = suggest_reason(probe, call, result, totals)
+    # Depois da inscrição (Inscrito/Aprovado) não faz sentido sugerir "Prazo perdido".
+    hint = None if status in (SUBMITTED, APPROVED) else suggest_reason(probe, call, result, totals)
     as_date = lambda v: date.fromisoformat(v) if v else None
-    with st.expander('Registrar andamento e resultado', expanded=status != PREPARING):
+    with st.expander('Registrar andamento e resultado', expanded=False):
         with st.form('application_' + application['id']):
             new_status = st.selectbox('Status do match', STATUSES, index=STATUSES.index(status) if status in STATUSES else 0)
             a, b = st.columns(2)
@@ -1965,12 +1969,35 @@ def home_pendencies(store):
 
 
 def alertas_page(store):
-    heading('Alertas', 'Fila de avisos por destinatário: equipe do polo, parceiros e startups incubadas.')
-    with st.container(border=True):
-        st.markdown('**Ainda não implementado.**')
-        st.write('Esta tela vai reunir os avisos de edital novo compatível, prazo chegando (7, 3 e 1 dia) e edital alterado, '
-                 'com texto pronto e links de e-mail e WhatsApp. Nada é enviado automaticamente.')
-        st.caption('Enquanto isso, prazos e pendências aparecem no Início.')
+    heading('Alertas', 'Fila de avisos por destinatário, com texto pronto para copiar, abrir no e-mail ou no WhatsApp.')
+    st.html(f'<div class="im-chips">{chip("Simulação: nada é enviado", "warn", "alert")}</div>')
+    recipient = st.segmented_control('Destinatário', ['Todos'] + alerts.RECIPIENTS, default='Todos', key='alert_recipient') or 'Todos'
+    allowed = [t for t in alerts.TYPES if alerts.FEATURE[t] is None or can(alerts.FEATURE[t])]
+    queue = [a for a in alerts.build(store) if a['tipo'] in allowed and (recipient == 'Todos' or recipient in a['destinatarios'])]
+    if not alerts.build(store):
+        st.html(empty_state('Nenhum aviso agora', 'Os avisos aparecem quando há match forte, edital novo compatível, prazo em até '
+                                                  '7 dias ou documento vencido. Nada é enviado: o texto fica pronto para você copiar.'))
+        return
+    # Agrupados por tipo em abas (sem seções empilhadas); tipo fora do plano mostra o cartão de bloqueio.
+    tabs = st.tabs([f"{kind} · {sum(a['tipo'] == kind for a in queue)}" if kind in allowed else f'{kind} · bloqueado'
+                    for kind in alerts.TYPES])
+    for kind, tab in zip(alerts.TYPES, tabs):
+        with tab:
+            if kind not in allowed:
+                locked_card(alerts.FEATURE[kind], 'lk_alert_' + kind)
+                continue
+            group = [a for a in queue if a['tipo'] == kind]
+            if not group:
+                st.caption('Nenhum aviso deste tipo' + ('' if recipient == 'Todos' else f' para {recipient.lower()}') + '.')
+            for alert in group:
+                with st.container(border=True):
+                    tags = ''.join(chip(r, 'info', 'users') for r in alert['destinatarios'])
+                    st.html(f'<div class="im-chips">{tags}{chip("Demonstração") if alert["demo"] else ""}</div>'
+                            f'<div class="im-card-title">{escape(alert["titulo"])}</div>')
+                    st.code(alert['texto'], language=None, wrap_lines=True)  # o ícone de copiar vem no próprio bloco
+                    a, b = st.columns(2)
+                    a.link_button('Abrir e-mail', alert['mailto'], icon=':material/mail:', width='stretch')
+                    b.link_button('Abrir WhatsApp', alert['whatsapp'], icon=':material/chat:', width='stretch')
 
 
 def planos_page():

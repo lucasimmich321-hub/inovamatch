@@ -130,3 +130,21 @@ def test_nota_e_dashboard_institucional():
     app.session_state['plan'] = 'Básico'
     app.run()
     assert 'Startups no portfólio' not in {m.label for m in app.metric}  # Início simples fora do Institucional
+
+
+def test_alertas_simulados_por_plano():
+    import sys
+    from pathlib import Path
+    from streamlit.testing.v1 import AppTest
+    sys.path.insert(0, str(Path(__file__).parent))
+    from nav import goto
+    app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
+    goto(app, 'Alertas')
+    assert any('Nenhum aviso agora' in h.value for h in app.get('html'))  # modo real vazio
+    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    goto(app, 'Alertas')
+    assert not app.exception and 6 <= len(app.code) <= 8
+    assert any('Simulação: nada é enviado' in h.value for h in app.get('html'))
+    app.session_state['plan'] = 'Gratuito'
+    app.run()
+    assert len(app.code) == 2 and any('Disponível no plano Básico' in h.value for h in app.get('html'))

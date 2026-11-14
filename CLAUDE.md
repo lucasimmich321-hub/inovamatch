@@ -52,7 +52,7 @@ Foco: MVP para demonstração, não sistema completo.
 - Editais de referência (PDFs reais da FAPESC): Nascer 24/2026 (inscrições 05/05 a 15/06/2026), GCUB 53/2026 (04/09 a 05/10/2026) e FAPESC 54/2026 (10/09 a 20/10/2026). Bons para dados reais e para testar a extração.
 
 ## Fases do Lote 3
-- Fase 1 (feita, 8387a04): navegação em 5 páginas com ícones. Alertas ainda é só um aviso.
+- Fase 1 (feita, 8387a04): navegação em 5 páginas com ícones. Alertas: fila simulada desde a Fase 4 dos alertas (14/11).
 - Fase 0 (feita, 88fb6f6): campo origem, seletor Dados reais/Demonstração, selos, docs/ESTADO_REAL.md. 222 testes passando.
 - Fase 2 + 3 (feita, f843523): cards de editais na paleta nova, página Matches com match ativo no topo, abas Checklist (marcar ok, vincular documento) e Documentos (enviar, baixar, "Baixar tudo (.zip)"), nome "Match" unificado.
 - Fase 4 (feita, mínima): gestão da captação. Datas sugeridas a partir do cronograma extraído (com fonte e "a confirmar") e datas manuais; cada data confirmada gera tarefas (responsável, prazo, status) e lembretes (7, 3 e 1 dia); exportar .ics. Aviso: datas pós-aprovação costumam estar no termo de outorga, não no edital.
@@ -167,3 +167,14 @@ Foco: MVP para demonstração, não sistema completo.
     assets/logo_nova.jpg (barra lateral) e símbolo em assets/logo_icone.png (aba e barra recolhida), com o Pillow que já vem com o
     Streamlit. O original na raiz não foi apagado nem versionado.
   - Não verificado em navegador.
+- 14/11/2026: Fase 4 (Alertas, SIMULAÇÃO: nada é enviado). 229 testes.
+  - inovamatch/alerts.py: fila gerada dos dados existentes. Match forte (nota ≥ 8, antes da inscrição) → Startups, Equipe;
+    Edital novo compatível (edital aberto que atende, sem match) → Startups, Parceiros; Prazo chegando (marcos 7/3/1 dia) do edital
+    (Startups, Equipe) e de datas confirmadas da captação (Equipe, Parceiros); Documento vencido → Startups, Equipe.
+  - Página Alertas: selo "Simulação: nada é enviado", filtro de destinatário no topo, uma aba por tipo; cada aviso com texto pronto
+    (st.code, que já tem botão de copiar), "Abrir e-mail" (mailto sem destinatário) e "Abrir WhatsApp" (wa.me sem número).
+    Planos: Gratuito só match forte; Básico + edital novo; Intermediário+ prazos e documentos (aba bloqueada = cartão do plano).
+    Demonstração: 7 avisos. Modo real sem dados: estado vazio.
+  - Ajustes: selo do Resumo mostra "Impedido" quando a faixa diz Impedido; sem sugestão "Prazo perdido" em Inscrito/Aprovado;
+    "Registrar andamento e resultado" abre sempre fechado.
+  - Não verificado em navegador (inclui o botão de copiar do st.code e a abertura dos links).
