@@ -88,7 +88,7 @@ def load_demo(store):
                              # Cronograma FICTÍCIO: alimenta as datas sugeridas da aba Captação na demonstração.
                              'schedule': _demo_schedule(days, source),
                              'review_state': 'Publicado', 'relevance': 'Relevante',
-                             'summary': 'Edital fictício, sem oportunidade real de financiamento.'})
+                             'summary': f'Edital fictício para startups e pequenas empresas da área {theme}, sem oportunidade real de financiamento.'})
 
 
 def demo_matches(store):

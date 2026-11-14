@@ -244,3 +244,18 @@ Foco: MVP para demonstração, não sistema completo.
     e N match(es) reais" (+ "Mais N startup(s) de exemplo (fictícias)" se houver).
   - Não verificado: nada em navegador (aparência e tamanho do selo); "Real (FAPESC)" só em teste unitário (crawler real não rodado
     nesta sessão); listas de texto do Início (prazos, pendências) não têm selo (a faixa do dashboard cobre o Institucional).
+- 14/11/2026: classificação automática de editais por público e área (regras, sem IA; ajuste sem fase nova). 238 testes.
+  - inovamatch/categories.py: palavras-chave no título + resumo + 3 primeiras páginas do PDF (sem PDF: trechos dos critérios).
+    Público: Startup, Empresa (MPE/MEI), Pesquisador / ICT, Estudante / bolsista, Pessoa física (vazio = "Não identificado").
+    Área: Saúde, Agro, TIC / software, Energia, Educação, Indústria, Ambiental (vazio = "Geral / não identificado").
+    Entra se aparece no título ou ≥ 3 vezes no texto (área ≥ 5; "startup" basta 1). Mais de 3 áreas = edital multitemático → "Geral".
+  - Selos no card e no detalhe com "sugerido automaticamente, conferir"; Publicação rápida tem os dois campos (multiseleção) e grava
+    audience/areas/categories_reviewed (a escolha revisada substitui a sugestão e tira a marca).
+  - Editais › Mais filtros: "Público-alvo" e "Área" por seleção (substituem o texto livre de área); "Limpar filtros" limpa os dois.
+  - Nota e veredito do match não usam a classificação.
+  - Demonstração: resumo dos editais fictícios abertos cita "startups e pequenas empresas da área X".
+  - Teste com os 3 abertos da FAPESC (cache de 14/11 15h, sem rede): 66/2025 Horizonte Europa → Pesquisador / ICT, área Geral
+    (cita 5 áreas); 65/2025 Horizonte Europa subvenção → Empresa (MPE/MEI), área Geral (cita 5 áreas); 54/2024 Inova Talentos →
+    Empresa, Pesquisador / ICT, Estudante / bolsista, área Geral (nenhuma ≥ 5). Na base inteira (114 editais, quase todos sem PDF lido),
+    91 ficaram com público "Não identificado" e 101 com área "Geral / não identificado".
+  - Não verificado em navegador (selos e marca "conferir" no card); Publicação rápida conferida só pelo AppTest.

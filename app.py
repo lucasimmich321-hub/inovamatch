@@ -17,6 +17,7 @@ from inovamatch.domain import STATES, deadline_info, now_iso, today
 from inovamatch.matching import FIELDS, OPS, FAIL, PASS, PENDING, DIMENSIONS, dimension_for, fingerprint, match
 from inovamatch.radar import import_url, pdf_call
 from inovamatch.storage import ScopedStore, Store
+from inovamatch import categories
 from inovamatch.documents import merge_analysis, automatic_analysis
 from inovamatch.portfolio import overview, matrix, recalculate, register_application
 from inovamatch.filters import filter_calls, funding_value, sort_calls, status_group
@@ -106,6 +107,7 @@ h1,h2,h3 {font-family:var(--im-font);letter-spacing:-.02em;color:var(--im-dark);
 .im-card {display:flex;flex-direction:column;gap:6px;}
 .im-chips {display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
 /* Selo de origem: pequeno e discreto; o fictício em laranja (contraste ≥ 4,5:1). */
+.im-auto {font-size:11px;color:#4A5670;font-style:italic;white-space:nowrap;}
 .im-origin {display:inline-block;font-size:11px;font-weight:700;line-height:1.5;padding:0 7px;border-radius:999px;border:1px solid;vertical-align:middle;margin-left:4px;white-space:nowrap;}
 .im-origin-fict {background:#FDECC8;color:#7A3E06;border-color:#7A3E06;}
 .im-origin-real {background:#fff;color:#3A4560;border-color:#C5CDDC;}
@@ -792,6 +794,12 @@ def quick_publish(store, call):
             day = st.date_input('Prazo de inscrição', value=suggested, format='DD/MM/YYYY', min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
             if call.get('deadline_evidence'):
                 st.caption('Sugestão lida do documento: ' + call['deadline_evidence'][:200])
+            audience, areas, _ = categories.effective(call)
+            a, b = st.columns(2)
+            new_audience = a.multiselect('Público-alvo', categories.AUDIENCE_OPTIONS, default=audience,
+                                         help='Sugestão automática por palavras-chave. Ajuste antes de publicar.')
+            new_areas = b.multiselect('Área', categories.AREA_OPTIONS, default=areas,
+                                      help='Sugestão automática por palavras-chave. Ajuste antes de publicar.')
             checked = st.checkbox('Conferi o prazo na fonte oficial (e nas retificações)')
             reviewed = st.checkbox('Revisei os critérios registrados (ou aceito publicar com critérios a completar)')
             go_publish = st.form_submit_button('Confirmar e publicar', type='primary')
@@ -801,7 +809,10 @@ def quick_publish(store, call):
                 return
             evidence = call.get('deadline_evidence') or f'Prazo confirmado pelo escritório na fonte em {today():%d/%m/%Y}.'
             updated = {**call, 'deadline': day.isoformat(), 'deadline_confirmed': True, 'deadline_evidence': evidence,
-                       'criteria_complete': True, 'quick_published': True}
+                       'criteria_complete': True, 'quick_published': True,
+                       # Classificação revisada pela pessoa: passa a valer no lugar da sugestão automática.
+                       'audience': new_audience or [categories.NO_AUDIENCE], 'areas': new_areas or [categories.NO_AREA],
+                       'categories_reviewed': True}
             missing = publication_blockers(updated)
             if missing:
                 st.error('Ainda falta: ' + ' '.join(missing))
@@ -843,6 +854,7 @@ def versions_view(store, call):
 def call_detail(store, call):
     st.subheader(call['title'])
     st.html(status_badge(call) + call_origin(call) + (' ' + chip('Alterado') if versioning.is_altered(call) else ''))
+    st.html('<div class="im-chips"><span class="muted">Público e área:</span>' + ''.join(category_chips(call)) + '</div>')
     versions_view(store, call)
     info = deadline_info(call)
     if info['status'] in ('soon', 'expired'):
@@ -1035,10 +1047,12 @@ def radar(store, simulated):
     order = c.selectbox('Ordenar por', ['Relevância', 'Prazo'], key='order_' + sk)
     extra = st.pills('Mostrar também', ['Incluir encerrados', 'Mostrar fora do foco'], selection_mode='multi', key='extra_filter_' + sk,
                      help='Por padrão a lista mostra editais abertos, em fluxo contínuo ou com situação a confirmar.')
-    with st.expander('Mais filtros: instituição, área, estado, valor, prazo e elegibilidade'):
+    with st.expander('Mais filtros: público, área, instituição, estado, valor, prazo e elegibilidade'):
         a, b = st.columns(2)
         institutions = a.multiselect('Instituições', sorted({c.get('institution', 'Não informado') for c in calls}))
-        area = b.text_input('Área / tema identificado')
+        area_filter = b.multiselect('Área', categories.AREA_OPTIONS, placeholder='Todas', key='area_filter_' + sk,
+                                    help='Classificação automática por palavras-chave (ou a revisada na publicação).')
+        audience_filter = a.multiselect('Público-alvo', categories.AUDIENCE_OPTIONS, placeholder='Todos', key='audience_filter_' + sk)
         state = a.selectbox('Estado exigido da organização', [''] + STATES, format_func=lambda key: key or 'Todos')
         min_value = b.number_input('Valor identificado mínimo (R$)', min_value=0.0, value=None)
         max_days = a.number_input('Prazo confirmado em até quantos dias?', min_value=0, value=None, step=1)
@@ -1050,8 +1064,9 @@ def radar(store, simulated):
                 selected_project = pick('Projeto para o filtro', [p for p in store.all('projects') if p['startup_id'] == selected_startup['id']], 'radar_filter_project')
             if not selected_project:
                 st.info('Selecione uma startup com projeto para aplicar o filtro de elegibilidade.')
-        st.caption('Área, estado e valores identificados podem ser sugestões ainda não validadas. Valores ausentes não são estimados. O filtro de prazo usa apenas datas confirmadas.')
-    filtered = filter_calls(calls, institutions=institutions, area=area, state=state, min_value=min_value, max_days=max_days,
+        st.caption('Público, área, estado e valores identificados podem ser sugestões ainda não validadas. Valores ausentes não são estimados. O filtro de prazo usa apenas datas confirmadas.')
+    by_category = [c for c in calls if categories.matches(c, audience_filter, area_filter)]
+    filtered = filter_calls(by_category, institutions=institutions, state=state, min_value=min_value, max_days=max_days,
                             verdict=None if eligibility == 'Todas' else eligibility, startup=selected_startup, project=selected_project,
                             statuses=statuses or None,
                             include_closed='Incluir encerrados' in extra or 'Encerrado' in statuses, include_off_focus='Mostrar fora do foco' in extra)
@@ -1099,6 +1114,16 @@ def deadline_text(call):
     return deadline_label(call)
 
 
+def category_chips(call):
+    """Selos de público e área (categories.py, por regras). Sugestão automática leva a marca "conferir"."""
+    audience, areas, auto = categories.effective(call)
+    out = [chip(a, 'info', 'users') for a in audience] + [chip(a, 'muted', 'tag') for a in areas]
+    if auto:
+        out.append(f'<span class="im-auto" title="Por palavras-chave no título e no início do texto, sem IA. '
+                   f'Ajuste na Publicação rápida.">{categories.AUTO_NOTE}</span>')
+    return out
+
+
 def call_card(call):
     situation = status_group(call)
     chips = [chip(STATUS_LABEL.get(situation, situation))]
@@ -1107,6 +1132,7 @@ def call_card(call):
         chips.append(chip('Aguardando revisão', 'warn'))
     if versioning.is_altered(call):
         chips.append(chip('Alterado'))
+    chips += category_chips(call)
     value = funding_value(call)
     return card(call['title'], call.get('institution') or 'Órgão não informado', chips,
                 [('calendar', deadline_text(call)), ('wallet', brl(value) if value is not None else 'Valor não informado')],
@@ -1124,7 +1150,7 @@ def start_match(call_id):
 
 
 def clear_radar_filters(sk):
-    for key in ('call_search_', 'status_filter_', 'extra_filter_'):
+    for key in ('call_search_', 'status_filter_', 'extra_filter_', 'area_filter_', 'audience_filter_'):
         st.session_state.pop(key + sk, None)
 
 
