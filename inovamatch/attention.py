@@ -3,7 +3,7 @@
 Regras únicas, usadas no card da lista, no topo do painel, na tabela de requisitos, no Início e em Startups.
 """
 from .applications import APPROVED, PREPARING, SUGGESTED
-from .matching import FAIL, FIELDS, PENDING
+from .matching import DIMENSIONS, FAIL, FIELDS, PASS, PENDING
 
 OPEN = (SUGGESTED, PREPARING)  # depois da inscrição, prazo encerrado ou requisito não impede mais nada
 MET, NOT_MET, OPTIONAL_NOT_MET, NO_DATA, TO_CHECK = 'Atendido', 'Não atendido', 'Opcional não atendido', 'Sem dado', 'A verificar'
@@ -18,6 +18,24 @@ def _missing(value):
 
 def _first_lower(text):
     return text[:1].lower() + text[1:]  # "Tempo de CNPJ" → "tempo de CNPJ" (siglas intactas)
+
+
+def for_application(result, application=None):
+    """Depois da inscrição (Inscrito, Aprovado, Reprovado, Desistiu), o prazo de inscrição encerrado não conta:
+    a linha do prazo sai e o veredito é recalculado com a mesma regra de matching.match. Mesma regra da nota."""
+    if not application or application.get('status') in OPEN:
+        return result
+    rows = [r for r in result['rows'] if r.get('id') != 'deadline']
+    blockers = [r for r in rows if r.get('mandatory', True) and r['status'] == FAIL]
+    pending = [r for r in rows if r['status'] == PENDING]
+    dimensions = {key: {'label': label, 'attended': 0, 'failed': 0, 'pending': 0, 'blockers': 0} for key, label in DIMENSIONS.items()}
+    for row in rows:
+        bucket = dimensions[row.get('dimension', 'eligibility')]
+        bucket[{PASS: 'attended', FAIL: 'failed', PENDING: 'pending'}[row['status']]] += 1
+        bucket['blockers'] += int(row['status'] == FAIL and row.get('mandatory', True))
+    verdict = 'Com impedimentos' if blockers else 'Precisa de informações' if pending else 'Potencialmente elegível'
+    return {**result, 'rows': rows, 'verdict': verdict, 'blockers': len(blockers), 'pending': len(pending),
+            'attended': sum(r['status'] == PASS for r in rows), 'dimensions': dimensions}
 
 
 def requirement_state(row):

@@ -42,7 +42,9 @@ from inovamatch.call_status import call_situation, continuous_confirmed, CONTINU
 # LOGO: único ponto de troca. Quando assets/logo_nova.jpg existir, ela é usada no menu e no favicon.
 ASSETS = Path(__file__).parent / 'assets'
 LOGO = ASSETS / 'logo_nova.jpg' if (ASSETS / 'logo_nova.jpg').exists() else ASSETS / 'logo.svg'
-st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon=str(LOGO) if LOGO.suffix != '.svg' else '◈', layout='wide')
+# Ícone da aba e da barra recolhida: só o símbolo (a logo inteira fica ilegível em 16 px).
+ICON = ASSETS / 'logo_icone.png' if (ASSETS / 'logo_icone.png').exists() else LOGO
+st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon=str(ICON) if ICON.suffix != '.svg' else '◈', layout='wide')
 
 CSS = '''
 <style>
@@ -1122,9 +1124,10 @@ def save_analysis(store, call, startup, project, result):
 
 def link_detail(store, call, startup, project, show_checklist=True, compact=False):
     """Um match edital × startup: resultado, motivo de cada critério, checklist e andamento."""
-    result = match(call, startup, project)
-    st.html(f'<div class="section-head">{escape(startup["name"])} · {escape(project["name"])}</div>')
     application = store.get('applications', f'{call["id"]}:{project["id"]}')
+    # Depois da inscrição, prazo encerrado não conta (mesma regra da nota e do "Impedido").
+    result = attention.for_application(match(call, startup, project), application)
+    st.html(f'<div class="section-head">{escape(startup["name"])} · {escape(project["name"])}</div>')
     st.html(verdict_badge(result) + origin_badge(application or (call if is_demo(call) else startup)))
     if not compact:  # no painel do match, impedimentos e pendências já estão no topo
         verdict_banner(result)
@@ -1397,8 +1400,8 @@ def link_rows(store, call):
         org = orgs.get(project['startup_id'])
         if not org:
             continue
-        result = match(call, org, project)
         application = store.get('applications', f'{call["id"]}:{project["id"]}')
+        result = attention.for_application(match(call, org, project), application)
         pairs[project['id']] = (org, project)
         rows.append({'Proponente': org['name'], 'Tipo': org_kind(org), 'Projeto': project['name'], 'Resultado': verdict_label(result),
                      'Motivo principal': main_reason(result), 'Pendentes': result['pending'], 'Não atendidos': result['blockers'],
@@ -1460,7 +1463,8 @@ def startup_matches(store, startup):
     if not calls:
         st.info('Nenhum edital publicado e aberto no momento.')
         return
-    results = {c['id']: (c, match(c, startup, project)) for c in calls}
+    results = {c['id']: (c, attention.for_application(match(c, startup, project), store.get('applications', f"{c['id']}:{project['id']}")))
+               for c in calls}
     st.dataframe([{'Edital': c['title'], 'Situação': status_text(c), 'Prazo': deadline_label(c), 'Resultado': verdict_label(r),
                    'Motivo principal': main_reason(r)} for c, r in results.values()], hide_index=True, width='stretch',
                  column_order=None if can('requirements') else ['Edital', 'Situação', 'Prazo', 'Resultado'])
@@ -1566,7 +1570,7 @@ def match_documents(store, startup, simulated):
 
 def match_attention(store, application, call, org, project):
     """(motivo do impedimento, itens, pendências) de um match. Mesma regra no card e no painel."""
-    result = match(call, org, project)
+    result = attention.for_application(match(call, org, project), application)
     reason, items = attention.impediments(result, application)
     pend = attention.pendencies(result, application, checklist_summary(match_checklist(store, call, org, project)),
                                 captacao.dates(store, application['id']), captacao.tasks(store, application['id']))
@@ -1883,7 +1887,7 @@ def home_operations(store, calls):
             # Ação principal do Início: resolver o que está parado.
             st.button('Abrir matches', key='home_candidacies', on_click=go, args=('Matches',), icon=':material/assignment:', type='primary')
     approved = {a['id']: a for a in store.all('applications') if a.get('status') == APPROVED}
-    cap = captacao.reminders(store, application_ids=set(approved))
+    cap = captacao.reminders(store, application_ids=set(approved)) if can('manage') else []  # captação é do Intermediário
     if cap:
         with st.container(border=True):
             st.markdown(f'**Captação: lembretes e tarefas** · {len(cap)}')
@@ -1947,13 +1951,13 @@ def home_pendencies(store):
         org = orgs.get(project['startup_id']) if project else None
         if not call or not org:
             continue
-        if a.get('status') in (SUGGESTED, PREPARING):
+        if a.get('status') in (SUGGESTED, PREPARING) and can('manage'):  # documentos do checklist: plano Intermediário
             totals = checklist_summary(build_checklist(store, call, org, project))
             if totals['docs_missing'] or totals['docs_expired']:
                 out.append(f"{org['name']}: {totals['docs_missing']} documento(s) faltando e {totals['docs_expired']} vencido(s) para {call['title'][:60]}")
         elif a.get('status') == SUBMITTED:
             out.append(f"{org['name']}: match inscrito em {call['title'][:60]} sem resultado registrado")
-    for doc in store.all('documents'):
+    for doc in store.all('documents') if can('manage') else []:
         status = validity_status(doc)
         if status in (EXPIRED, SOON) and doc['startup_id'] in orgs:
             out.append(f"{orgs[doc['startup_id']]['name']}: {doc['tipo']} {status.lower()}")
@@ -1996,7 +2000,7 @@ def main():
         st.session_state.goto = 'Editais'
     elif legacy:
         st.session_state.goto = LEGACY_PAGES.get(legacy, legacy)
-    st.logo(str(LOGO), size='large')
+    st.logo(str(LOGO), size='large', icon_image=str(ICON))
     pages = {title: st.Page(_page(title), title=title, icon=icon, url_path=slug, default=(slug == 'inicio'))
              for title, slug, icon in PAGE_DEFS}
     # "Planos" é oculta no menu (as 5 páginas continuam as mesmas); abre pelo link "Ver planos".

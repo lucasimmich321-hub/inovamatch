@@ -33,7 +33,7 @@ Foco: MVP para demonstração, não sistema completo.
 - O trabalho novo está na branch kalil/lote3. O checkout principal pode estar na main (versão antiga, com 7 itens de menu em rádio e visual teal): confira com `git branch --show-current` antes de dizer que algo "não mudou".
 
 ## Identidade visual
-- Paleta antiga: verde-azulado (teal), logo antiga em assets/logo.svg. Substituir pela paleta da logo nova: marinho ≈ #04133A e azul vivo ≈ #005CFD (wordmark "INOVA" em marinho e "MATCH" em azul, marca de quadrados de pixel). Logo nova esperada em assets/logo_nova.jpg; enquanto não existir, use só os hex, com um único ponto de troca no código.
+- Paleta antiga: verde-azulado (teal), logo antiga em assets/logo.svg. Substituir pela paleta da logo nova: marinho ≈ #04133A e azul vivo ≈ #005CFD (wordmark "INOVA" em marinho e "MATCH" em azul, marca de quadrados de pixel). Logo nova em assets/logo_nova.jpg (recortada da imagem que o Kalil pôs na raiz) e símbolo em assets/logo_icone.png (ícone da aba); ponto único de troca: LOGO/ICON no topo do app.py.
 - Contraste mínimo 4,5:1 e foco visível. Um módulo único de componentes (card, chip de status com ícone + texto, estado vazio, cabeçalho de tela).
 - Ícones: Material Symbols nativo do Streamlit (:material/nome:) nos widgets e SVGs do Lucide embutidos nos cards HTML.
 - Skills: design-taste-frontend (feita para landing page; usar na identidade), ui-ux-pro-max e web-design-guidelines (estrutura das telas).
@@ -157,4 +157,13 @@ Foco: MVP para demonstração, não sistema completo.
     8,3 / 9,1 / 8,7. Sem pendência: Horizonte, Araucária e os 2 da Vale Agro. Documento vencido passou para a Semente Lab.
   - Início (Institucional): "Operação do dia" num expansor fechado; "Em breve: visão da startup" fica fora dele.
   - Captado na demo: R$ 150.000 (90 mil Araucária + 60 mil Serra Biotec).
+  - Não verificado em navegador.
+- 14/11/2026: ajustes (veredito, rótulo, Início do Básico, logo). 228 testes.
+  - attention.for_application: depois da inscrição a linha do prazo sai e o veredito é recalculado; usado no Resumo, na tabela
+    de compatibilidade, no perfil da startup, no topo do match e na nota. Aprovado/Reprovado/Desistiu não aparece mais "Não atende" por prazo.
+  - Rótulo: "Nota (calculada por regras)" / "Nota calculada por regras".
+  - Início no Básico (abaixo do Intermediário): sem "Captação: lembretes e tarefas" e sem pendências de documentos.
+  - Logo: único arquivo na raiz era e58cf35b-ddc9-460c-be31-c84c9a3cd9db.jpeg (logo InovaMatch). Recortada para
+    assets/logo_nova.jpg (barra lateral) e símbolo em assets/logo_icone.png (aba e barra recolhida), com o Pillow que já vem com o
+    Streamlit. O original na raiz não foi apagado nem versionado.
   - Não verificado em navegador.

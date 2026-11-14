@@ -12,15 +12,13 @@ from .matching import FAIL, PASS, PENDING
 MANDATORY_WEIGHT, OPTIONAL_WEIGHT = 2, 1
 BLOCKER_CAP = 4.0
 STRONG = 8.0  # "Match forte" a partir desta nota
-LABEL = 'calculado por regras'
+LABEL = 'calculada por regras'
 
 
 def compute(result, application=None):
     """Com o match já inscrito (ou depois), o prazo de inscrição encerrado não pesa mais na nota."""
-    from .attention import NO_DATA, OPEN, requirement_state
-    rows = result.get('rows') or []
-    if application and application.get('status') not in OPEN:
-        rows = [r for r in rows if r.get('id') != 'deadline']
+    from .attention import NO_DATA, for_application, requirement_state
+    rows = for_application(result, application).get('rows') or []
     possible = earned = 0.0
     counts = {'mandatory_met': 0, 'mandatory_total': 0, 'optional_met': 0, 'optional_total': 0, 'pending': 0, 'blockers': 0, 'missing_mandatory': 0}
     for row in rows:
