@@ -227,3 +227,24 @@ def test_match_justifications_in_expander_with_essential_columns():
     clean(app)
     table = next(d for d in app.dataframe if 'Justificativa' in d.value.columns)
     assert list(table.proto.column_order) == []
+
+
+# T6 ---------------------------------------------------------------------
+
+def test_markdown_from_extracted_text_is_escaped():
+    import app as ui
+    raw = 'Contrato [social](https://evil.example) *ME* $x$ :red[a]'
+    escaped = ui.md_escape(raw)
+    assert '](' not in escaped.replace('\\]\\(', '')
+    assert '\\[' in escaped and '\\*' in escaped and '\\$' in escaped and '\\:' in escaped
+
+
+def test_docs_report_current_test_count():
+    import subprocess
+    import sys
+    out = subprocess.run([sys.executable, '-m', 'pytest', '--collect-only', '-q', str(ROOT / 'tests')],
+                         capture_output=True, text=True, cwd=ROOT).stdout
+    total = int(re.search(r'(\d+) tests? collected', out).group(1))
+    for doc in ['README.md', 'docs/VALIDACAO_EXTRACAO.md']:
+        text = (ROOT / doc).read_text(encoding='utf-8')
+        assert f'{total} testes' in text or f'{total} passed' in text, doc

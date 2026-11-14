@@ -115,6 +115,14 @@ def lines(value):
     return [line.strip() for line in value.splitlines() if line.strip()]
 
 
+MD_SPECIAL = set('\\`*_{}[]()#+-.!|<>~$:')
+
+
+def md_escape(text):
+    """Texto extraído de PDF exibido como literal no st.markdown (sem links, ênfase, LaTeX ou diretivas)."""
+    return ''.join('\\' + ch if ch in MD_SPECIAL else ch for ch in str(text))
+
+
 def display(value):
     if value is None or value == '' or value == []:
         return 'Não informado'
@@ -540,7 +548,7 @@ def documentation_view(call):
     if not docs:
         st.info('Nenhuma exigência documental foi identificada. Isso não significa que o edital dispense documentos.')
     for c in docs:
-        st.markdown('- [ ] ' + c.get('label', 'Documento') + ' · ' + display(c.get('expected')))
+        st.markdown('- [ ] ' + md_escape(c.get('label', 'Documento')) + ' · ' + md_escape(display(c.get('expected'))))
         st.caption(f"Página {c.get('page') or 'web'} · {c.get('source', '')} · {'Validado' if c.get('confirmed') else 'A revisar'}")
     submission = [c for c in call.get('criteria', []) if c.get('requirement_type') == 'Submissão' and c.get('validation_status') != 'rejected']
     if submission:

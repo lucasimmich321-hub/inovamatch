@@ -4,13 +4,13 @@ Registro consolidado em 2026-11-14T01:11:33-03:00, America/Sao_Paulo. Python 3.1
 
 ## Resultado efetivamente observado
 
-- Os 55 testes originais foram preservados. Resultado da suíte atual:
+- Suíte atual: **140 testes**, sem rede e sem API paga (inclui a integração de IA com transporte simulado e o Lote 1 de interface). Resultado de `pytest -q`:
 
 ```text
-........................................................................ [ 74%]
-.........................                                                [100%]
-97 passed in 4.91s
+140 passed
 ```
+
+  Na data deste registro a suíte tinha 97 testes; os testes anteriores continuam preservados.
 
 - O AppTest do Streamlit exercitou as telas existentes, o leitor automático página → PDF (com a rede substituída por documentos de referência no teste da interface), critérios preenchidos, validação, portfólio, recálculo e início de preparação.
 - O ensaio com rede consultou a FAPESC, abriu **dois PDFs oficiais reais**, extraiu as páginas, gerou critérios, conferiu **20 casos parciais de referência**, cadastrou uma empresa e um projeto fictícios em uma base temporária, executou o match e gerou checklists.
