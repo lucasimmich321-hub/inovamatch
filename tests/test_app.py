@@ -4,7 +4,7 @@ from datetime import timedelta
 from inovamatch.domain import today
 import pytest
 from streamlit.testing.v1 import AppTest
-from nav import goto
+from nav import carregar_demo, goto
 
 APP = str(Path(__file__).resolve().parents[1] / 'app.py')
 
@@ -31,17 +31,16 @@ def navigate(app, page):
 def test_all_pages_and_demo_matching_and_copilot():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
     assert [t.value for t in app.title] == ['Início']  # página inicial
-    button(app, 'Carregar demonstração').click().run()
+    carregar_demo(app)
     clean(app)
     assert app.session_state['dataset'] == 'Demonstração'
     for page in ['Startups', 'Matches', 'Início', 'Editais']:  # Alertas oculta (SHOW_ALERTAS); testada em test_captacao
         navigate(app, page)
     # Editais › Startups compatíveis: edital × proponentes com Atende / Pendente / Não atende.
     summary = next(d for d in app.dataframe if 'Motivo principal' in d.value.columns)
-    # As 3 startups fictícias: elegível, pendente e impedida (mesma semântica do match reverso antigo).
-    # 6 startups fictícias (3 originais + 3 da demonstração ampliada): duas atendem, uma pendente, três não atendem.
-    # Semente Lab (em formação, sem CNPJ) passou de "Pendente" para "Não atende" (por ora).
-    assert summary.value['Resultado'].tolist() == ['Atende', 'Atende', 'Não atende', 'Não atende', 'Não atende', 'Não atende']
+    # 5 startups fictícias × edital de teste de Tecnologia: Vale Agro e Araucária atendem; as de Saúde e a Semente Lab
+    # (em formação, sem CNPJ: "não atende por ora") não atendem.
+    assert summary.value['Resultado'].tolist() == ['Atende', 'Atende', 'Não atende', 'Não atende', 'Não atende']
     task = next(c for c in app.checkbox if (c.key or '').startswith('chk_'))
     task.check().run()
     clean(app)
@@ -49,7 +48,7 @@ def test_all_pages_and_demo_matching_and_copilot():
     button(app, 'Criar match').click().run()
     clean(app)
     real = [a for a in app.session_state['demo_data']['applications'].values() if not a.get('simulated')]
-    assert [a['id'] for a in real] == ['demo-call-1:project-demo-verde']
+    assert [a['id'] for a in real] == ['fx-call-1:project-demo-fora']
     assert len(app.session_state['demo_data']['analyses']) == 1
     navigate(app, 'Startups')
     assert any('Motivo principal' in d.value.columns and 'Edital' in d.value.columns for d in app.dataframe)
@@ -84,7 +83,7 @@ def test_live_create_and_edit_startup_then_create_project():
 
 def test_session_isolation_and_empty_pages():
     first = clean(AppTest.from_file(APP, default_timeout=20).run())
-    button(first, 'Carregar demonstração').click().run()
+    carregar_demo(first)
     second = clean(AppTest.from_file(APP, default_timeout=20).run())
     assert second.session_state['real_data']['startups'] == {}
     for page in ['Editais', 'Startups', 'Vínculos']:
@@ -93,7 +92,7 @@ def test_session_isolation_and_empty_pages():
 
 def test_dashboard_open_call_and_criterion_edit():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    button(app, 'Carregar demonstração').click().run()
+    carregar_demo(app)
     navigate(app, 'Início')
     next(b for b in app.button if b.label == 'Ver edital').click().run()  # card "Prazos que vencem"
     clean(app)

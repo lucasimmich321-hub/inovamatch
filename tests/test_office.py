@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 from streamlit.testing.v1 import AppTest
-from nav import goto
+from nav import carregar_demo, goto
 
 from inovamatch.crawler import AWAITING, PUBLISHED
 from inovamatch.domain import today
@@ -63,7 +63,7 @@ def test_five_task_pages_with_real_navigation(monkeypatch):
 
 def test_dataset_choice_survives_page_changes():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    carregar_demo(app)
     for page in ['Editais', 'Startups', 'Início']:
         goto(app, page)
         assert app.session_state['dataset'] == 'Demonstração'  # seletor da lateral removido; a base fica na sessão
@@ -417,13 +417,13 @@ def test_panel_screen_with_demo_and_empty_state():
     clean(app)
     assert any('Nenhum match finalizado' in i.value for i in app.info)
     goto(app, 'Início')  # o botão de demonstração ficou só no Início com a base vazia
-    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    carregar_demo(app)
     goto(app, 'Matches')
     clean(app)
     metrics = {m.label: m.value for m in app.metric}
-    # 8 matches da demonstração: aprovados R$ 90.000 + R$ 60.000; reprovado (140 mil) e desistência (120 mil).
-    assert metrics['Captado'] == 'R$ 150 mil' and metrics['Deixou de captar'] == 'R$ 260 mil'  # compacto; exato na ajuda
-    assert metrics['Taxa de aprovação'] == '67%' and metrics['Em andamento'] == '4'
+    # 5 matches fictícios: aprovado R$ 90.000 (Araucária); reprovado Serra Biotec (pedido de 90 mil); 3 em andamento.
+    assert metrics['Captado'] == 'R$ 90 mil' and metrics['Deixou de captar'] == 'R$ 90 mil'  # compacto; exato na ajuda
+    assert metrics['Taxa de aprovação'] == '50%' and metrics['Em andamento'] == '3'
     assert any('Dados de demonstração' in i.value for i in app.info)
     assert any(e.label == 'Como cada número é calculado' for e in app.expander)
     assert any(b.label == 'Exportar matches (CSV)' for b in app.get('download_button'))

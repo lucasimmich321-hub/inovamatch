@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 from streamlit.testing.v1 import AppTest
-from nav import goto
+from nav import carregar_demo, goto
 
 from inovamatch.acceptance import reference_cases
 from inovamatch.call_status import call_situation, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN
@@ -216,7 +216,7 @@ def test_secondary_text_contrast_and_focus_visible():
 
 def test_match_justifications_in_expander_with_essential_columns():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    carregar_demo(app)
     goto(app, 'Vínculos')
     clean(app)
     assert any(e.label == 'Justificativas e evidências da comparação' for e in app.expander)

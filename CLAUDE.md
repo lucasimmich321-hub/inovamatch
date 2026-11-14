@@ -47,7 +47,7 @@ Foco: MVP para demonstração, não sistema completo.
 ## Dados: real x demonstração
 - Todo registro tem origem = "real" ou "demo". Match é demo se o edital ou a startup for demo. Interface: base "Dados reais" por padrão (seletor de base e "Carregar demonstração" ficam no menu do usuário, canto inferior esquerdo, só no perfil Institucional; também pelo botão do Início com a base vazia), aviso amarelo em demo e selo de origem pequeno em cada registro: "Fictício" (laranja) ou "Real (FAPESC)" / "Real" (origin.provenance).
 - Real: crawler da FAPESC (inovamatch/crawler.py), import por URL ou PDF (inovamatch/radar.py), entrada manual; armazenado na sessão ou em SQLite (inovamatch/storage.py).
-- Demonstração: gerada por código Python (inovamatch/demo.py com 2 editais abertos e 3 startups; demo_matches cria um 3º edital encerrado, mais 3 startups e 8 matches prontos, sem órfãos; o botão não carrega mais os 10 históricos de office_stats.demo_applications, vault.demo_documents, office_stats.demo_applications com 10 matches históricos). Os JSON em docs/ e tests/fixtures/ são só registros de verificação; o app não os lê.
+- Demonstração (desde 14/11): editais REAIS (cópia dos coletados em Dados reais ou, sem nenhum, do cache local do crawler via crawler.CacheOnlyFetcher, sem rede); inventado só: 5 startups (uma por perfil + Semente Lab sem CNPJ), documentos sem arquivo, 5 matches, captação do aprovado e 1 edital "[SIMULAÇÃO]" (demo.SIM_CALL_ID) para "Simular retificação". Sem edital real: aviso, sem matches. Em Dados reais não há fictícios (startups de exemplo removidas).
 - Tabela completa em docs/ESTADO_REAL.md.
 - Editais de referência (PDFs reais da FAPESC): Nascer 24/2026 (inscrições 05/05 a 15/06/2026), GCUB 53/2026 (04/09 a 05/10/2026) e FAPESC 54/2026 (10/09 a 20/10/2026). Bons para dados reais e para testar a extração.
 
@@ -291,3 +291,20 @@ Foco: MVP para demonstração, não sistema completo.
   - Cabeçalho "INOVALE 2026" não mexido (aguarda o Kalil confirmar o nome).
   - Não verificado em navegador: aparência do botão do usuário (avatar e plano por CSS), abertura do popover, aba de destino aberta
     de fato (AppTest não mostra a aba ativa), coluna Origem nos CSVs abertos em planilha.
+- 14/11/2026: menu do Streamlit oculto, usuário no rodapé da lateral, demonstração com editais reais. 243 testes.
+  - .streamlit/config.toml: toolbarMode = "minimal" (conferido no código do frontend 1.67: sem itens do host nem menu_items, a barra
+    some, com os três pontinhos e o Deploy; o botão de reabrir a lateral é outro elemento e fica). Reforço por CSS: stMainMenu e
+    stAppDeployButton com display:none.
+  - Lateral em coluna (CSS com :has): o bloco do usuário desce para o rodapé com margin-top:auto; continua sticky se a lateral rolar.
+  - demo.py reescrito: load_demo = 5 startups/projetos fictícios + edital de simulação; copy_real_calls; demo_matches escolhe editais
+    reais do crawler (abertos: com critérios e prazo mais próximo; encerrado: "Relevante" e ano mais recente). Matches: Horizonte
+    Sugerido, Semente Lab Em preparação, Vale Agro Inscrito (abertos); Araucária Aprovado com captação (R$ 90 mil, datas manuais e
+    tarefas fictícias) e Serra Biotec Reprovado (encerrado). Oeste Energia e os matches Desistiu/2º aprovado saíram.
+  - app.demo_activate: copia editais do crawler de Dados reais; sem nenhum, crawl só do cache (~1 s com o cache local de 114 editais).
+    Faixa fixa (sticky) no topo de todas as páginas na Demonstração; faixa vermelha se não houver edital real.
+  - Selo "Simulação" (laranja) no edital inventado; ele vai para o fim da lista de Editais. Startups e matches seguem com "Fictício".
+  - Dados reais: saíram o painel e as funções de startups de exemplo; legenda "todos reais".
+  - Testes: tests/demo_fixture.py (3 editais de TESTE no formato do crawler, ids fx-call-N) e tests/conftest.py (cache vazio, para não
+    depender de data/cache). nav.carregar_demo semeia Dados reais antes do clique.
+  - Não verificado em navegador: sumiço do menu de três pontinhos, bloco do usuário no rodapé, faixa fixa ao rolar. Demonstração com
+    o cache local rodada só pelo AppTest. No Streamlit Cloud o cache começa vazio: a demo avisa até alguém clicar "Atualizar editais".

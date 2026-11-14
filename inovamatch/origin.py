@@ -32,10 +32,13 @@ def label(record):
 
 
 FICTITIOUS = 'Fictício'
+SIMULATION = 'Simulação'  # o único edital inventado da demonstração (só para "Simular retificação")
 
 
 def provenance(record, kind=None):
     """Texto do selo de origem: "Fictício" (demonstração), "Real (FAPESC)" (edital real com órgão conhecido) ou "Real"."""
+    if (record or {}).get('simulacao'):
+        return SIMULATION
     if is_demo(record):
         return FICTITIOUS
     institution = ((record or {}).get('institution') or '').strip()
@@ -51,6 +54,7 @@ def match_provenance(application, call, startup):
 
 def badge_html(text):
     """Selo pequeno e discreto de origem (texto + cor; o fictício em laranja)."""
-    css = 'fict' if text == FICTITIOUS else 'real'
-    title = 'Registro fictício, criado para demonstração' if css == 'fict' else 'Registro real'
+    css = 'fict' if text in (FICTITIOUS, SIMULATION) else 'real'
+    title = ('Edital inventado, só para simular uma retificação' if text == SIMULATION
+             else 'Registro fictício, criado para demonstração' if css == 'fict' else 'Registro real')
     return f'<span class="im-origin im-origin-{css}" title="{title}">{escape(text)}</span>'

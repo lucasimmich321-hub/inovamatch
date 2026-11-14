@@ -15,3 +15,12 @@ def goto(app, page, open_first=True):
         if first is not None:
             first.click().run()
     return app
+
+
+def carregar_demo(app, button=None):
+    """Clica em "Carregar demonstração" depois de pôr editais de teste em Dados reais (a demo usa editais reais)."""
+    from demo_fixture import seed_real_calls
+    seed_real_calls(app)
+    target = button or next(b for b in app.button if b.label == "Carregar demonstração")
+    target.click().run()
+    return app

@@ -4,6 +4,7 @@ import json
 import pytest
 
 from inovamatch.demo import load_demo
+from demo_fixture import fixture_calls
 from inovamatch.domain import deadline_info, today, valid_cnpj
 from inovamatch.extraction import extract_pdf, suggest
 from inovamatch.matching import FAIL, PASS, PENDING, checklist, evaluate, fingerprint, match, months_between
@@ -142,22 +143,23 @@ def test_demo_three_outcomes_and_no_duplicate_load():
     store = Store()
     load_demo(store)
     load_demo(store)
-    assert len(store.all('startups')) == 3
-    assert len(store.all('calls')) == 2
-    call = store.get('calls', 'demo-call-1')
-    outcomes = []
-    for p in store.all('projects'):
-        outcomes.append(match(call, store.get('startups', p['startup_id']), p)['verdict'])
+    # Demonstração: 5 startups fictícias (uma por perfil + Semente Lab) e só 1 edital inventado (simulação de retificação).
+    assert len(store.all('startups')) == 5
+    assert [c['id'] for c in store.all('calls')] == ['demo-call-sim'] and store.all('calls')[0]['simulacao']
+    fixture_calls(store)  # editais de TESTE no formato do crawler (na demo de verdade vêm do crawler)
+    call = store.get('calls', 'fx-call-1')
+    outcomes = {p['startup_id']: match(call, store.get('startups', p['startup_id']), p)['verdict'] for p in store.all('projects')}
     # Semente Lab está em formação (sem CNPJ, de propósito): tempo de CNPJ "não atende por ora" → impedimento.
-    assert outcomes == ['Potencialmente elegível', 'Com impedimentos', 'Com impedimentos']
-    assert all(c['simulated'] for c in store.all('calls'))
+    assert outcomes == {'demo-fora': 'Com impedimentos', 'demo-bio': 'Com impedimentos', 'demo-agro': 'Potencialmente elegível',
+                        'demo-verde': 'Potencialmente elegível', 'demo-pendente': 'Com impedimentos'}
 
 
 def test_startup_sem_cnpj_nao_atende_por_ora_e_nao_vira_pendencia():
     from inovamatch import attention
     store = Store()
     load_demo(store)
-    call, startup = store.get('calls', 'demo-call-1'), store.get('startups', 'demo-pendente')
+    fixture_calls(store)
+    call, startup = store.get('calls', 'fx-call-1'), store.get('startups', 'demo-pendente')
     assert startup['sem_cnpj'] and not startup['cnpj']
     rows = [r for r in match(call, startup, store.get('projects', 'project-demo-pendente'))['rows'] if r.get('field') == 'age_months']
     assert rows and attention.requirement_state(rows[0]) == 'Não atende por ora' and 'abrir o CNPJ' in rows[0]['reason']

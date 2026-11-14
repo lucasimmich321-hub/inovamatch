@@ -13,6 +13,6 @@ maxUploadSize = 10
 gatherUsageStats = false
 
 [client]
-# "viewer": esconde o botão Deploy e as opções de desenvolvedor (rerun, limpar cache); mantém o menu do visitante.
+# "minimal": sem menu de três pontinhos (Print, Record screen, "Made with Streamlit") e sem Deploy (Streamlit 1.67).
 # Não afeta o botão de abrir/fechar a barra lateral.
-toolbarMode = "viewer"
+toolbarMode = "minimal"

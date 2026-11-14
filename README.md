@@ -55,11 +55,8 @@ O arquivo será `data/inovamatch.db`. `INOVAMATCH_DB` permite alterar o caminho.
 
 ## Roteiro da apresentação
 
-1. Clique em **Carregar demonstração**. A faixa “MODO DEMONSTRAÇÃO” identifica todos os registros como fictícios.
-2. Abra **Match Inteligente**. No edital **[SIMULADO] Inovação Catarinense**, compare cada startup:
-   - **Araucária Tech:** potencialmente elegível segundo os critérios simulados.
-   - **Horizonte Digital:** impedimento obrigatório de sede em outro estado.
-   - **Semente Lab:** informações de sede, tempo de CNPJ e contrapartida pendentes.
+1. Em **Editais**, clique em **Atualizar editais** (ou use o cache local do crawler) e depois em **Carregar demonstração** (menu do usuário, canto inferior esquerdo). A faixa no topo diz o que é fictício: startups e matches; os editais são reais.
+2. Abra um edital real e veja as **Startups compatíveis**: as 5 startups fictícias aparecem com o selo “Fictício” e o resultado de cada critério.
 3. Na aba **Match reverso**, compare o edital com todo o portfólio.
 4. Abra o **Copiloto de Captação**, escolha uma candidatura e marque tarefas. As tarefas não alteram a elegibilidade. Alterações no cadastro, critérios ou dia de análise criam uma nova revisão das tarefas.
 5. Selecione **Dados reais**. Cadastre uma startup e um projeto ao vivo. Só o nome e o vínculo são obrigatórios; dados ausentes geram pendências quando exigidos.
@@ -155,7 +152,7 @@ Aceitação com busca real e dois PDFs oficiais, em base temporária isolada:
 python scripts/validate_live.py --output work/aceitacao-real.json
 ```
 
-O comando compara os PDFs com os hashes de referência e executa 20 conferências parciais. Se o documento mudar, exige atualizar a referência após leitura humana; não considera a nova interpretação validada. Os registros fictícios do ensaio não entram no site. A suíte normal (`pytest -q`) tem 241 testes e roda sem rede e sem API paga.
+O comando compara os PDFs com os hashes de referência e executa 20 conferências parciais. Se o documento mudar, exige atualizar a referência após leitura humana; não considera a nova interpretação validada. Os registros fictícios do ensaio não entram no site. A suíte normal (`pytest -q`) tem 243 testes e roda sem rede e sem API paga.
 
 Os resultados reais dependem da disponibilidade e estrutura do site na hora da execução. `VALIDACAO.md` mantém o registro inicial; [docs/VALIDACAO_EXTRACAO.md](docs/VALIDACAO_EXTRACAO.md) registra a evolução e os limites atuais.
 

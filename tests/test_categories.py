@@ -2,7 +2,7 @@
 from pathlib import Path
 from streamlit.testing.v1 import AppTest
 from inovamatch import categories
-from nav import goto
+from nav import carregar_demo, goto
 
 APP = str(Path(__file__).resolve().parents[1] / 'app.py')
 
@@ -25,7 +25,7 @@ def test_regras_publico_e_area():
 def test_filtro_por_area_na_lista_de_editais(monkeypatch):
     monkeypatch.delenv('INOVAMATCH_STORAGE', raising=False)
     app = AppTest.from_file(APP, default_timeout=60).run()
-    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    carregar_demo(app)
     app = goto(app, 'Editais', open_first=False)
     html = ' '.join(h.value for h in app.get('html'))
     assert categories.AUTO_NOTE in html and 'Startup' in html

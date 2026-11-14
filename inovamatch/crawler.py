@@ -155,6 +155,25 @@ class FapescFetcher:
         return body, content_type, resolved
 
 
+class CacheOnlyFetcher:
+    """Lê só o cache em disco, sem rede e sem prazo de validade. Usado pela demonstração: editais reais já coletados."""
+
+    def __init__(self, cache=None):
+        self.cache = cache or DiskCache()
+        self.requests = 0
+        self.cache_hits = 0
+
+    def close(self):
+        pass
+
+    def fetch(self, url, limit=4 * 1024 * 1024):
+        cached = self.cache.get(url, float('inf'))
+        if not cached:
+            raise ValueError('Fora do cache local (a demonstração não acessa a rede).')
+        self.cache_hits += 1
+        return cached
+
+
 def discover(fetcher, progress=None):
     """Lê as listagens e devolve (itens classificados, erros). Uma listagem falhar não derruba as outras."""
     items, errors = [], []

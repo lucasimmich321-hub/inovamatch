@@ -12,7 +12,7 @@ import requests
 import streamlit as st
 import streamlit.components.v1 as components
 
-from inovamatch.demo import demo_matches, load_demo
+from inovamatch.demo import copy_real_calls, demo_matches, load_demo
 from inovamatch.domain import STATES, deadline_info, now_iso, today
 from inovamatch.matching import FIELDS, OPS, FAIL, PASS, PENDING, DIMENSIONS, dimension_for, fingerprint, match
 from inovamatch.radar import import_url, pdf_call
@@ -21,7 +21,7 @@ from inovamatch import categories
 from inovamatch.documents import merge_analysis, automatic_analysis
 from inovamatch.portfolio import overview, matrix, recalculate, register_application
 from inovamatch.filters import filter_calls, funding_value, sort_calls, status_group
-from inovamatch.crawler import crawl, summary_line, publication_blockers, AWAITING, PUBLISHED
+from inovamatch.crawler import CacheOnlyFetcher, crawl, summary_line, publication_blockers, AWAITING, PUBLISHED
 from inovamatch.ai_ui import render_ai
 from inovamatch.vault import (DOC_TYPES, DEMO_NOTICE, EXPIRED, SOON, OK as OK_VALID, NO_DATE, add_document, demo_documents,
                               read_document, remove_document, replace_document, startup_documents, validity_status)
@@ -37,11 +37,11 @@ from inovamatch import score as scoring
 from inovamatch import dashboard
 from inovamatch import alerts
 from inovamatch import versioning
-from inovamatch.demo import EXAMPLE_IDS, add_example_startups, remove_example_startups, simulate_rectification
+from inovamatch.demo import simulate_rectification
 from inovamatch import attention
 from inovamatch.filters import STATUS_FILTERS
-from inovamatch.origin import (DEMO, FICTITIOUS, LABELS as ORIGIN_LABELS, badge_html as origin_badge, is_demo, match_provenance,
-                               provenance)
+from inovamatch.origin import (DEMO, FICTITIOUS, LABELS as ORIGIN_LABELS, badge_html as origin_badge, from_crawler, is_demo,
+                               match_provenance, provenance)
 from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN, DECLARABLE
 
 # LOGO: único ponto de troca. Quando assets/logo_nova.jpg existir, ela é usada no menu e no favicon.
@@ -121,7 +121,14 @@ h1,h2,h3 {font-family:var(--im-font);letter-spacing:-.02em;color:var(--im-dark);
 .st-key-user_menu button [data-testid="stMarkdownContainer"] {text-align:left;min-width:0;}
 .st-key-user_menu button [data-testid="stMarkdownContainer"] p {font-weight:700;overflow-wrap:anywhere;white-space:normal;}
 .st-key-user_menu button [data-testid="stMarkdownContainer"]::after {display:block;font-size:13px;font-weight:400;color:var(--im-muted);}
-.st-key-user_block {position:sticky;bottom:0;background:#fff;border-top:1px solid var(--im-border);padding:10px 0 6px;margin-top:24px;z-index:2;}
+.st-key-user_block {position:sticky;bottom:0;background:#fff;border-top:1px solid var(--im-border);padding:10px 0 6px;margin-top:auto;z-index:2;}
+/* Lateral em coluna: menu no topo, bloco do usuário empurrado para o rodapé (margin-top:auto) em qualquer altura. */
+[data-testid="stSidebarContent"] {display:flex;flex-direction:column;}
+[data-testid="stSidebarContent"] div:has(.st-key-user_block) {display:flex;flex-direction:column;flex:1 0 auto;}
+/* Menu de três pontinhos (Print, Record, "Made with Streamlit") e Deploy: toolbarMode="minimal" já tira; reforço por CSS. */
+[data-testid="stMainMenu"], [data-testid="stAppDeployButton"] {display:none !important;}
+/* Faixa da Demonstração fixa no topo da página (abaixo do cabeçalho do Streamlit). */
+.st-key-demo_band {position:sticky;top:3.75rem;z-index:5;background:var(--im-bg, #F5F7FB);padding-top:4px;}
 .im-chip-fail {background:#FBE0DC;color:#8A1C12;border-color:#8A1C12;}
 .im-band {display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 14px;margin:4px 0 8px;border:1px solid;font-size:14px;}
 .im-band ul {margin:4px 0 0;padding-left:18px;} .im-band li {margin:2px 0;} .im-band .im-icon {flex:none;margin-top:1px;}
@@ -185,12 +192,27 @@ def go(page, call_id=None, tab=None):
         st.session_state.open_tab = (st.session_state.goto, tab)
 
 
+def real_store():
+    """Base "Dados reais": sessão (padrão) ou SQLite local (INOVAMATCH_STORAGE=sqlite)."""
+    storage_mode = os.environ.get('INOVAMATCH_STORAGE', 'session').lower()
+    path = os.environ.get('INOVAMATCH_DB', 'data/inovamatch.db') if storage_mode == 'sqlite' else None
+    return Store(st.session_state.setdefault('real_data', {}), path=path)
+
+
+def real_calls_in(store):
+    return [c for c in store.all('calls') if from_crawler(c)]
+
+
 def demo_activate():
-    data = st.session_state.setdefault('demo_data', {})
-    load_demo(Store(data))
-    demo_documents(Store(data))
-    # Os 10 históricos de office_stats.demo_applications ficaram de fora: apontavam para editais inexistentes (órfãos).
-    demo_matches(Store(data))  # 8 matches prontos, todos ligados a editais e projetos da demonstração
+    """Demonstração = startups e matches FICTÍCIOS sobre editais REAIS. Editais: os já coletados em Dados reais;
+    sem nenhum, lê o cache local do crawler (sem rede). Sem nada, a tela avisa; nenhum edital é inventado no lugar."""
+    demo = Store(st.session_state.setdefault('demo_data', {}))
+    load_demo(demo)
+    demo_documents(demo)
+    copy_real_calls(demo, real_store().all('calls'))
+    if not real_calls_in(demo):
+        crawl(demo, fetcher=CacheOnlyFetcher())  # só cache em disco; nunca acessa a rede
+    demo_matches(demo)  # até 5 matches fictícios, só se houver edital real
     st.session_state.dataset = ORIGIN_LABELS[DEMO]
     st.session_state.plan = plans.DEFAULT  # demonstração abre no plano Institucional (tudo liberado)
     st.session_state.goto = 'Início'
@@ -326,7 +348,8 @@ def status_badge(call):
 
 
 def call_badge(call):
-    return '[SIMULADO] ' if call.get('simulated') else ''
+    # O título do edital de simulação já começa com "[SIMULAÇÃO]"; não repete a marca.
+    return '' if call.get('simulacao') or call.get('title', '').startswith('[SIM') else ('[SIMULADO] ' if call.get('simulated') else '')
 
 
 def source_link(call):
@@ -344,7 +367,7 @@ def office_results(store):
     start, end = period_bounds(period)
     stats = compute_office(store, start, end)
     if stats['simulated']:
-        st.info('Dados de demonstração: os matches deste painel são SIMULADOS e não representam captação real.')
+        st.info('Dados de demonstração: os matches deste painel são fictícios (startups fictícias em editais reais) e não representam captação real.')
     a, b, c, d = st.columns(4)
     a.metric('Captado', brl_short(stats['captado']), help=money_help(stats['captado'], DEFINITIONS['Captado']))
     b.metric('Deixou de captar', brl_short(stats['deixou_de_captar']), help=money_help(stats['deixou_de_captar'], DEFINITIONS['Deixou de captar']))
@@ -994,7 +1017,9 @@ def update_panel(store):
 def radar(store, simulated):
     heading('Editais', 'Editais da FAPESC lidos do PDF, com página e trecho de cada exigência. Revise, confirme o prazo e publique.')
     if simulated:
-        st.info('Você está vendo editais fictícios. Para consultar a FAPESC, escolha “Dados reais” no menu do usuário (canto inferior esquerdo).')
+        st.info('Editais reais da FAPESC copiados para a demonstração (mudanças aqui não afetam a base real), mais 1 edital '
+                '“Simulação” só para testar a retificação. Para atualizar da FAPESC, escolha “Dados reais” no menu do usuário '
+                '(canto inferior esquerdo).')
     else:
         update_panel(store)
         with st.expander('Adicionar edital por URL, PDF ou cadastro manual'):
@@ -1085,6 +1110,7 @@ def radar(store, simulated):
     filtered = sort_calls(filtered)
     if order == 'Prazo':
         filtered.sort(key=deadline_sort_key)
+    filtered.sort(key=lambda c: bool(c.get('simulacao')))  # o edital de simulação (demonstração) vai sempre para o fim
     q = query.casefold().strip()
     filtered = [c for c in filtered if q in (c['title'] + c.get('institution', '') + (c.get('summary') or '')).casefold()]
     if not filtered:
@@ -1612,7 +1638,8 @@ def startup_matches(store, startup):
         st.info('Esta startup ainda não tem projeto. Crie em Matches → Novo projeto.')
         return
     project = pick('Projeto', projects, 'profile_project_' + startup['id'])
-    calls = [c for c in sort_calls(store.all('calls')) if status_group(c) != 'Encerrado' and (review_state(c) == PUBLISHED or c.get('simulated'))]
+    calls = [c for c in sort_calls(store.all('calls')) if status_group(c) != 'Encerrado'
+             and (review_state(c) == PUBLISHED or c.get('simulated') or CTX.get('simulated'))]  # na demo, também os em revisão
     if not calls:
         st.info('Nenhum edital publicado e aberto no momento.')
         return
@@ -1625,29 +1652,7 @@ def startup_matches(store, startup):
     link_detail(store, results[chosen][0], startup, project)
 
 
-def example_startups_panel(store):
-    """Só em Dados reais: startups FICTÍCIAS para testar matches com os editais reais do crawler."""
-    present = any(store.get('startups', sid) for sid in EXAMPLE_IDS)
-    with st.container(border=True):
-        if not present:
-            st.markdown('**Testar com editais reais**')
-            st.caption('Adiciona 6 startups e projetos fictícios (selo Fictício). Os editais continuam os reais; '
-                       'matches com essas startups também saem com o selo Fictício.')
-            if st.button('Adicionar startups de exemplo (fictícias)', icon=':material/group_add:', key='add_examples'):
-                count = add_example_startups(store)
-                st.session_state.flash = f'{count} startups de exemplo adicionadas (fictícias).'
-                st.rerun()
-        else:
-            st.html(f'<div class="im-chips">{origin_badge(FICTITIOUS)}</div>Startups de exemplo (fictícias) presentes nesta base.')
-            if st.button('Remover startups de exemplo', icon=':material/group_remove:', key='remove_examples'):
-                remove_example_startups(store)
-                st.session_state.flash = 'Startups de exemplo removidas (com projetos, documentos e matches delas).'
-                st.rerun()
-
-
 def startups_list(store):
-    if not CTX.get('simulated'):
-        example_startups_panel(store)
     startups = [s for s in store.all('startups') if org_kind(s) == 'Startup']
     if startups:
         startup_profile(store, startups)
@@ -1697,9 +1702,8 @@ def my_startup():
 def missing_persona_startup():
     plan = current_plan()
     st.html(empty_state('A startup deste perfil não está nesta base',
-                        f'{plans.PERSONAS[plan]} ({plan}) usa uma startup fictícia da Demonstração. No menu do usuário (canto inferior '
-                        'esquerdo), troque para o perfil Institucional e carregue a demonstração (ou, em Dados reais, '
-                        'adicione as startups de exemplo em Startups).'))
+                        f'{plans.PERSONAS[plan]} ({plan}) usa uma startup fictícia, que só existe na Demonstração. No menu do usuário '
+                        '(canto inferior esquerdo), troque para o perfil Institucional e carregue a demonstração.'))
 
 
 def my_startup_page(store, simulated):
@@ -2252,14 +2256,13 @@ def change_dataset(key):
 
 
 def dataset_legend(store, simulated):
-    """Legenda curta da base atual: o texto fixo dos fictícios na Demonstração; em Dados reais, a contagem da base."""
-    if simulated:
-        return '6 startups, 3 editais e 8 matches fictícios para experimentar o fluxo completo.'
+    """Legenda curta da base atual (contagem do que está carregado)."""
     startups, calls, apps = store.all('startups'), store.all('calls'), store.all('applications')
-    real = lambda rows: sum(not is_demo(r) for r in rows)
-    text = f'Nesta base: {real(startups)} startup(s), {real(calls)} edital(is) e {real(apps)} match(es) reais.'
-    fict = len(startups) - real(startups)
-    return text + (f' Mais {fict} startup(s) de exemplo (fictícias), fora dos números.' if fict else '')
+    if simulated:
+        real = len(real_calls_in(store))
+        return (f'{len(startups)} startups e {len(apps)} matches fictícios; {real} edital(is) real(is) da FAPESC '
+                f'e 1 de simulação.')
+    return f'Nesta base: {len(startups)} startup(s), {len(calls)} edital(is) e {len(apps)} match(es), todos reais.'
 
 
 def user_block(store, simulated):
@@ -2332,13 +2335,16 @@ def main():
     simulated = dataset == ORIGIN_LABELS[DEMO]
     if simulated:
         store = Store(st.session_state.setdefault('demo_data', {}))
-        st.warning('**Você está na Demonstração.** Startups, editais e matches desta base são fictícios e não representam '
-                   'oportunidades reais. Para ver os editais coletados da FAPESC, escolha “Dados reais” no menu do usuário (canto inferior esquerdo).',
-                   icon=':material/science:')
+        with st.container(key='demo_band'):  # faixa fixa no topo de todas as páginas (CSS sticky)
+            st.html(band('warn', 'Demonstração: startups e matches são fictícios; editais são reais (FAPESC).',
+                         ['O único edital inventado tem o selo “Simulação” e serve só para testar a retificação.',
+                          'Para sair, escolha “Dados reais” no menu do usuário (canto inferior esquerdo).']))
+            if not real_calls_in(store):
+                st.html(band('fail', 'Nenhum edital real coletado ainda: a demonstração ficou sem matches.',
+                             ['Nada foi inventado no lugar. Em “Dados reais” › Editais, clique em “Atualizar editais” '
+                              'e carregue a demonstração de novo.']))
     else:
-        storage_mode = os.environ.get('INOVAMATCH_STORAGE', 'session').lower()
-        path = os.environ.get('INOVAMATCH_DB', 'data/inovamatch.db') if storage_mode == 'sqlite' else None
-        store = Store(st.session_state.setdefault('real_data', {}), path=path)
+        store = real_store()
     if not can('multi_startup'):
         store = ScopedStore(store, plans.PERSONA_STARTUP[current_plan()])
     with st.sidebar:

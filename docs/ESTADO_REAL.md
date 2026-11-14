@@ -8,10 +8,12 @@ O que é dado real, o que é demonstração e o que ainda não existe. Atualize 
   as três listagens oficiais (chamadas abertas, em andamento e encerradas) e o PDF dos editais abertos. Também entram
   editais importados por URL ou PDF (`inovamatch/radar.py`) e editais cadastrados à mão. O armazenamento fica na sessão do
   navegador ou em SQLite (`INOVAMATCH_STORAGE=sqlite`), via `inovamatch/storage.py`.
-- **Demonstração** (menu do usuário, perfil Institucional → "Demonstração" ou "Carregar demonstração"): tudo é gerado por código Python,
-  e não por um arquivo JSON. São 2 editais e 3 startups em `inovamatch/demo.py`, documentos fictícios em
-  `inovamatch/vault.py` (`demo_documents`) e 10 matches históricos em `inovamatch/office_stats.py` (`demo_applications`).
-  Nada disso sai da sessão nem entra na base real.
+- **Demonstração** (menu do usuário, perfil Institucional → "Demonstração" ou "Carregar demonstração"): os **editais são reais**: os já coletados
+  em "Dados reais" ou, sem nenhum, os do cache local do crawler (`CacheOnlyFetcher`, sem rede). Sem edital real, a tela avisa e
+  não cria matches. **Inventado** (código em `inovamatch/demo.py`): 5 startups e projetos (uma por perfil + Semente Lab, sem
+  CNPJ), documentos sem arquivo (`vault.demo_documents`), 5 matches (Sugerido, Em preparação, Inscrito, Aprovado, Reprovado),
+  a captação do aprovado e 1 edital "[SIMULAÇÃO]" só para "Simular retificação". Nada disso sai da sessão nem entra na base real.
+  Em "Dados reais" não há nenhum registro fictício (as startups de exemplo saíram em 14/11).
 - Os JSON em `docs/` (`fontes_verificadas_*.json`, `aceitacao_real_*.json`) e `tests/fixtures/` são registros de
   verificação e testes. **O app não os lê.**
 
@@ -22,10 +24,10 @@ Registros antigos sem o campo são deduzidos pela marca `simulated`/`demo`. Um m
 
 | Tela | Dados reais | Demonstração |
 |---|---|---|
-| Início | editais do crawler/importação + startups e matches cadastrados | `demo.py` + `demo_applications` + `demo_documents` |
-| Editais | crawler FAPESC (`crawler.py`), importação (`radar.py`), cadastro manual | `demo.py` (2 editais fictícios) |
-| Startups | cadastro feito pelo escritório; cofre com upload real | `demo.py` (3 startups) + `vault.demo_documents` (sem arquivo) |
-| Matches | matches criados a partir de um edital publicado | `office_stats.demo_applications` (10 históricos) + matches criados na sessão |
+| Início | editais do crawler/importação + startups e matches cadastrados | editais reais + `demo.py` + `demo_documents` |
+| Editais | crawler FAPESC (`crawler.py`), importação (`radar.py`), cadastro manual | reais (cópia do crawler) + 1 "[SIMULAÇÃO]" |
+| Startups | cadastro feito pelo escritório; cofre com upload real | `demo.py` (5 startups fictícias) + `vault.demo_documents` (sem arquivo) |
+| Matches | matches criados a partir de um edital publicado | `demo.demo_matches` (5 fictícios em editais reais) + matches criados na sessão |
 | Alertas | não implementado | não implementado |
 
 ## Funcionalidades
@@ -46,7 +48,7 @@ Registros antigos sem o campo são deduzidos pela marca `simulated`/`demo`. Um m
 | Editais em cards com filtros (busca, status, encerrados, ordenar por prazo) | real |
 | Rascunho de proposta | real (texto montado a partir das regras, sem IA) |
 | Andamento, resultado e motivo de perda | real |
-| Painel do escritório (4 números) | real sobre os dados da base; na demo, sobre os 10 matches fictícios |
+| Painel do escritório (4 números) | real sobre os dados da base; na demo, sobre os 5 matches fictícios |
 | Selo "Demonstração" e aviso de modo demo | real |
 | Alertas (prazo, edital novo, edital alterado) | não implementado |
 | Aviso de edital alterado (comparação de versões) | não implementado |

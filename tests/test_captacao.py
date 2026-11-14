@@ -1,4 +1,5 @@
 """Fumaça da Fase 4: status novos (com migração), datas da captação, tarefa gerada, lembretes e .ics."""
+import pytest
 from datetime import date, timedelta
 
 from inovamatch import applications as apps, captacao
@@ -32,19 +33,20 @@ def test_captacao_smoke():
     assert 'Startup\\, edital\\; teste' in ics.replace('\r\n ', '') and '[Demonstração]' in ics
 
 
-def test_demo_carrega_8_matches_so_na_demonstracao():
+def test_demo_carrega_5_matches_so_na_demonstracao():
     import sys
     from pathlib import Path
     from streamlit.testing.v1 import AppTest
     sys.path.insert(0, str(Path(__file__).parent))
-    from nav import goto
+    from nav import carregar_demo, goto
     app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
-    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    carregar_demo(app)
     goto(app, 'Matches')
     assert not app.exception
-    assert len([b for b in app.button if b.label == 'Gerenciar']) == 8
-    statuses = {a['status'] for a in app.session_state['demo_data']['applications'].values() if a['id'].startswith('demo-call-')}
-    assert statuses == set(apps.STATUSES)  # o ciclo inteiro aparece na demonstração
+    assert len([b for b in app.button if b.label == 'Gerenciar']) == 5
+    statuses = {a['status'] for a in app.session_state['demo_data']['applications'].values() if a['id'].startswith('fx-call-')}
+    # 5 matches fictícios, um status cada (Desistiu ficou de fora), todos em editais "reais" (aqui, de teste).
+    assert statuses == set(apps.STATUSES) - {apps.NOT_SUBMITTED}
     assert not app.session_state['real_data'].get('applications')  # nada no modo real
 
 
@@ -52,10 +54,12 @@ def test_exigencia_com_contexto_e_primeiro_match_da_demo_atende():
     import app as ui
     from inovamatch.demo import demo_matches, load_demo
     from inovamatch.matching import match
+    from demo_fixture import fixture_calls
     store = Store({})
     load_demo(store)
+    fixture_calls(store)
     demo_matches(store)
-    call, startup, project = store.get('calls', 'demo-call-2'), store.get('startups', 'demo-fora'), store.get('projects', 'project-demo-fora')
+    call, startup, project = store.get('calls', 'fx-call-2'), store.get('startups', 'demo-fora'), store.get('projects', 'project-demo-fora')
     result = match(call, startup, project)
     assert result['verdict'] == 'Potencialmente elegível'
     texts = {r['requirement']: ui.requirement_text(r) for r in result['rows']}
@@ -71,13 +75,13 @@ def test_impedido_e_pendencias_visiveis_na_demo():
     from pathlib import Path
     from streamlit.testing.v1 import AppTest
     sys.path.insert(0, str(Path(__file__).parent))
-    from nav import goto
+    from nav import carregar_demo, goto
     app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
-    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    carregar_demo(app)
     goto(app, 'Matches')
     html = ' '.join(h.value for h in app.get('html'))
     assert 'im-chip-fail' in html and 'Impedido' in html and 'pendência(s)' in html  # selos no card
-    app.session_state['active_match'] = 'demo-call-1:project-demo-pendente'  # Semente Lab: em formação e faltam dados
+    app.session_state['active_match'] = 'fx-call-1:project-demo-pendente'  # Semente Lab: em formação e faltam dados
     app.run()
     html = ' '.join(h.value for h in app.get('html'))
     assert 'Não atende por ora: CNPJ há pelo menos 24 meses (ação sugerida: abrir o CNPJ)' in html
@@ -91,15 +95,15 @@ def test_planos_simulados_liberam_e_bloqueiam():
     from pathlib import Path
     from streamlit.testing.v1 import AppTest
     sys.path.insert(0, str(Path(__file__).parent))
-    from nav import goto
+    from nav import carregar_demo, goto
     app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
-    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    carregar_demo(app)
     assert app.session_state['plan'] == 'Institucional'
-    app.session_state['active_match'] = 'demo-call-1:project-demo-pendente'
+    app.session_state['active_match'] = 'fx-call-1:project-demo-pendente'
     goto(app, 'Matches')
     assert any('Exigência' in d.value.columns for d in app.dataframe)  # Institucional: tudo liberado
     app.session_state['plan'] = 'Gratuito'  # Lucas = Horizonte Digital: só o match dela aparece
-    app.session_state['active_match'] = 'demo-call-2:project-demo-fora'
+    app.session_state['active_match'] = 'fx-call-2:project-demo-fora'
     app.run()
     html = ' '.join(h.value for h in app.get('html'))
     assert not app.exception and 'Disponível no plano Básico' in html and 'Disponível no plano Intermediário' in html
@@ -120,17 +124,20 @@ def test_nota_e_dashboard_institucional():
     from inovamatch.demo import demo_matches, load_demo
     from inovamatch.matching import match
     sys.path.insert(0, str(Path(__file__).parent))
-    from nav import goto
+    from nav import carregar_demo, goto
+    from demo_fixture import fixture_calls
     store = Store({})
     load_demo(store)
+    fixture_calls(store)
     demo_matches(store)
-    blocked = match(store.get('calls', 'demo-call-3'), store.get('startups', 'demo-energia'), store.get('projects', 'project-demo-energia'))
+    # Araucária (Tecnologia) × edital de Saúde: área não atende → impedimento.
+    blocked = match(store.get('calls', 'fx-call-2'), store.get('startups', 'demo-verde'), store.get('projects', 'project-demo-verde'))
     assert score.compute(blocked)['value'] <= score.BLOCKER_CAP  # impedimento limita a nota
     app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
-    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    carregar_demo(app)
     goto(app, 'Início')
     metrics = {m.label: m.value for m in app.metric}
-    assert not app.exception and metrics['Startups no portfólio'] == '6' and metrics['Nota média'].endswith('/ 10')
+    assert not app.exception and metrics['Startups no portfólio'] == '5' and metrics['Nota média'].endswith('/ 10')
     assert any(d.label == 'Exportar relatório (CSV)' for d in app.get('download_button'))
     app.session_state['plan'] = 'Básico'
     app.run()
@@ -143,12 +150,12 @@ def test_alertas_simulados_por_plano(monkeypatch):
     from pathlib import Path
     from streamlit.testing.v1 import AppTest
     sys.path.insert(0, str(Path(__file__).parent))
-    from nav import goto
+    from nav import carregar_demo, goto
     app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
     goto(app, 'Alertas')
     assert any('Nenhum aviso agora' in h.value for h in app.get('html'))  # modo real vazio
     goto(app, 'Início')  # sem o bloco da lateral, a demonstração só carrega pelo Início com a base vazia
-    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    carregar_demo(app)
     goto(app, 'Alertas')
     assert not app.exception and 6 <= len(app.code) <= 8
     assert any('Simulação: nada é enviado' in h.value for h in app.get('html'))
@@ -164,9 +171,11 @@ def test_perfil_abaixo_do_institucional_ve_so_a_sua_startup():
     from inovamatch.demo import demo_matches, load_demo
     from inovamatch.storage import ScopedStore
     from inovamatch.vault import demo_documents
+    from demo_fixture import fixture_calls
     base = Store({})
     load_demo(base)
     demo_documents(base)
+    fixture_calls(base)
     demo_matches(base)
     names = {'Gratuito': 'Horizonte Digital', 'Básico': 'Serra Biotec', 'Intermediário': 'Vale Agro Digital', 'Premium': 'Araucária Tech'}
     for plan, name in names.items():
@@ -185,7 +194,7 @@ def test_hash_do_edital_e_retificacao_simulada(monkeypatch):
     from streamlit.testing.v1 import AppTest
     from inovamatch import versioning
     sys.path.insert(0, str(Path(__file__).parent))
-    from nav import goto
+    from nav import carregar_demo, goto
     call = versioning.register({'id': 'c'}, 'fonte', 'a1', [{'text': 'Prazo  ATÉ\n10/12'}])
     assert call['versions'][0]['changed'] == versioning.FIRST and not call.get('altered')
     same_text = versioning.register(call, 'fonte', 'a2', [{'text': 'prazo até 10/12'}])  # só o arquivo (e a formatação)
@@ -193,24 +202,25 @@ def test_hash_do_edital_e_retificacao_simulada(monkeypatch):
     changed = versioning.register(same_text, 'fonte', 'a3', [{'text': 'prazo até 20/12'}])
     assert changed['altered'] and changed['versions'][-1]['changed'] == versioning.BOTH
     app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
-    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    carregar_demo(app)
     from inovamatch.demo import simulate_rectification
-    simulate_rectification(Store(app.session_state['demo_data']), 'demo-call-2')
+    # Só o edital de simulação aceita retificação simulada; os editais reais (aqui, de teste) não.
+    with pytest.raises(ValueError):
+        simulate_rectification(Store(app.session_state['demo_data']), 'fx-call-2')
+    simulate_rectification(Store(app.session_state['demo_data']), 'demo-call-sim')
+    assert app.session_state['demo_data']['calls']['demo-call-sim']['altered']
     goto(app, 'Alertas')
     assert any('Edital alterado' in t.label for t in app.tabs) and any('foi alterado em' in c.value for c in app.code)
-    app.session_state['active_match'] = 'demo-call-2:project-demo-fora'
-    goto(app, 'Matches')
-    assert any('Edital alterado em' in h.value for h in app.get('html'))
 
 
-def test_dados_reais_com_startups_de_exemplo_e_publicacao_rapida(monkeypatch):
+def test_dados_reais_sem_ficticios_e_publicacao_rapida(monkeypatch):
     import sys
     from datetime import timedelta
     from pathlib import Path
     from streamlit.testing.v1 import AppTest
     from inovamatch.domain import today
     sys.path.insert(0, str(Path(__file__).parent))
-    from nav import goto
+    from nav import carregar_demo, goto
     monkeypatch.delenv('INOVAMATCH_STORAGE', raising=False)
     app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
     assert any(s.label == 'Trocar perfil (simulação)' for s in app.selectbox)  # perfil fictício no pé da barra lateral
@@ -219,9 +229,9 @@ def test_dados_reais_com_startups_de_exemplo_e_publicacao_rapida(monkeypatch):
     assert 'Plano Institucional' in html and any('Marina Souza' in str(p.proto) for p in app.get('popover'))
     assert not any('Trocar perfil ou exportar' in str(p.proto) for p in app.get('popover'))
     goto(app, 'Startups')
-    next(b for b in app.button if b.label == 'Adicionar startups de exemplo (fictícias)').click().run()
+    # Dados reais não têm mais startups de exemplo (fictícias): nada inventado nesta base.
+    assert not any('startups de exemplo' in b.label for b in app.button)
     real = app.session_state['real_data']
-    assert len(real['startups']) == 6 and all(s['origem'] == 'demo' for s in real['startups'].values())
     Store(real).save('calls', {'id': 'real-1', 'title': 'Edital real de teste', 'institution': 'FAPESC', 'url': 'https://fapesc.sc.gov.br/x',
                                'origem': 'real', 'deadline': (today() + timedelta(days=20)).isoformat(), 'deadline_confirmed': False,
                                'deadline_evidence': 'Cronograma, p. 3: submissão até a data.', 'criteria': []})

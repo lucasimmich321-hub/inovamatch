@@ -208,11 +208,20 @@ def test_publish_button_in_review_screen():
     assert app.session_state['real_data']['calls'][ready['id']]['review_state'] == PUBLISHED
 
 
-def test_demo_has_open_calls_marked_as_simulated():
-    from inovamatch.demo import load_demo
+def test_demo_so_inventa_o_edital_de_simulacao_e_le_o_cache_sem_rede(tmp_path):
+    from inovamatch.crawler import CacheOnlyFetcher, DiskCache
+    from inovamatch.demo import copy_real_calls, load_demo
+    from inovamatch.origin import provenance
     store = Store({})
     load_demo(store)
     calls = store.all('calls')
-    assert any(call_situation(c) == 'Aberto' for c in calls)
-    assert all(c['simulated'] and c['title'].startswith('[SIMULADO]') for c in calls)
-    assert all('SIMULADO' in c['opening_evidence'] for c in calls)
+    assert len(calls) == 1 and calls[0]['title'].startswith('[SIMULAÇÃO]') and provenance(calls[0], 'call') == 'Simulação'
+    assert call_situation(calls[0]) == 'Aberto'
+    # Editais reais: copiados do crawler, nunca os cadastrados à mão ou fictícios.
+    real = Store({})
+    real.save('calls', {'id': 'r1', 'title': 'Edital FAPESC 1/2026', 'source_id': 'fapesc'})
+    real.save('calls', {'id': 'm1', 'title': 'Manual', 'origem': 'real'})
+    assert copy_real_calls(store, real.all('calls')) == 1 and store.get('calls', 'r1')
+    # Cache vazio: o leitor só-cache falha sem tentar a rede.
+    with pytest.raises(ValueError):
+        CacheOnlyFetcher(DiskCache(tmp_path)).fetch('https://fapesc.sc.gov.br/x')

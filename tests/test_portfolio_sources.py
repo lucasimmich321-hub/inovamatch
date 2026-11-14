@@ -1,6 +1,7 @@
 from datetime import timedelta
 import pytest
 from inovamatch.demo import load_demo
+from demo_fixture import fixture_calls
 from inovamatch.domain import today
 from inovamatch.filters import filter_calls
 from inovamatch.matching import PASS, FAIL, PENDING, evaluate, match
@@ -42,19 +43,20 @@ def test_a_mandatory_alignment_failure_blocks_independently_of_dimension_totals(
 def test_scale_recalculation_after_edit_and_application_tracking(sqlite, tmp_path):
     store = Store(path=tmp_path / 'db.sqlite' if sqlite else None)
     load_demo(store)
-    assert recalculate(store) == 6
-    assert len(store.all('analyses')) == 6
+    fixture_calls(store)  # 2 editais de teste abertos + 1 encerrado (fora da conta) + o edital de simulação
+    assert recalculate(store) == 15
+    assert len(store.all('analyses')) == 15
     startup = store.get('startups', 'demo-verde')
     project = store.get('projects', 'project-demo-verde')
-    call = store.get('calls', 'demo-call-1')
+    call = store.get('calls', 'fx-call-1')
     register_application(store, call, startup, project)
     stats = overview(store)
-    assert stats['startups'] == 3 and stats['projects'] == 3 and stats['preparing'] == 1
-    assert stats['eligible'] == 2  # Araucária × Inovação Catarinense e Horizonte × Saúde e Impacto
+    assert stats['startups'] == 5 and stats['projects'] == 5 and stats['preparing'] == 1
+    assert stats['eligible'] == 4  # Araucária e Vale Agro × Inovação Catarinense; Horizonte e Serra Biotec × Saúde e Impacto
     store.save('startups', {**startup, 'state': 'PR'})
-    assert recalculate(store, startup_id=startup['id']) == 2
-    assert overview(store)['eligible'] == 1
-    assert store.get('analyses', 'demo-call-1:project-demo-verde')['verdict'] == 'Com impedimentos'
+    assert recalculate(store, startup_id=startup['id']) == 3
+    assert overview(store)['eligible'] == 3
+    assert store.get('analyses', 'fx-call-1:project-demo-verde')['verdict'] == 'Com impedimentos'
 
 
 def test_source_failure_does_not_drop_successful_sources(monkeypatch):
