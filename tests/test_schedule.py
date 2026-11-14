@@ -104,7 +104,7 @@ def test_review_screen_shows_schedule_and_unconfirmed_suggestion():
     Store(data).save('calls', call)
     app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / 'app.py'), default_timeout=20).run()
     app.session_state['real_data'] = data
-    app.sidebar.radio[0].set_value('Radar de Editais').run()
+    app.sidebar.radio[0].set_value('Editais').run()
     assert not app.exception
     assert any('Prazo sugerido: 15/06/2026' in w.value for w in app.warning)
     table = next(d for d in app.dataframe if 'Etapa' in d.value.columns)

@@ -198,7 +198,7 @@ def test_publish_button_in_review_screen():
          'source': 'x', 'page': 1, 'evidence': 'sede em SC'}], 'criteria_complete': True, 'deadline': today().isoformat(),
         'deadline_confirmed': True, 'deadline_evidence': 'p. 3', 'review_state': AWAITING, 'relevance': 'Relevante'})
     app.session_state['real_data'] = data
-    app.sidebar.radio[0].set_value('Radar de Editais').run()
+    app.sidebar.radio[0].set_value('Editais').run()
     assert not app.exception
     button = next(b for b in app.button if b.label == 'Publicar para as startups')
     assert not button.disabled

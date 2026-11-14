@@ -29,31 +29,38 @@ def navigate(app, page):
 
 def test_all_pages_and_demo_matching_and_copilot():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    # Dashboard tem um único título de página: o H1 do hero.
+    assert app.session_state['page'] == 'Vínculos'  # tela principal
+    navigate(app, 'Painel')
+    # Painel tem um único título de página: o H1 do hero.
     assert not app.title
     assert sum('<h1>' in h.value for h in app.get('html')) == 1
     button(app, 'Carregar demonstração').click().run()
     clean(app)
-    assert app.session_state['dataset'] == 'Demonstração'
-    assert [m.value for m in app.metric][:2] == ['2', '3']
-    for page in ['Cadastrar Startup', 'Cadastrar Projeto', 'Radar de Editais', 'Match Inteligente', 'Copiloto de Captação']:
+    assert app.session_state['dataset'] == 'Demonstração' and app.session_state['page'] == 'Vínculos'
+    for page in ['Startups', 'Editais', 'Painel']:
         navigate(app, page)
+    assert [m.value for m in app.metric][:2] == ['2', '3']
+    navigate(app, 'Vínculos')
+    # Vínculos: tabela edital × startups com Atende / Pendente / Não atende.
+    summary = next(d for d in app.dataframe if 'Motivo principal' in d.value.columns)
+    # As 3 startups fictícias: elegível, pendente e impedida (mesma semântica do match reverso antigo).
+    assert summary.value['Resultado'].tolist() == ['Atende', 'Pendente de verificação', 'Não atende']
     assert len(app.checkbox) > 0
     app.checkbox[0].check().run()
     clean(app)
     assert any(t['done'] for t in app.session_state['demo_data']['tasks'].values())
-    navigate(app, 'Match Inteligente')
-    button(app, 'Analisar e registrar candidatura').click().run()
+    button(app, 'Iniciar candidatura').click().run()
     clean(app)
-    button(app, 'Comparar todas as startups e projetos').click().run()
+    assert len(app.session_state['demo_data']['applications']) == 1
+    assert len(app.session_state['demo_data']['analyses']) == 1
+    app.segmented_control[0].set_value('Startup').run()
     clean(app)
-    assert len(app.session_state['demo_data']['analyses']) == 3
-    assert app.dataframe[-1].value['Resultado'].tolist() == ['Potencialmente elegível', 'Com impedimentos', 'Precisa de informações']
+    assert any('Motivo principal' in d.value.columns and 'Edital' in d.value.columns for d in app.dataframe)
 
 
 def test_live_create_and_edit_startup_then_create_project():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    navigate(app, 'Cadastrar Startup')
+    navigate(app, 'Startups')
     next(x for x in app.text_input if x.label == 'Nome da startup *').set_value('Startup ao vivo')
     button(app, 'Salvar startup').click().run()
     clean(app)
@@ -65,7 +72,7 @@ def test_live_create_and_edit_startup_then_create_project():
     button(app, 'Salvar startup').click().run()
     clean(app)
     assert app.session_state['real_data']['startups'][sid]['name'] == 'Startup editada'
-    navigate(app, 'Cadastrar Projeto')
+    navigate(app, 'Startups')
     next(x for x in app.text_input if x.label == 'Nome do projeto *').set_value('Projeto ao vivo')
     button(app, 'Salvar projeto').click().run()
     clean(app)
@@ -83,16 +90,17 @@ def test_session_isolation_and_empty_pages():
     button(first, 'Carregar demonstração').click().run()
     second = clean(AppTest.from_file(APP, default_timeout=20).run())
     assert second.session_state['real_data']['startups'] == {}
-    for page in ['Radar de Editais', 'Cadastrar Projeto', 'Match Inteligente', 'Copiloto de Captação']:
+    for page in ['Editais', 'Startups', 'Vínculos']:
         navigate(second, page)
 
 
 def test_dashboard_open_call_and_criterion_edit():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
     button(app, 'Carregar demonstração').click().run()
+    navigate(app, 'Painel')
     next(b for b in app.button if b.label == 'Ver edital →').click().run()
     clean(app)
-    assert app.session_state['page'] == 'Radar de Editais'
+    assert app.session_state['page'] == 'Editais'
     select = next(s for s in app.selectbox if s.label == 'Adicionar ou editar critério')
     select.set_value('criterion-0').run()
     clean(app)
@@ -107,7 +115,7 @@ def test_dashboard_open_call_and_criterion_edit():
 
 def test_manual_call_criterion_evidence_and_deadline_review():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    navigate(app, 'Radar de Editais')
+    navigate(app, 'Editais')
     next(r for r in app.radio if r.label == 'Origem').set_value('Cadastro manual').run()
     next(x for x in app.text_input if x.label == 'Título do edital *').set_value('Edital da apresentação')
     next(x for x in app.text_input if x.label == 'Referência da fonte *').set_value('Regulamento de teste')
@@ -157,7 +165,7 @@ def test_automatic_pdf_analysis_prefills_review_and_integrates_portfolio(monkeyp
     app = AppTest.from_file(APP, default_timeout=30)
     app.session_state['real_data'] = store.data
     clean(app.run())
-    navigate(app, 'Radar de Editais')
+    navigate(app, 'Editais')
     button(app, 'Analisar requisitos automaticamente').click().run()
     clean(app)
     current = app.session_state['real_data']['calls'][call['id']]
@@ -176,11 +184,12 @@ def test_automatic_pdf_analysis_prefills_review_and_integrates_portfolio(monkeyp
     revised = app.session_state['real_data']['calls'][call['id']]
     rule = next(c for c in revised['criteria'] if c['id'] == state_rule['id'])
     assert rule['confirmed'] and rule['extracted'] and rule['validation_status'] == 'validated'
-    navigate(app, 'Copiloto de Captação')
-    button(app, 'Iniciar preparação desta candidatura').click().run()
+    navigate(app, 'Vínculos')
+    next(t for t in app.toggle if t.label == 'Incluir editais ainda em revisão').set_value(True).run()
+    button(app, 'Iniciar candidatura').click().run()
     clean(app)
     assert len(app.session_state['real_data']['applications']) == 1
-    navigate(app, 'Portfólio da Incubadora')
+    navigate(app, 'Startups')
     button(app, 'Recalcular todo o portfólio').click().run()
     clean(app)
     assert app.dataframe[0].value['Candidaturas em preparação'].tolist() == [1]

@@ -17,7 +17,7 @@ from inovamatch.radar import import_url, pdf_call
 from inovamatch.storage import Store
 from inovamatch.documents import merge_analysis, automatic_analysis
 from inovamatch.portfolio import overview, matrix, recalculate, register_application
-from inovamatch.filters import filter_calls, funding_value, sort_calls
+from inovamatch.filters import filter_calls, funding_value, sort_calls, status_group
 from inovamatch.crawler import crawl, summary_line, publication_blockers, AWAITING, PUBLISHED
 from inovamatch.ai_ui import render_ai
 from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN, DECLARABLE
@@ -26,56 +26,65 @@ st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon='◈',
 
 CSS = '''
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap');
-html, body, [class*="css"], [data-testid="stApp"] {font-family:'DM Sans',sans-serif;}
-h1,h2,h3 {font-family:'Manrope',sans-serif;letter-spacing:-.035em;}
-.block-container {max-width:1450px;padding-top:4.75rem;padding-bottom:3rem;}
-[data-testid="stSidebar"] {border-right:1px solid #e3e9e8;background:#fff;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+:root {--im-primary:#0F766E;--im-dark:#0E1B1F;--im-bg:#F5F7F6;--im-border:#D9E1DF;--im-muted:#4B5A5F;}
+html, body, [class*="css"], [data-testid="stApp"] {font-family:'Inter',sans-serif;color:var(--im-dark);}
+[data-testid="stApp"] {background:var(--im-bg);}
+h1,h2,h3 {font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em;color:var(--im-dark);}
+.block-container {max-width:1360px;padding-top:4.75rem;padding-bottom:3rem;}
+[data-testid="stSidebar"] {border-right:1px solid var(--im-border);background:#fff;}
 [data-testid="stSidebar"] .block-container {padding-top:2rem;}
-[data-testid="stMetric"] {background:white;border:1px solid #e1e9e6;border-radius:14px;padding:20px 22px;}
-[data-testid="stMetricLabel"] {color:#55675f;font-size:13px;}
+[data-testid="stMetric"] {background:#fff;border:1px solid var(--im-border);border-radius:14px;padding:18px 20px;}
+[data-testid="stMetricLabel"] {color:#4B5A5F;font-size:13px;}
 [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] * {white-space:normal !important;overflow:visible !important;text-overflow:clip !important;}
-[data-testid="stMetricValue"] {font-family:'Manrope',sans-serif;font-weight:800;font-size:32px;}
-.eyebrow {color:#4a6a63;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;}
+[data-testid="stMetricValue"] {font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:30px;}
+[data-testid="stVerticalBlockBorderWrapper"] {border-color:var(--im-border) !important;border-radius:14px !important;background:#fff;}
+.eyebrow {color:#2A3C41;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;}
 .brand {display:flex;gap:11px;align-items:center;margin-bottom:27px;}
-.brand-icon {border-radius:12px;background:#087f74;color:white;font-size:27px;font-weight:800;padding:4px 12px;}
-.brand-name {font-family:'Manrope',sans-serif;font-size:23px;font-weight:800;letter-spacing:-1px;}
-.brand-sub {color:#4f6964;font-size:11px;letter-spacing:.12em;}
-.hero {border-radius:19px;background:linear-gradient(120deg,#103b38,#12584f);padding:30px 34px;margin:14px 0 26px;color:#fff;position:relative;overflow:hidden;}
-.hero:after {content:'◉';font-size:240px;position:absolute;right:2%;top:-100px;color:#a3e5bc10;}
-.hero .eyebrow {color:#a9e7bf;}
-.hero h1 {font-family:'Manrope',sans-serif;font-size:32px;font-weight:800;color:white;padding:0;max-width:680px;margin:12px 0;line-height:1.24;}
-.hero p {color:#c7dfd8;margin:0;font-size:14px;}
-.tag {display:inline-block;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;background:#e4f4ec;color:#1c7359;}
-.tag.warn {background:#fff2d9;color:#8b6418;}
-.tag.demo {background:#f2eafb;color:#76519a;}
-.opportunity {min-height:160px;}
-.opportunity h3 {font-size:17px;letter-spacing:-.02em;margin:13px 0 10px;line-height:1.45;}
-.muted {color:#55675f;font-size:12px;}
-.section-head {font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;margin:26px 0 4px;}
-.steps {background:#edf4f1;border-radius:14px;padding:23px 26px;margin-top:26px;color:#45655b;line-height:1.9;}
-.footer {font-size:11px;color:#55675f;border-top:1px solid #e1e8e4;margin-top:30px;padding-top:15px;}
+.brand-icon {border-radius:12px;background:#0F766E;color:white;font-size:24px;font-weight:700;padding:4px 11px;}
+.brand-name {font-family:'Space Grotesk',sans-serif;font-size:23px;font-weight:700;letter-spacing:-.5px;}
+.brand-sub {color:#4B5A5F;font-size:11px;letter-spacing:.12em;}
+.hero {border-radius:16px;background:#0E1B1F;padding:28px 32px;margin:14px 0 24px;color:#fff;}
+.hero .eyebrow {color:#5EEAD4;}
+.hero h1 {font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:white;padding:0;max-width:720px;margin:10px 0;line-height:1.2;}
+.hero p {color:#B6C9C6;margin:0;font-size:14px;}
+.tag {display:inline-block;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;background:#D9F2EE;color:#0B4F4A;}
+.tag.warn {background:#FDECC8;color:#7A3E06;}
+.tag.demo {background:#E6EAE9;color:#3A4A4F;}
+.opportunity {min-height:150px;}
+.opportunity h3 {font-size:17px;margin:12px 0 10px;line-height:1.4;}
+.muted {color:#4B5A5F;font-size:12px;}
+.section-head {font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;margin:24px 0 4px;}
+.steps {background:#fff;border:1px solid #D9E1DF;border-radius:14px;padding:20px 24px;margin-top:24px;color:#2A3C41;line-height:1.9;}
+.soon {background:#fff;border:1px dashed #4B5A5F;border-radius:14px;padding:18px 22px;color:#2A3C41;}
+.footer {font-size:11px;color:#4B5A5F;border-top:1px solid #D9E1DF;margin-top:30px;padding-top:15px;}
 .status {display:inline-block;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;border:1px solid transparent;}
-.s-open {background:#e4f4ec;color:#14583f;}
-.s-flow {background:#e3eefb;color:#1d4f8a;}
-.s-flow-pending {background:#fff;color:#1d4f8a;border:1px dashed #1d4f8a;}
-.s-closed {background:#fbe5e3;color:#8a1f17;}
-.s-future {background:#f2eafb;color:#5e3d80;}
-.s-unknown {background:#eef1f0;color:#44524e;}
-:focus-visible, [data-baseweb] :focus-visible {outline:3px solid #087f74 !important;outline-offset:2px !important;}
-[data-testid="stSidebar"] label:has(input:focus-visible), [data-testid="stPills"] button:focus-visible {outline:3px solid #087f74 !important;outline-offset:2px;border-radius:8px;}
-[data-testid="stForm"] {background:#fff;border-color:#e2eae5;border-radius:14px;}
-.stButton button {border-radius:9px;}
-@media(max-width:700px) {.hero {padding:24px}.hero h1 {font-size:25px}.block-container {padding:4.5rem 1.2rem 1.2rem;}}
+.s-open {background:#D9F2EE;color:#0B4F4A;}
+.s-flow {background:#D9F2EE;color:#0B4F4A;}
+.s-flow-pending {background:#FDECC8;color:#7A3E06;border:1px dashed #7A3E06;}
+.s-closed {background:#E6EAE9;color:#3A4A4F;}
+.s-future {background:#E6EAE9;color:#3A4A4F;}
+.s-unknown {background:#FDECC8;color:#7A3E06;}
+.v-ok {background:#D9F2EE;color:#0B4F4A;}
+.v-pending {background:#FDECC8;color:#7A3E06;}
+.v-fail {background:#FBE0DC;color:#8A1C12;}
+:focus-visible, [data-baseweb] :focus-visible {outline:3px solid #0F766E !important;outline-offset:2px !important;}
+[data-testid="stSidebar"] label:has(input:focus-visible), [data-testid="stPills"] button:focus-visible {outline:3px solid #0F766E !important;outline-offset:2px;border-radius:8px;}
+[data-testid="stForm"] {background:#fff;border-color:#D9E1DF;border-radius:14px;}
+.stButton button, .stDownloadButton button, .stLinkButton a {border-radius:10px;}
+@media(max-width:700px) {.hero {padding:22px}.hero h1 {font-size:24px}.block-container {padding:4.5rem 1rem 1.2rem;}}
 </style>'''
 st.html(CSS)
 
-PAGES = ['Dashboard', 'Radar de Editais', 'Cadastrar Startup', 'Cadastrar Projeto', 'Match Inteligente', 'Copiloto de Captação', 'Portfólio da Incubadora']
-ICONS = ['◫', '◎', '◇', '▤', '⟷', '✧', '▦']
+PAGES = ['Vínculos', 'Editais', 'Startups', 'Painel']
+ICONS = ['⟷', '◎', '◇', '▦']
+# Nomes das 7 telas antigas (links internos e ai_ui) apontam para a tela nova equivalente.
+LEGACY_PAGES = {'Dashboard': 'Painel', 'Radar de Editais': 'Editais', 'Cadastrar Startup': 'Startups', 'Cadastrar Projeto': 'Startups',
+                'Match Inteligente': 'Vínculos', 'Copiloto de Captação': 'Vínculos', 'Portfólio da Incubadora': 'Startups'}
 
 
 def go(page, call_id=None):
-    st.session_state.page = page
+    st.session_state.page = LEGACY_PAGES.get(page, page)
     if call_id:
         st.session_state.focus_call = call_id
 
@@ -84,7 +93,7 @@ def demo_activate():
     data = st.session_state.setdefault('demo_data', {})
     load_demo(Store(data))
     st.session_state.dataset = 'Demonstração'
-    st.session_state.page = 'Dashboard'
+    st.session_state.page = 'Vínculos'
 
 
 def brl(value):
@@ -174,7 +183,7 @@ def source_link(call):
         st.caption(call.get('source_label', 'Fonte ainda não registrada.'))
 
 
-def dashboard(store):
+def painel(store):
     # Título único da página: o hero (antes havia um H1 repetindo a mesma ideia).
     st.html('<div class="eyebrow">INOVALE 2026 &nbsp; / &nbsp; RADAR INTELIGENTE DE FOMENTO</div>')
     st.html('''<div class="hero"><div class="eyebrow">ENCONTRE. COMPARE. PREPARE.</div>
@@ -199,7 +208,7 @@ def dashboard(store):
         with st.container(border=True):
             st.markdown('**Seu radar está pronto para começar.**')
             st.write('Busque editais na FAPESC ou carregue a demonstração na barra lateral para explorar o fluxo completo.')
-            st.button('Explorar Radar de Editais →', type='primary', on_click=go, args=('Radar de Editais',))
+            st.button('Ir para Editais →', type='primary', on_click=go, args=('Editais',))
     else:
         ordered = sorted(calls, key=lambda c: (deadline_info(c)['days'] is None,
                                               deadline_info(c)['days'] if deadline_info(c)['days'] is not None else 99999))[:6]
@@ -209,13 +218,13 @@ def dashboard(store):
                     badge = 'SIMULADO' if call.get('simulated') else escape(call.get('institution', 'Fonte pública'))
                     st.html(f'<div class="opportunity"><span class="tag {"demo" if call.get("simulated") else ""}">{badge}</span>'
                             f'<h3>{escape(call["title"])}</h3><span class="muted">{escape(deadline_label(call))}</span></div>')
-                    st.button('Ver edital →', key='open_' + call['id'], on_click=go, args=('Radar de Editais', call['id']), width='stretch')
+                    st.button('Ver edital →', key='open_' + call['id'], on_click=go, args=('Editais', call['id']), width='stretch')
     if soon:
         st.warning(f'{len(soon)} edital(is) com prazo confirmado em até 7 dias. Confira o horário e as retificações na fonte.')
     if stats['rows']:
         st.markdown('**Startups e oportunidades da incubadora**')
         st.dataframe(stats['rows'], hide_index=True, width='stretch')
-        st.button('Abrir portfólio da incubadora →', on_click=go, args=('Portfólio da Incubadora',))
+        st.button('Ver startups →', on_click=go, args=('Startups',))
     if calls:
         with st.expander('Novos editais e revisões necessárias'):
             st.dataframe([{'Edital': c['title'], 'Instituição': c.get('institution'), 'Encontrado em': when(c.get('discovered_at'), 'Cadastro manual'),
@@ -223,11 +232,14 @@ def dashboard(store):
     st.html('<div class="steps"><strong>Uma candidatura preparada começa com três passos</strong><br>'
             '01 &nbsp; Cadastre sua startup e seu projeto &nbsp; → &nbsp; 02 &nbsp; Revise os critérios do edital &nbsp; → &nbsp; '
             '03 &nbsp; Faça o match e organize a preparação</div>')
+    st.html('<div class="soon"><span class="tag demo">Em breve</span><div class="section-head">Visão da startup</div>'
+            'Cada startup verá, só para leitura, os editais que o escritório direcionou a ela e o checklist do vínculo. '
+            'Ainda não disponível: hoje o InovaMatch é operado pelo escritório de projetos.</div>')
     st.html('<div class="footer">InovaMatch · Hackathon Incubadora Joaçaba 2026 · Regras transparentes, evidências rastreáveis.</div>')
 
 
 def startup_form(store, simulated):
-    heading('Cadastrar Startup', 'As informações da empresa são avaliadas separadamente das informações do projeto.')
+    st.caption('As informações da empresa são avaliadas separadamente das informações do projeto.')
     records = store.all('startups')
     options = ['__new__'] + [r['id'] for r in records]
     lookup = {r['id']: r for r in records}
@@ -278,11 +290,10 @@ def startup_form(store, simulated):
 
 
 def project_form(store, simulated):
-    heading('Cadastrar Projeto', 'Defina a proposta, o orçamento e as despesas antes de comparar com um edital.')
+    st.caption('Defina a proposta, o orçamento e as despesas antes de comparar com um edital.')
     startups = store.all('startups')
     if not startups:
         st.info('Cadastre uma startup para vincular seu primeiro projeto.')
-        st.button('Cadastrar startup →', on_click=go, args=('Cadastrar Startup',))
         return
     records = store.all('projects')
     lookup = {r['id']: r for r in records}
@@ -554,7 +565,7 @@ def documentation_view(call):
         st.markdown('**Condições de envio identificadas**')
         st.dataframe([{'Condição': c['evidence'], 'Página': c.get('page'), 'Fonte': c['source'], 'Revisão': c.get('review_status')} for c in submission], hide_index=True, width='stretch')
     st.caption('O checklist operacional é individual por startup, projeto e edital. Marque as tarefas e acompanhe o progresso no Copiloto.')
-    st.button('Preparar candidatura no Copiloto →', on_click=go, args=('Copiloto de Captação',), key='docs_copilot_' + call['id'])
+    st.button('Ver vínculos com as startups →', on_click=go, args=('Vínculos',), key='docs_copilot_' + call['id'])
 
 
 def compatibility_view(store, call):
@@ -585,7 +596,7 @@ def dimensions_view(result):
 
 
 def portfolio_view(store):
-    heading('Portfólio da Incubadora', 'Startups, projetos e candidaturas em uma visão de gestão da captação.')
+    st.caption('Startups, projetos e candidaturas em uma visão de gestão da captação.')
     if st.button('Recalcular todo o portfólio', type='primary'):
         with st.spinner('Comparando os projetos com os editais analisados…'):
             count = recalculate(store)
@@ -603,8 +614,6 @@ def portfolio_view(store):
         st.dataframe([{'Edital': calls.get(a['call_id'], {}).get('title', a['call_id']),
                        'Projeto': projects.get(a['project_id'], {}).get('name', a['project_id']), 'Situação': a['status'],
                        'Início': a.get('started_at')} for a in applications], hide_index=True, width='stretch')
-    st.button('Cadastrar outra startup →', on_click=go, args=('Cadastrar Startup',))
-    st.button('Cadastrar outro projeto →', on_click=go, args=('Cadastrar Projeto',))
 
 
 def review_state(call):
@@ -758,7 +767,7 @@ def update_panel(store):
 
 
 def radar(store, simulated):
-    heading('Radar de Editais', 'Fontes públicas, referências visíveis e prazos confirmados por revisão.')
+    heading('Editais', 'Editais da FAPESC lidos do PDF, com página e trecho de cada exigência. Revise, confirme o prazo e publique.')
     if simulated:
         st.info('Você está vendo editais simulados. Selecione “Meus dados” na barra lateral para consultar a FAPESC.')
     else:
@@ -846,23 +855,6 @@ def radar(store, simulated):
     call_detail(store, call)
 
 
-def choose_candidacy(store, prefix):
-    if not store.all('calls') or not store.all('startups') or not store.all('projects'):
-        st.info('Cadastre uma startup, um projeto e um edital, ou carregue a demonstração.')
-        return None
-    a, b = st.columns(2)
-    with a:
-        startup = pick('Startup', store.all('startups'), prefix + '_startup')
-    projects = [p for p in store.all('projects') if p['startup_id'] == startup['id']]
-    with b:
-        project = pick('Projeto', projects, prefix + '_project')
-    if not project:
-        st.info('Esta startup ainda não tem projeto cadastrado.')
-        return None
-    call = pick('Edital', store.all('calls'), prefix + '_call', name='title')
-    return call, startup, project
-
-
 ESSENTIAL_COLUMNS = ['Requisito', 'Resultado', 'Obrigatório', 'Exigência', 'Dados declarados', 'Justificativa']
 
 
@@ -894,70 +886,45 @@ def verdict_banner(result):
         st.success('Potencialmente elegível segundo as regras registradas e os dados declarados.')
 
 
-def intelligent_match(store):
-    heading('Match Inteligente', 'Entenda cada exigência, a evidência e o próximo passo — sem estimar chance de aprovação.')
-    direct, reverse = st.tabs(['Empresa e projeto → edital', 'Match reverso · edital → portfólio'])
-    with direct:
-        selection = choose_candidacy(store, 'match')
-        if selection:
-            call, startup, project = selection
-            result = match(call, startup, project)
-            if st.button('Analisar e registrar candidatura', type='primary'):
-                register_application(store, call, startup, project)
-                store.save('analyses', {'id': f'{call["id"]}:{project["id"]}', 'call_id': call['id'], 'project_id': project['id'],
-                                        'startup_id': startup['id'], 'verdict': result['verdict'],
-                                        'fingerprint': fingerprint(call, startup, project), 'result': result})
-                st.success('Análise registrada. Você pode preparar a candidatura no Copiloto.')
-            verdict_banner(result)
-            a, b, c = st.columns(3)
-            a.metric('Critérios atendidos', result['attended'])
-            b.metric('Impedimentos obrigatórios', result['blockers'])
-            c.metric('Pendências de verificação', result['pending'])
-            with st.expander('Justificativas e evidências da comparação'):
-                result_table(result, 'match')
-            dimensions_view(result)
-            st.caption('A comparação é recalculada com os dados atuais. “Atendido” se refere à regra registrada e à informação declarada, sem auditoria documental. Não representa aprovação pelo órgão.')
-    with reverse:
-        call = pick('Edital para comparar com o portfólio', store.all('calls'), 'reverse_call', name='title')
-        if call and st.button('Comparar todas as startups e projetos', type='primary'):
-            startups = {s['id']: s for s in store.all('startups')}
-            projects = store.all('projects')
-            rows = []
-            for project in projects:
-                startup = startups[project['startup_id']]
-                result = match(call, startup, project)
-                rows.append({'Startup': startup['name'], 'Projeto': project['name'], 'Resultado': result['verdict'],
-                             'Impedimentos': result['blockers'], 'Pendências': result['pending']})
-                store.save('analyses', {'id': f'{call["id"]}:{project["id"]}', 'call_id': call['id'], 'project_id': project['id'],
-                                        'startup_id': startup['id'], 'verdict': result['verdict'],
-                                        'fingerprint': fingerprint(call, startup, project), 'result': result})
-            project_owners = {p['startup_id'] for p in projects}
-            rows += [{'Startup': s['name'], 'Projeto': 'Sem projeto cadastrado', 'Resultado': 'Precisa de informações',
-                      'Impedimentos': 0, 'Pendências': 1} for s in startups.values() if s['id'] not in project_owners]
-            if rows:
-                st.dataframe(rows, hide_index=True, width='stretch')
-                st.caption('Comparação realizada agora. Mudanças nos cadastros exigem uma nova execução.')
-            else:
-                st.info('Nenhuma startup cadastrada.')
+VERDICT_LABEL = {'Potencialmente elegível': ('Atende', 'v-ok'), 'Precisa de informações': ('Pendente de verificação', 'v-pending'),
+                 'Com impedimentos': ('Não atende', 'v-fail')}
 
 
-def copilot(store):
-    heading('Copiloto de Captação', 'Um plano de preparação baseado nas exigências registradas para a sua candidatura.')
-    selection = choose_candidacy(store, 'copilot')
-    if not selection:
-        return
-    call, startup, project = selection
-    result = match(call, startup, project)
-    verdict_banner(result)
-    dimensions_view(result)
-    with st.expander('Critérios atendidos, impedimentos e pendências desta candidatura'):
-        result_table(result, 'copilot')
-    if st.button('Iniciar preparação desta candidatura', type='primary'):
-        register_application(store, call, startup, project)
-        st.success('Candidatura em preparação registrada no portfólio.')
-    st.caption('Marcar uma tarefa como concluída registra seu progresso. Corrija os cadastros ou critérios para alterar o resultado do match.')
-    if result['blockers']:
-        st.warning('Revise os impedimentos antes de investir na candidatura. Sede, idade do CNPJ, natureza jurídica e prazo podem inviabilizar a inscrição; melhorar a apresentação não os resolve.')
+def verdict_label(result):
+    return VERDICT_LABEL[result['verdict']][0]
+
+
+def verdict_badge(result):
+    label, css = VERDICT_LABEL[result['verdict']]
+    return f'<span class="status {css}">{escape(label)}</span>'
+
+
+def main_reason(result):
+    """A razão que mais pesa, em português claro. Não é nota nem chance de aprovação."""
+    blockers = [r for r in result['rows'] if r['status'] == FAIL and r['mandatory']]
+    pending = [r for r in result['rows'] if r['status'] == PENDING]
+    if blockers:
+        return 'Não atende: ' + blockers[0]['requirement'] + (f' (+{len(blockers) - 1})' if len(blockers) > 1 else '')
+    if pending:
+        return f'{len(pending)} item(ns) a verificar, ex.: ' + pending[0]['requirement']
+    return 'Atende a todos os critérios registrados'
+
+
+def linkable_calls(store, include_review=False):
+    """Editais que o escritório pode vincular: publicados e não encerrados (ou o que veio da tela de IA)."""
+    preferred = st.session_state.get('match_call')
+    return [c for c in sort_calls(store.all('calls'))
+            if c['id'] == preferred or ((review_state(c) == PUBLISHED or include_review) and status_group(c) != 'Encerrado')]
+
+
+def save_analysis(store, call, startup, project, result):
+    store.save('analyses', {'id': f'{call["id"]}:{project["id"]}', 'call_id': call['id'], 'project_id': project['id'],
+                            'startup_id': startup['id'], 'verdict': result['verdict'],
+                            'fingerprint': fingerprint(call, startup, project), 'result': result})
+
+
+def candidacy_tasks(store, call, startup, project, result):
+    """Checklist operacional da candidatura (antigo Copiloto)."""
     sig = fingerprint(call, startup, project) + '_' + today().isoformat()
     tasks = checklist(result)
     completed = 0
@@ -971,14 +938,129 @@ def copilot(store):
                 store.save('tasks', {'id': key, 'call_id': call['id'], 'project_id': project['id'],
                                      'criterion_id': task['id'], 'fingerprint': sig, 'done': done})
             completed += int(done)
-            st.caption('Fonte: ' + (task['source'] or 'Referência não registrada'))
+            st.caption('Fonte: ' + (task['source'] or 'Referência não registrada') + (f" · p. {task['page']}" if task.get('page') else ''))
             if task['evidence']:
                 with st.expander('Ver trecho de evidência'):
                     st.write(task['evidence'])
-    st.progress(completed / len(tasks), text=f'{completed} de {len(tasks)} tarefas concluídas')
-    st.markdown('**Próximos passos**')
-    st.write('Resolva as pendências acima, reúna as comprovações e confira a versão mais recente do edital e seus anexos antes de enviar a candidatura.')
-    st.caption('Sugestão geral de apresentação, sem valor de requisito: deixe claros o objetivo, o problema, as entregas, a equipe e a coerência do orçamento. Nenhuma recomendação garante recursos.')
+    if tasks:
+        st.progress(completed / len(tasks), text=f'{completed} de {len(tasks)} tarefas concluídas')
+
+
+def link_detail(store, call, startup, project):
+    """Um vínculo edital × startup: resultado, motivo de cada critério, checklist e candidatura."""
+    result = match(call, startup, project)
+    st.html(f'<div class="section-head">{escape(startup["name"])} · {escape(project["name"])}</div>')
+    st.html(verdict_badge(result))
+    verdict_banner(result)
+    a, b, c = st.columns(3)
+    a.metric('Critérios atendidos', result['attended'])
+    b.metric('Não atendidos (obrigatórios)', result['blockers'])
+    c.metric('Pendentes de verificação', result['pending'])
+    application = store.get('applications', f'{call["id"]}:{project["id"]}')
+    if application:
+        st.caption(f"Candidatura: {application.get('status', 'Em preparação')} desde {when(application.get('started_at'))}")
+    elif st.button('Iniciar candidatura', type='primary', key='start_' + call['id'] + project['id']):
+        register_application(store, call, startup, project)
+        save_analysis(store, call, startup, project, result)
+        st.session_state.flash = 'Candidatura em preparação registrada.'
+        st.rerun()
+    if result['blockers']:
+        st.warning('Revise os itens não atendidos antes de investir na candidatura. Sede, idade do CNPJ, natureza jurídica e prazo podem inviabilizar a inscrição.')
+    with st.expander('Justificativas e evidências da comparação', expanded=True):
+        result_table(result, 'match')
+    with st.expander('Checklist da candidatura'):
+        candidacy_tasks(store, call, startup, project, result)
+    with st.expander('Resumo por dimensão'):
+        dimensions_view(result)
+    st.caption('“Atende” refere-se às regras registradas e aos dados declarados, sem auditoria documental. Não é aprovação nem chance de aprovação.')
+
+
+def links_by_call(store):
+    include = st.toggle('Incluir editais ainda em revisão', key='links_include_review',
+                        help='Por padrão só aparecem editais publicados pelo escritório e não encerrados.')
+    calls = linkable_calls(store, include)
+    if not calls:
+        st.info('Nenhum edital publicado ainda. Revise e publique um edital na tela Editais, ou carregue a demonstração.')
+        st.button('Ir para Editais →', on_click=go, args=('Editais',))
+        return
+    call = pick('Edital', calls, 'links_call', name='title', preferred=st.session_state.get('match_call'))
+    st.html(status_badge(call) + f' <span class="muted">{escape(review_state(call))} · {escape(deadline_label(call))}</span>')
+    startups = {s['id']: s for s in store.all('startups')}
+    projects = store.all('projects')
+    if not startups:
+        st.info('Cadastre as startups do polo para ver os vínculos.')
+        st.button('Cadastrar startup →', on_click=go, args=('Startups',))
+        return
+    rows, pairs = [], {}
+    for project in projects:
+        startup = startups.get(project['startup_id'])
+        if not startup:
+            continue
+        result = match(call, startup, project)
+        application = store.get('applications', f'{call["id"]}:{project["id"]}')
+        pairs[project['id']] = (startup, project)
+        rows.append({'Startup': startup['name'], 'Projeto': project['name'], 'Resultado': verdict_label(result),
+                     'Motivo principal': main_reason(result), 'Pendentes': result['pending'], 'Não atendidos': result['blockers'],
+                     'Candidatura': application.get('status') if application else '—'})
+    owners = {p['startup_id'] for p in projects}
+    rows += [{'Startup': s['name'], 'Projeto': 'Sem projeto cadastrado', 'Resultado': 'Pendente de verificação',
+              'Motivo principal': 'Cadastre um projeto para comparar', 'Pendentes': 1, 'Não atendidos': 0, 'Candidatura': '—'}
+             for s in startups.values() if s['id'] not in owners]
+    order = {'Atende': 0, 'Pendente de verificação': 1, 'Não atende': 2}
+    rows.sort(key=lambda r: order[r['Resultado']])
+    st.dataframe(rows, hide_index=True, width='stretch')
+    if not pairs:
+        return
+    chosen = st.selectbox('Abrir vínculo', list(pairs), key='links_open_' + call['id'],
+                          format_func=lambda pid: pairs[pid][0]['name'] + ' · ' + pairs[pid][1]['name'])
+    link_detail(store, call, *pairs[chosen])
+
+
+def links_by_startup(store):
+    startups = store.all('startups')
+    if not startups:
+        st.info('Cadastre as startups do polo para ver os vínculos.')
+        return
+    a, b = st.columns(2)
+    with a:
+        startup = pick('Startup', startups, 'links_startup')
+    projects = [p for p in store.all('projects') if p['startup_id'] == startup['id']]
+    with b:
+        project = pick('Projeto', projects, 'links_project')
+    if not project:
+        st.info('Esta startup ainda não tem projeto cadastrado.')
+        st.button('Cadastrar projeto →', on_click=go, args=('Startups',))
+        return
+    include = st.toggle('Incluir editais ainda em revisão', key='links_include_review_startup')
+    calls = linkable_calls(store, include)
+    if not calls:
+        st.info('Nenhum edital publicado ainda.')
+        return
+    results = {c['id']: (c, match(c, startup, project)) for c in calls}
+    st.dataframe([{'Edital': c['title'], 'Situação': status_text(c), 'Prazo': deadline_label(c), 'Resultado': verdict_label(r),
+                   'Motivo principal': main_reason(r)} for c, r in results.values()], hide_index=True, width='stretch')
+    chosen = st.selectbox('Abrir vínculo', list(results), key='links_open_startup', format_func=lambda cid: results[cid][0]['title'])
+    link_detail(store, results[chosen][0], startup, project)
+
+
+def vinculos(store):
+    heading('Vínculos', 'Para cada edital publicado, quais startups do polo atendem, o que falta e por quê. Sem nota e sem chance de aprovação.')
+    mode = st.segmented_control('Ver por', ['Edital', 'Startup'], default='Edital', key='links_mode') or 'Edital'
+    if mode == 'Edital':
+        links_by_call(store)
+    else:
+        links_by_startup(store)
+
+
+def startups_page(store, simulated):
+    heading('Startups', 'As startups que o escritório atende, seus projetos e o acompanhamento das candidaturas.')
+    tab_startup, tab_project, tab_follow = st.tabs(['Cadastro da startup', 'Projetos', 'Acompanhamento'])
+    with tab_startup:
+        startup_form(store, simulated)
+    with tab_project:
+        project_form(store, simulated)
+    with tab_follow:
+        portfolio_view(store)
 
 
 def main():
@@ -988,10 +1070,12 @@ def main():
         st.html('<div class="brand"><span class="brand-icon">◈</span><div><div class="brand-name">InovaMatch</div><div class="brand-sub">INTELIGÊNCIA EM FOMENTO</div></div></div>')
         st.caption('ESPAÇO DE TRABALHO')
         dataset = st.selectbox('Base de dados', ['Meus dados', 'Demonstração'], key='dataset', label_visibility='collapsed')
+        if st.session_state.get('page') in LEGACY_PAGES:
+            st.session_state.page = LEGACY_PAGES[st.session_state.page]
         page = st.radio('Navegação', PAGES, format_func=lambda p: ICONS[PAGES.index(p)] + '  ' + p, key='page', label_visibility='collapsed')
         st.divider()
         st.markdown('**Explore o fluxo completo**')
-        st.caption('3 startups e 2 editais fictícios para experimentar o radar, o match e a preparação.')
+        st.caption('3 startups e 2 editais fictícios para experimentar editais, vínculos e candidaturas.')
         st.button('Carregar demonstração', on_click=demo_activate, width='stretch')
         st.caption('InovaMatch · MVP / 2026')
     simulated = dataset == 'Demonstração'
@@ -1010,10 +1094,8 @@ def main():
             st.caption('SQLite local ativo. Use somente em ambiente privado: os cadastros são compartilhados entre sessões deste servidor.')
     with st.sidebar:
         st.download_button('↓ Exportar dados em JSON', store.export(), 'inovamatch-demo.json' if simulated else 'inovamatch-dados.json', 'application/json', width='stretch')
-    route = {'Dashboard': lambda: dashboard(store), 'Radar de Editais': lambda: radar(store, simulated),
-             'Cadastrar Startup': lambda: startup_form(store, simulated), 'Cadastrar Projeto': lambda: project_form(store, simulated),
-             'Match Inteligente': lambda: intelligent_match(store), 'Copiloto de Captação': lambda: copilot(store),
-             'Portfólio da Incubadora': lambda: portfolio_view(store)}
+    route = {'Vínculos': lambda: vinculos(store), 'Editais': lambda: radar(store, simulated),
+             'Startups': lambda: startups_page(store, simulated), 'Painel': lambda: painel(store)}
     route[page]()
 
 

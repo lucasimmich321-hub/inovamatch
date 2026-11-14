@@ -83,7 +83,7 @@ def test_match_semantics_unchanged_by_continuous_status():
 
 def test_review_form_confirms_continuous_and_rejects_dates_together():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    app.sidebar.radio[0].set_value('Radar de Editais').run()
+    app.sidebar.radio[0].set_value('Editais').run()
     next(r for r in app.radio if r.label == 'Origem').set_value('Cadastro manual').run()
     next(x for x in app.text_input if x.label == 'Título do edital *').set_value('Chamada em fluxo contínuo')
     next(x for x in app.text_input if x.label == 'Referência da fonte *').set_value('Regulamento')
@@ -136,7 +136,7 @@ def test_radar_hides_closed_and_off_focus_until_chips_are_used():
     store.save('calls', fixture_call('fapesc_66_2025', id='closed', title='Encerrado na fonte', source_closed=True, relevance='Relevante'))
     store.save('calls', fixture_call('fapesc_66_2025', id='off', title='Pós-graduação', recurring_schedule=False, relevance='Fora do foco'))
     app.session_state['real_data'] = data
-    app.sidebar.radio[0].set_value('Radar de Editais').run()
+    app.sidebar.radio[0].set_value('Editais').run()
     clean(app)
     titles = lambda: next(t for t in app.dataframe if 'Título' in t.value.columns).value['Título'].tolist()
     assert titles() == ['Inova Talentos']
@@ -178,7 +178,7 @@ def test_update_progress_is_collapsed_and_summary_formatted(monkeypatch):
         return report
     monkeypatch.setattr(crawler, 'crawl', fake_crawl)
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    app.sidebar.radio[0].set_value('Radar de Editais').run()
+    app.sidebar.radio[0].set_value('Editais').run()
     next(b for b in app.button if b.label == 'Atualizar editais').click().run()
     clean(app)
     captions = [c.value for c in app.caption]
@@ -202,13 +202,13 @@ def contrast(fg, bg='#ffffff'):
 def test_secondary_text_contrast_and_focus_visible():
     import app as ui
     for selector in ['.muted', '.brand-sub', '.eyebrow', '.footer', '[data-testid="stMetricLabel"]']:
-        color = re.search(re.escape(selector) + r' \{[^}]*color:(#[0-9a-f]{6})', ui.CSS).group(1)
+        color = re.search(re.escape(selector) + r' \{[^}]*color:(#[0-9a-f]{6})', ui.CSS, re.I).group(1)
         assert contrast(color) >= 4.5, (selector, color)
     for css in ['s-open', 's-flow', 's-flow-pending', 's-closed', 's-future', 's-unknown']:
         rule = re.search(r'\.' + css + r' \{([^}]*)\}', ui.CSS).group(1)
-        fg = re.search(r'(?<!-)color:(#[0-9a-f]{6})', rule).group(1)
-        bg = re.search(r'background:(#[0-9a-f]{3,6})', rule).group(1)
-        bg = '#ffffff' if bg == '#fff' else bg
+        fg = re.search(r'(?<!-)color:(#[0-9a-f]{6})', rule, re.I).group(1)
+        bg = re.search(r'background:(#[0-9a-f]{3,6})', rule, re.I).group(1)
+        bg = '#ffffff' if bg.lower() == '#fff' else bg
         assert contrast(fg, bg) >= 4.5, (css, fg, bg)
     assert ':focus-visible' in ui.CSS and 'outline:3px solid' in ui.CSS
 
@@ -216,7 +216,7 @@ def test_secondary_text_contrast_and_focus_visible():
 def test_match_justifications_in_expander_with_essential_columns():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
     next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
-    app.sidebar.radio[0].set_value('Match Inteligente').run()
+    app.sidebar.radio[0].set_value('Vínculos').run()
     clean(app)
     assert any(e.label == 'Justificativas e evidências da comparação' for e in app.expander)
     toggle = next(t for t in app.toggle if t.label.startswith('Mostrar todas as colunas'))

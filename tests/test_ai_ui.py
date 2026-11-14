@@ -102,5 +102,5 @@ def test_password_click_analysis_review_compare_and_cache_with_mock_transport(mo
     assert 'private-test-server-value' not in str(app)
     button(app, 'Comparar com startups').click().run()
     clean(app)
-    assert app.session_state['page'] == 'Match Inteligente'
+    assert app.session_state['page'] == 'Vínculos'
     assert any('Resultado' in frame.value.columns and 'ATENDIDO' in frame.value['Resultado'].tolist() for frame in app.dataframe)
