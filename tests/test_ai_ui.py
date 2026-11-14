@@ -42,6 +42,7 @@ def prepared_app():
     app = AppTest.from_file(APP, default_timeout=30)
     app.session_state['real_data'] = store.data
     app.session_state['page'] = 'Radar de Editais'
+    app.session_state['focus_call'] = 'call-ai-ui'  # Editais abre em cards; o detalhe vem pelo foco ou por "Ver detalhes"
     app.run()
     clean(app)
     return app

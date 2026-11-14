@@ -54,7 +54,7 @@ def open_app(data, page='Editais', focus='pub'):
 def test_five_task_pages_with_real_navigation():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
     assert [t.value for t in app.title] == ['Início']
-    for page in ['Editais', 'Startups', 'Candidaturas', 'Alertas', 'Início']:
+    for page in ['Editais', 'Startups', 'Matches', 'Alertas', 'Início']:
         goto(app, page)
         clean(app)
         assert [t.value for t in app.title] == [page]
@@ -83,8 +83,8 @@ def test_open_link_shows_reasons_and_starts_candidacy():
     app = open_app(data)
     reasons = next(d for d in app.dataframe if 'Justificativa' in d.value.columns).value
     assert 'Sede em SC' in reasons['Requisito'].tolist()
-    assert any(b.label == 'Gerar rascunho da candidatura (.txt)' for b in app.get('download_button'))
-    next(b for b in app.button if b.label == 'Iniciar candidatura').click().run()
+    assert any(b.label == 'Gerar rascunho da proposta (.txt)' for b in app.get('download_button'))
+    next(b for b in app.button if b.label == 'Criar match').click().run()
     clean(app)
     assert app.session_state['real_data']['applications']['pub:p-sc']['status'] == 'Em preparação'
 
@@ -334,14 +334,14 @@ def test_result_form_on_link_screen():
     started(store)
     app = open_app(data)
     assert any(e.label == 'Registrar andamento e resultado' for e in app.expander)
-    next(s for s in app.selectbox if s.label == 'Status da candidatura').set_value(apps.NOT_SUBMITTED)
+    next(s for s in app.selectbox if s.label == 'Status do match').set_value(apps.NOT_SUBMITTED)
     next(b for b in app.button if b.label == 'Salvar andamento').click().run()
     clean(app)
     assert any('Escolha o motivo' in e.value for e in app.error)
     assert any('Sugestão de motivo' in c.value for c in app.caption)
     assert app.session_state['real_data']['applications']['pub:p-sc']['status'] == apps.PREPARING
     next(s for s in app.selectbox if s.label == 'Motivo (se reprovada ou não submetida)').set_value('Prazo perdido')
-    next(s for s in app.selectbox if s.label == 'Status da candidatura').set_value(apps.NOT_SUBMITTED)
+    next(s for s in app.selectbox if s.label == 'Status do match').set_value(apps.NOT_SUBMITTED)
     next(b for b in app.button if b.label == 'Salvar andamento').click().run()
     clean(app)
     saved = app.session_state['real_data']['applications']['pub:p-sc']
@@ -358,13 +358,13 @@ def test_follow_up_table_by_call_with_documents_count(tmp_path, monkeypatch):
     app = open_app(data, 'Startups')
     table = next(d for d in app.dataframe if 'Documentos' in d.value.columns).value
     assert table.to_dict('records') == [{'Origem': 'Dados reais', 'Startup': 'Startup SC', 'Projeto': 'Projeto SC', 'Edital': 'Edital publicado',
-                                         'Documentos': '1 de 3', 'Candidatura': 'Em preparação', 'Solicitado': 'R$ 80.000,00',
+                                         'Documentos': '1 de 3', 'Match': 'Em preparação', 'Solicitado': 'R$ 80.000,00',
                                          'Captado': '—', 'Motivo': '—'}]
     next(s for s in app.selectbox if s.label == 'Filtrar por edital').set_value('pub').run()
     clean(app)
     table = next(d for d in app.dataframe if 'Documentos' in d.value.columns).value
     assert table['Startup'].tolist() == ['Startup SC', 'Startup PR']
-    assert table['Candidatura'].tolist() == ['Em preparação', 'Não iniciada']
+    assert table['Match'].tolist() == ['Em preparação', 'Não iniciado']
 
 
 # T6 · painel do escritório ------------------------------------------------------------------
@@ -412,18 +412,18 @@ def test_csv_export_neutralizes_formulas():
 
 def test_panel_screen_with_demo_and_empty_state():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    goto(app, 'Candidaturas')  # resultados do escritório: Candidaturas › Resultados
+    goto(app, 'Matches')  # resultados do escritório: Candidaturas › Resultados
     clean(app)
-    assert any('Nenhuma candidatura finalizada' in i.value for i in app.info)
+    assert any('Nenhum match finalizado' in i.value for i in app.info)
     next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
-    goto(app, 'Candidaturas')
+    goto(app, 'Matches')
     clean(app)
     metrics = {m.label: m.value for m in app.metric}
     assert metrics['Captado'] == 'R$ 230.000,00' and metrics['Deixou de captar'] == 'R$ 410.000,00'
     assert metrics['Taxa de aprovação'] == '50%' and metrics['Em andamento'] == '2'
     assert any('Dados de demonstração' in i.value for i in app.info)
     assert any(e.label == 'Como cada número é calculado' for e in app.expander)
-    assert any(b.label == 'Exportar candidaturas (CSV)' for b in app.get('download_button'))
+    assert any(b.label == 'Exportar matches (CSV)' for b in app.get('download_button'))
     assert any('Agência' in d.value.columns for d in app.dataframe)
 
 

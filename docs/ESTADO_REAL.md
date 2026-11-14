@@ -25,7 +25,7 @@ Registros antigos sem o campo são deduzidos pela marca `simulated`/`demo`. Um m
 | Início | editais do crawler/importação + startups e matches cadastrados | `demo.py` + `demo_applications` + `demo_documents` |
 | Editais | crawler FAPESC (`crawler.py`), importação (`radar.py`), cadastro manual | `demo.py` (2 editais fictícios) |
 | Startups | cadastro feito pelo escritório; cofre com upload real | `demo.py` (3 startups) + `vault.demo_documents` (sem arquivo) |
-| Candidaturas (matches) | matches criados a partir de um edital publicado | `office_stats.demo_applications` (10 históricos) + matches criados na sessão |
+| Matches | matches criados a partir de um edital publicado | `office_stats.demo_applications` (10 históricos) + matches criados na sessão |
 | Alertas | não implementado | não implementado |
 
 ## Funcionalidades
@@ -41,7 +41,9 @@ Registros antigos sem o campo são deduzidos pela marca `simulated`/`demo`. Um m
 | Comparação startup × edital (match) | real (regras sobre os dados cadastrados) |
 | Cadastro de startups e projetos | real (sessão ou SQLite) |
 | Cofre de documentos | real no modo "Dados reais"; demo sem arquivo |
-| Checklist do match (CSV/PDF) | real |
+| Checklist do match (CSV/PDF), marcar ok e vincular documento do cofre | real |
+| Documentos do match: enviar, baixar, "Baixar tudo (.zip)" | real; na demo não há arquivo para baixar |
+| Editais em cards com filtros (busca, status, encerrados, ordenar por prazo) | real |
 | Rascunho de proposta | real (texto montado a partir das regras, sem IA) |
 | Andamento, resultado e motivo de perda | real |
 | Painel do escritório (4 números) | real sobre os dados da base; na demo, sobre os 10 matches fictícios |

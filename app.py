@@ -1,6 +1,7 @@
 """Execute: streamlit run app.py"""
 import csv
 import io
+import zipfile
 import os
 import uuid
 from datetime import date, datetime
@@ -27,73 +28,91 @@ from inovamatch.link_checklist import (DOCS as CHK_DOCS, DATA as CHK_DATA, MANUA
 from inovamatch.applications import (STATUSES, REASONS, PREPARING, LOST, NOT_SUBMITTED, REJECTED, suggest_reason,
                                      update_application)
 from inovamatch.office_stats import DEFINITIONS, PERIODS, compute as compute_office, demo_applications, period_bounds, to_csv as office_csv
+from inovamatch.components import card, chip, empty_state
+from inovamatch.filters import STATUS_FILTERS
 from inovamatch.origin import DEMO, LABELS as ORIGIN_LABELS, badge_html as origin_badge, is_demo, label as origin_label
 from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN, DECLARABLE
 
-st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon='◈', layout='wide')
+# LOGO: único ponto de troca. Quando assets/logo_nova.jpg existir, ela é usada no menu e no favicon.
+ASSETS = Path(__file__).parent / 'assets'
+LOGO = ASSETS / 'logo_nova.jpg' if (ASSETS / 'logo_nova.jpg').exists() else ASSETS / 'logo.svg'
+st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon=str(LOGO) if LOGO.suffix != '.svg' else '◈', layout='wide')
 
 CSS = '''
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-:root {--im-primary:#0F766E;--im-dark:#0E1B1F;--im-bg:#F5F7F6;--im-border:#D9E1DF;--im-muted:#4B5A5F;}
-html, body, [class*="css"], [data-testid="stApp"] {font-family:'Inter',sans-serif;color:var(--im-dark);}
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+:root {--im-primary:#005CFD;--im-dark:#04133A;--im-bg:#F5F7FB;--im-border:#DCE3EF;--im-muted:#4A5670;--im-font:'Nunito','Segoe UI',system-ui,-apple-system,sans-serif;}
+html, body, [class*="css"], [data-testid="stApp"] {font-family:var(--im-font);color:var(--im-dark);}
 [data-testid="stApp"] {background:var(--im-bg);}
-h1,h2,h3 {font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em;color:var(--im-dark);}
+h1,h2,h3 {font-family:var(--im-font);letter-spacing:-.02em;color:var(--im-dark);}
 .block-container {max-width:1360px;padding-top:4.75rem;padding-bottom:3rem;}
 [data-testid="stSidebar"] {border-right:1px solid var(--im-border);background:#fff;}
 [data-testid="stSidebar"] .block-container {padding-top:2rem;}
 [data-testid="stMetric"] {background:#fff;border:1px solid var(--im-border);border-radius:14px;padding:18px 20px;}
-[data-testid="stMetricLabel"] {color:#4B5A5F;font-size:13px;}
+[data-testid="stMetricLabel"] {color:#4A5670;font-size:13px;}
 [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] * {white-space:normal !important;overflow:visible !important;text-overflow:clip !important;}
-[data-testid="stMetricValue"] {font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;}
+[data-testid="stMetricValue"] {font-family:var(--im-font);font-weight:700;font-size:26px;}
 [data-testid="stMetricValue"], [data-testid="stMetricValue"] * {white-space:normal !important;overflow:visible !important;text-overflow:clip !important;}
 [data-testid="stVerticalBlockBorderWrapper"] {border-color:var(--im-border) !important;border-radius:14px !important;background:#fff;}
-.eyebrow {color:#2A3C41;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;}
+.eyebrow {color:#22304F;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;}
 .brand {display:flex;gap:11px;align-items:center;margin-bottom:27px;}
-.brand-icon {border-radius:12px;background:#0F766E;color:white;font-size:24px;font-weight:700;padding:4px 11px;}
-.brand-name {font-family:'Space Grotesk',sans-serif;font-size:23px;font-weight:700;letter-spacing:-.5px;}
-.brand-sub {color:#4B5A5F;font-size:11px;letter-spacing:.12em;}
-.hero {border-radius:16px;background:#0E1B1F;padding:28px 32px;margin:14px 0 24px;color:#fff;}
-.hero .eyebrow {color:#5EEAD4;}
-.hero h1 {font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:white;padding:0;max-width:720px;margin:10px 0;line-height:1.2;}
-.hero p {color:#B6C9C6;margin:0;font-size:14px;}
-.tag {display:inline-block;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;background:#D9F2EE;color:#0B4F4A;}
+.brand-icon {border-radius:12px;background:var(--im-primary);color:white;font-size:24px;font-weight:700;padding:4px 11px;}
+.brand-name {font-family:var(--im-font);font-size:23px;font-weight:700;letter-spacing:-.5px;}
+.brand-sub {color:#4A5670;font-size:11px;letter-spacing:.12em;}
+.hero {border-radius:16px;background:var(--im-dark);padding:28px 32px;margin:14px 0 24px;color:#fff;}
+.hero .eyebrow {color:#8DB4FF;}
+.hero h1 {font-family:var(--im-font);font-size:30px;font-weight:700;color:white;padding:0;max-width:720px;margin:10px 0;line-height:1.2;}
+.hero p {color:#C3CFE6;margin:0;font-size:14px;}
+.tag {display:inline-block;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;background:#E3ECFF;color:#0A3A9E;}
 .tag.warn {background:#FDECC8;color:#7A3E06;}
 .tag.demo {background:#FDECC8;color:#7A3E06;border:1px solid #7A3E06;margin-left:6px;}
 .opportunity {min-height:150px;}
 .opportunity h3 {font-size:17px;margin:12px 0 10px;line-height:1.4;}
-.muted {color:#4B5A5F;font-size:12px;}
-.section-head {font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;margin:24px 0 4px;}
-.steps {background:#fff;border:1px solid #D9E1DF;border-radius:14px;padding:20px 24px;margin-top:24px;color:#2A3C41;line-height:1.9;}
-.soon {background:#fff;border:1px dashed #4B5A5F;border-radius:14px;padding:18px 22px;color:#2A3C41;}
-.footer {font-size:11px;color:#4B5A5F;border-top:1px solid #D9E1DF;margin-top:30px;padding-top:15px;}
+.muted {color:#4A5670;font-size:12px;}
+.section-head {font-family:var(--im-font);font-size:20px;font-weight:700;margin:24px 0 4px;}
+.steps {background:#fff;border:1px solid var(--im-border);border-radius:14px;padding:20px 24px;margin-top:24px;color:#22304F;line-height:1.9;}
+.soon {background:#fff;border:1px dashed var(--im-muted);border-radius:14px;padding:18px 22px;color:#22304F;}
+.footer {font-size:11px;color:#4A5670;border-top:1px solid var(--im-border);margin-top:30px;padding-top:15px;}
 .status {display:inline-block;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;border:1px solid transparent;}
-.s-open {background:#D9F2EE;color:#0B4F4A;}
-.s-flow {background:#D9F2EE;color:#0B4F4A;}
+.s-open {background:#DDF3E4;color:#14532D;}
+.s-flow {background:#E3ECFF;color:#0A3A9E;}
 .s-flow-pending {background:#FDECC8;color:#7A3E06;border:1px dashed #7A3E06;}
-.s-closed {background:#E6EAE9;color:#3A4A4F;}
-.s-future {background:#E6EAE9;color:#3A4A4F;}
+.s-closed {background:#ECEFF5;color:#3A4560;}
+.s-future {background:#ECEFF5;color:#3A4560;}
 .s-unknown {background:#FDECC8;color:#7A3E06;}
-.v-ok {background:#D9F2EE;color:#0B4F4A;}
+.v-ok {background:#DDF3E4;color:#14532D;}
 .v-pending {background:#FDECC8;color:#7A3E06;}
 .v-fail {background:#FBE0DC;color:#8A1C12;}
-:focus-visible, [data-baseweb] :focus-visible {outline:3px solid #0F766E !important;outline-offset:2px !important;}
-[data-testid="stSidebar"] label:has(input:focus-visible), [data-testid="stPills"] button:focus-visible {outline:3px solid #0F766E !important;outline-offset:2px;border-radius:8px;}
-[data-testid="stForm"] {background:#fff;border-color:#D9E1DF;border-radius:14px;}
+:focus-visible, [data-baseweb] :focus-visible {outline:3px solid var(--im-primary) !important;outline-offset:2px !important;}
+[data-testid="stSidebar"] label:has(input:focus-visible), [data-testid="stPills"] button:focus-visible {outline:3px solid var(--im-primary) !important;outline-offset:2px;border-radius:8px;}
+[data-testid="stForm"] {background:#fff;border-color:var(--im-border);border-radius:14px;}
 .stButton button, .stDownloadButton button, .stLinkButton a {border-radius:10px;}
 @media(max-width:700px) {.hero {padding:22px}.hero h1 {font-size:24px}.block-container {padding:4.5rem 1rem 1.2rem;}}
+.im-card {display:flex;flex-direction:column;gap:6px;}
+.im-chips {display:flex;flex-wrap:wrap;gap:6px;}
+.im-chip {display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;border:1px solid transparent;}
+.im-chip-ok {background:#DDF3E4;color:#14532D;} .im-chip-info {background:#E3ECFF;color:#0A3A9E;}
+.im-chip-muted {background:#ECEFF5;color:#3A4560;} .im-chip-warn {background:#FDECC8;color:#7A3E06;border-color:#7A3E06;}
+.im-card-title {font-size:17px;font-weight:800;color:var(--im-dark);line-height:1.35;margin-top:4px;}
+.im-card-sub {font-size:13px;color:#4A5670;font-weight:600;}
+.im-facts {display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:#22304F;}
+.im-fact {display:inline-flex;align-items:center;gap:5px;} .im-icon {flex:none;}
+.im-summary {margin:2px 0 0;font-size:13px;color:#4A5670;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.im-empty {text-align:center;background:#fff;border:1px dashed var(--im-border);border-radius:14px;padding:28px 20px;color:#4A5670;}
+.im-empty .im-icon {color:var(--im-primary);} .im-empty-title {font-weight:800;color:var(--im-dark);font-size:17px;margin:8px 0 4px;}
+.im-empty p {margin:0;font-size:14px;}
 </style>'''
 st.html(CSS)
 
 # Navegação por tarefa do usuário (st.navigation). Ícones Material nativos; nada de símbolos unicode no menu.
 PAGE_DEFS = [('Início', 'inicio', ':material/home:'), ('Editais', 'editais', ':material/description:'),
-             ('Startups', 'startups', ':material/rocket_launch:'), ('Candidaturas', 'candidaturas', ':material/assignment:'),
+             ('Startups', 'startups', ':material/rocket_launch:'), ('Matches', 'matches', ':material/handshake:'),
              ('Alertas', 'alertas', ':material/notifications:')]
 PAGES = [title for title, _, _ in PAGE_DEFS]
 # Nomes de telas antigas (links internos e o ai_ui, que não é alterado) levam à página nova equivalente.
-LEGACY_PAGES = {'Dashboard': 'Início', 'Painel': 'Início', 'Radar de Editais': 'Editais', 'Vínculos': 'Editais',
-                'Match Inteligente': 'Editais', 'Copiloto de Captação': 'Candidaturas', 'Cadastrar Startup': 'Startups',
-                'Cadastrar Projeto': 'Candidaturas', 'Portfólio da Incubadora': 'Startups'}
+LEGACY_PAGES = {'Dashboard': 'Início', 'Painel': 'Início', 'Radar de Editais': 'Editais', 'Vínculos': 'Editais', 'Candidaturas': 'Matches',
+                'Match Inteligente': 'Editais', 'Copiloto de Captação': 'Matches', 'Cadastrar Startup': 'Startups',
+                'Cadastrar Projeto': 'Matches', 'Portfólio da Incubadora': 'Startups'}
 CTX = {}
 
 
@@ -203,11 +222,11 @@ def office_results(store):
     """T6: os 4 números do escritório, motivos de perda, tabelas, período e exportação."""
     st.html('<div class="section-head">Resultados do escritório</div>')
     period = st.selectbox('Período', PERIODS, index=0, key='panel_period',
-                          help='Candidaturas finalizadas entram pelo resultado (ou pela submissão/última mudança de status).')
+                          help='Matches finalizados entram pelo resultado (ou pela submissão/última mudança de status).')
     start, end = period_bounds(period)
     stats = compute_office(store, start, end)
     if stats['simulated']:
-        st.info('Dados de demonstração: as candidaturas deste painel são SIMULADAS e não representam captação real.')
+        st.info('Dados de demonstração: os matches deste painel são SIMULADOS e não representam captação real.')
     a, b, c, d = st.columns(4)
     a.metric('Captado', brl(stats['captado']), help=DEFINITIONS['Captado'])
     b.metric('Deixou de captar', brl(stats['deixou_de_captar']), help=DEFINITIONS['Deixou de captar'])
@@ -219,7 +238,7 @@ def office_results(store):
             st.markdown(f'**{name}:** {text}')
         st.caption(f"No período: {stats['aprovadas']} aprovada(s), {stats['reprovadas']} reprovada(s), {stats['nao_submetidas']} não submetida(s).")
     if not stats['finalizadas']:
-        st.info('Nenhuma candidatura finalizada no período. Registre o resultado de cada candidatura na tela Vínculos para alimentar o painel.')
+        st.info('Nenhum match finalizado no período. Registre o resultado de cada match em Matches › Gerenciar para alimentar o painel.')
     else:
         losses = {k: v for k, v in stats['reasons'].items() if v}
         left, right = st.columns([3, 2])
@@ -227,16 +246,16 @@ def office_results(store):
             st.markdown('**Motivos de perda** (reprovadas e não submetidas)')
             if losses:
                 import altair as alt  # vem com o Streamlit; permite rótulos inteiros
-                chart = alt.Chart(alt.Data(values=[{'Motivo': k, 'Candidaturas': v} for k, v in losses.items()])).mark_bar(color='#0F766E').encode(
-                    x=alt.X('Candidaturas:Q', title='Candidaturas', axis=alt.Axis(tickMinStep=1, format='d', labelColor='#2A3C41', titleColor='#2A3C41')),
+                chart = alt.Chart(alt.Data(values=[{'Motivo': k, 'Matches': v} for k, v in losses.items()])).mark_bar(color='#005CFD').encode(
+                    x=alt.X('Matches:Q', title='Matches', axis=alt.Axis(tickMinStep=1, format='d', labelColor='#2A3C41', titleColor='#2A3C41')),
                     y=alt.Y('Motivo:N', title=None, sort='-x', axis=alt.Axis(labelLimit=320, labelColor='#2A3C41', labelFontSize=12)),
-                    tooltip=['Motivo:N', 'Candidaturas:Q'])
+                    tooltip=['Motivo:N', 'Matches:Q'])
                 st.altair_chart(chart, use_container_width=True)
             else:
                 st.caption('Nenhuma perda registrada no período.')
         with right:
             st.markdown('**Motivos em números**')
-            st.dataframe([{'Motivo': k, 'Candidaturas': v} for k, v in losses.items()] or [{'Motivo': '—', 'Candidaturas': 0}],
+            st.dataframe([{'Motivo': k, 'Matches': v} for k, v in losses.items()] or [{'Motivo': '—', 'Matches': 0}],
                          hide_index=True, width='stretch')
         money = lambda rows, key: [{key: name, **{k: (brl(v) if k in ('Captado', 'Deixou de captar') else v) for k, v in row.items()}}
                                    for name, row in sorted(rows.items())]
@@ -245,7 +264,7 @@ def office_results(store):
         st.markdown('**Por startup**')
         st.dataframe(money(stats['by_startup'], 'Startup'), hide_index=True, width='stretch')
     if stats['rows']:
-        st.download_button('Exportar candidaturas (CSV)', office_csv(stats['rows']), 'inovamatch-candidaturas.csv', 'text/csv')
+        st.download_button('Exportar matches (CSV)', office_csv(stats['rows']), 'inovamatch-matches.csv', 'text/csv')
     st.html('<div class="section-head">Operação</div>')
 
 
@@ -306,7 +325,7 @@ def candidacy_form(store, simulated):
     startups = [o for o in store.all('startups') if org_kind(o) == kind]
     if not startups:
         if kind == 'Startup':
-            st.info('Cadastre uma startup para criar a primeira candidatura dela.')
+            st.info('Cadastre uma startup para criar o primeiro projeto dela.')
             st.button('Cadastrar startup →', on_click=go, args=('Startups',), key='cand_go_startups')
             return
         with st.form(f'quick_org_{kind}_{simulated}'):
@@ -329,8 +348,8 @@ def candidacy_form(store, simulated):
     pending = st.session_state.pop(f'pending_project_{simulated}', None)
     if pending in lookup:
         st.session_state[f'project_edit_{simulated}'] = pending
-    selected = st.selectbox('Nova candidatura ou editar projeto existente', ['__new__'] + list(lookup),
-                            format_func=lambda i: 'Nova candidatura' if i == '__new__' else lookup[i]['name'], key=f'project_edit_{simulated}')
+    selected = st.selectbox('Novo projeto ou editar projeto existente', ['__new__'] + list(lookup),
+                            format_func=lambda i: 'Novo projeto' if i == '__new__' else lookup[i]['name'], key=f'project_edit_{simulated}')
     old = lookup.get(selected, {})
     index = {s['id']: s['name'] for s in startups}
     with st.form('project_' + selected):
@@ -362,7 +381,7 @@ def candidacy_form(store, simulated):
         partner_types = st.text_area('Tipos dos parceiros — um por linha', '\n'.join(old.get('partner_types', [])), help='Ex.: ICT, Empresa. O vínculo e a qualificação precisam de comprovação.')
         project_documents = st.text_area('Documentos do projeto e da equipe — um por linha', '\n'.join(old.get('project_documents', [])), help='Ex.: Diploma, Currículo Lattes, Comprovante de vínculo. A titularidade e a validade devem ser conferidas.')
         recalc = st.checkbox('Recalcular compatibilidade após salvar o projeto', value=True)
-        saved = st.form_submit_button('Salvar candidatura', type='primary')
+        saved = st.form_submit_button('Salvar projeto', type='primary')
     if saved:
         try:
             saved_record = store.save('projects', {**old, 'startup_id': sid, 'name': name.strip(), 'objective': objective,
@@ -378,7 +397,7 @@ def candidacy_form(store, simulated):
             if call_choice != '__none__' and not store.get('applications', f"{call_choice}:{saved_record['id']}"):
                 register_application(store, open_calls[call_choice], store.get('startups', sid), saved_record)
             st.session_state[f'pending_project_{simulated}'] = saved_record['id']
-            st.session_state.flash = 'Candidatura salva.' if call_choice != '__none__' else 'Projeto salvo. Escolha o edital quando quiser.'
+            st.session_state.flash = 'Projeto salvo.' if call_choice != '__none__' else 'Projeto salvo. Escolha o edital quando quiser.'
             st.rerun()
         except ValueError as exc:
             st.error(str(exc))
@@ -611,7 +630,7 @@ def dimensions_view(result):
 
 
 def portfolio_view(store):
-    st.caption('Startups, projetos e candidaturas em uma visão de gestão da captação.')
+    st.caption('Startups, projetos e matches em uma visão de gestão da captação.')
     if st.button('Recalcular todo o portfólio', type='primary'):
         with st.spinner('Comparando os projetos com os editais analisados…'):
             count = recalculate(store)
@@ -822,10 +841,28 @@ def radar(store, simulated):
     if not calls:
         st.info('Nenhum edital cadastrado. Faça uma busca ou importe uma fonte para começar.')
         return
-    query = st.text_input('Filtrar editais por título ou instituição', key='call_search_' + str(simulated))
-    extra = st.pills('Mostrar também', ['Incluir encerrados', 'Mostrar fora do foco'], selection_mode='multi', key='extra_filter_' + str(simulated),
-                     help='Por padrão a lista mostra editais abertos, em fluxo contínuo ou com situação a confirmar, do mais relevante ao menos relevante.')
-    with st.expander('Filtros de instituição, área, estado, valor, prazo e elegibilidade'):
+    sk = str(simulated)
+    detail_key = 'radar_detail_' + sk
+    focus = st.session_state.pop('focus_call', None)
+    if focus in {c['id'] for c in calls}:
+        st.session_state[detail_key] = focus
+    if st.session_state.get(detail_key) in {c['id'] for c in calls}:
+        # Detalhe ocupa a tela; "Voltar" devolve aos cards com os filtros preservados.
+        st.button('Voltar para a lista', icon=':material/arrow_back:', on_click=open_call_detail, args=(detail_key, None), key='radar_back_' + sk)
+        select_key = 'radar_call_' + sk
+        st.session_state[select_key] = st.session_state[detail_key]
+        call = pick('Selecione um edital para revisar', sort_calls(calls), select_key, name='title')
+        st.session_state[detail_key] = call['id']
+        call_detail(store, call)
+        return
+    a, b, c = st.columns([3, 2, 1.3])
+    query = a.text_input('Buscar', key='call_search_' + sk, placeholder='Título, órgão ou resumo')
+    statuses = b.multiselect('Status', list(STATUS_FILTERS), key='status_filter_' + sk, placeholder='Todos',
+                             format_func=lambda x: STATUS_LABEL.get(x, x))
+    order = c.selectbox('Ordenar por', ['Relevância', 'Prazo'], key='order_' + sk)
+    extra = st.pills('Mostrar também', ['Incluir encerrados', 'Mostrar fora do foco'], selection_mode='multi', key='extra_filter_' + sk,
+                     help='Por padrão a lista mostra editais abertos, em fluxo contínuo ou com situação a confirmar.')
+    with st.expander('Mais filtros: instituição, área, estado, valor, prazo e elegibilidade'):
         a, b = st.columns(2)
         institutions = a.multiselect('Instituições', sorted({c.get('institution', 'Não informado') for c in calls}))
         area = b.text_input('Área / tema identificado')
@@ -843,25 +880,78 @@ def radar(store, simulated):
         st.caption('Área, estado e valores identificados podem ser sugestões ainda não validadas. Valores ausentes não são estimados. O filtro de prazo usa apenas datas confirmadas.')
     filtered = filter_calls(calls, institutions=institutions, area=area, state=state, min_value=min_value, max_days=max_days,
                             verdict=None if eligibility == 'Todas' else eligibility, startup=selected_startup, project=selected_project,
-                            include_closed='Incluir encerrados' in extra, include_off_focus='Mostrar fora do foco' in extra)
+                            statuses=statuses or None,
+                            include_closed='Incluir encerrados' in extra or 'Encerrado' in statuses, include_off_focus='Mostrar fora do foco' in extra)
     filtered = sort_calls(filtered)
-    filtered = [c for c in filtered if query.casefold() in (c['title'] + c.get('institution', '')).casefold()]
+    if order == 'Prazo':
+        filtered.sort(key=deadline_sort_key)
+    q = query.casefold().strip()
+    filtered = [c for c in filtered if q in (c['title'] + c.get('institution', '') + (c.get('summary') or '')).casefold()]
     if not filtered:
-        hidden = len(calls)
-        st.info(f'Nenhum edital aberto corresponde ao filtro ({hidden} no total). Use “Incluir encerrados” ou “Mostrar fora do foco” para ver os demais.')
+        st.html(empty_state('Nenhum edital com esses filtros', f'{len(calls)} edital(is) na base. Limpe os filtros ou inclua os encerrados.'))
+        st.button('Limpar filtros', icon=':material/filter_alt_off:', on_click=clear_radar_filters, args=(sk,), key='radar_clear_' + sk)
         return
-    st.caption(f'{len(filtered)} de {len(calls)} edital(is) · A abertura de uma chamada não garante elegibilidade.')
-    st.dataframe([{'Origem': origin_label(c), 'Instituição': c.get('institution'), 'Título': c['title'], 'Situação das inscrições': status_text(c),
-                   'Relevância': c.get('relevance') or 'Não avaliada', 'Revisão': review_state(c), 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_label(c),
-                   'Análise de requisitos': 'Revisão integral declarada' if c.get('criteria_complete') else c.get('requirements_status', 'Não analisado'),
-                   'Valor identificado': brl(funding_value(c)), 'Última verificação': when(c.get('last_seen_at') or c.get('discovered_at')),
-                   'Fonte oficial': c.get('url'), 'PDF': c.get('pdf_url') or c.get('document_url')} for c in filtered], hide_index=True, width='stretch')
-    preferred = st.session_state.pop('focus_call', None)
-    select_key = 'radar_call_' + str(simulated)
-    if preferred in {c['id'] for c in filtered}:
-        st.session_state[select_key] = preferred
-    call = pick('Selecione um edital para revisar', filtered, select_key, name='title')
-    call_detail(store, call)
+    shown = st.session_state.get('radar_limit_' + sk, 24)
+    st.caption(f'{len(filtered)} de {len(calls)} editais · A abertura de uma chamada não garante elegibilidade.')
+    columns = st.columns(2)
+    for index, call in enumerate(filtered[:shown]):
+        with columns[index % 2], st.container(border=True):
+            st.html(call_card(call))
+            left, right = st.columns(2)
+            left.button('Ver detalhes', key='card_open_' + call['id'], on_click=open_call_detail, args=(detail_key, call['id']),
+                        icon=':material/visibility:', width='stretch')
+            right.button('Criar match', key='card_match_' + call['id'], on_click=start_match, args=(call['id'],),
+                         icon=':material/handshake:', type='primary', width='stretch')
+    if len(filtered) > shown:
+        st.button(f'Mostrar mais ({len(filtered) - shown})', key='radar_more_' + sk,
+                  on_click=lambda: st.session_state.update({'radar_limit_' + sk: shown + 24}))
+    with st.expander('Detalhes da consulta (tabela)'):
+        st.dataframe([{'Origem': origin_label(c), 'Instituição': c.get('institution'), 'Título': c['title'], 'Situação': status_text(c),
+                       'Revisão': review_state(c), 'Prazo': deadline_label(c), 'Valor identificado': brl(funding_value(c)),
+                       'Última verificação': when(c.get('last_seen_at') or c.get('discovered_at')), 'Fonte oficial': c.get('url')}
+                      for c in filtered], hide_index=True, width='stretch')
+
+
+STATUS_LABEL = {'Futuro': 'Em breve'}
+
+
+def deadline_sort_key(call):
+    days = deadline_info(call)['days']
+    return (0, days) if days is not None and days >= 0 and not continuous_confirmed(call) else (1, 0)
+
+
+def deadline_text(call):
+    if call.get('deadline_confirmed') and call.get('deadline') and not continuous_confirmed(call):
+        return 'Até ' + date.fromisoformat(call['deadline']).strftime('%d/%m') + ' · ' + deadline_label(call)
+    return deadline_label(call)
+
+
+def call_card(call):
+    situation = status_group(call)
+    chips = [chip(STATUS_LABEL.get(situation, situation))]
+    if is_demo(call):
+        chips.append(chip('Demonstração'))
+    if review_state(call) != PUBLISHED and not is_demo(call):
+        chips.append(chip('Aguardando revisão', 'warn'))
+    value = funding_value(call)
+    return card(call['title'], call.get('institution') or 'Órgão não informado', chips,
+                [('calendar', deadline_text(call)), ('wallet', brl(value) if value is not None else 'Valor não informado')],
+                call.get('summary') or '')
+
+
+def open_call_detail(detail_key, call_id):
+    st.session_state[detail_key] = call_id
+
+
+def start_match(call_id):
+    st.session_state.new_match_call = call_id
+    st.session_state.active_match = None
+    go('Matches')
+
+
+def clear_radar_filters(sk):
+    for key in ('call_search_', 'status_filter_', 'extra_filter_'):
+        st.session_state.pop(key + sk, None)
 
 
 ESSENTIAL_COLUMNS = ['Requisito', 'Resultado', 'Obrigatório', 'Exigência', 'Dados declarados', 'Justificativa']
@@ -932,8 +1022,8 @@ def save_analysis(store, call, startup, project, result):
                             'fingerprint': fingerprint(call, startup, project), 'result': result})
 
 
-def link_detail(store, call, startup, project):
-    """Um vínculo edital × startup: resultado, motivo de cada critério, checklist e candidatura."""
+def link_detail(store, call, startup, project, show_checklist=True):
+    """Um match edital × startup: resultado, motivo de cada critério, checklist e andamento."""
     result = match(call, startup, project)
     st.html(f'<div class="section-head">{escape(startup["name"])} · {escape(project["name"])}</div>')
     application = store.get('applications', f'{call["id"]}:{project["id"]}')
@@ -944,23 +1034,24 @@ def link_detail(store, call, startup, project):
     b.metric('Não atendidos (obrigatórios)', result['blockers'])
     c.metric('Pendentes de verificação', result['pending'])
     if application:
-        st.caption(f"Candidatura: {application.get('status', 'Em preparação')} · iniciada em {when(application.get('started_at'))}")
-        application_form(store, application, call, result, checklist_summary(build_checklist(store, call, startup, project)))
-    elif st.button('Iniciar candidatura', type='primary', key='start_' + call['id'] + project['id']):
+        st.caption(f"Match: {application.get('status', 'Em preparação')} · iniciada em {when(application.get('started_at'))}")
+        application_form(store, application, call, result, checklist_summary(match_checklist(store, call, startup, project)))
+    elif st.button('Criar match', type='primary', key='start_' + call['id'] + project['id']):
         register_application(store, call, startup, project)
         save_analysis(store, call, startup, project, result)
-        st.session_state.flash = 'Candidatura em preparação registrada.'
+        st.session_state.flash = 'Match criado (em preparação).'
         st.rerun()
     if result['blockers']:
-        st.warning('Revise os itens não atendidos antes de investir na candidatura. Sede, idade do CNPJ, natureza jurídica e prazo podem inviabilizar a inscrição.')
+        st.warning('Revise os itens não atendidos antes de investir neste match. Sede, idade do CNPJ, natureza jurídica e prazo podem inviabilizar a inscrição.')
     with st.expander('Justificativas e evidências da comparação', expanded=True):
         result_table(result, 'match')
-    with st.expander('Checklist do vínculo', expanded=True):
-        link_checklist_view(store, call, startup, project)
+    if show_checklist:
+        with st.expander('Checklist do match', expanded=True):
+            link_checklist_view(store, call, startup, project)
     with st.expander('Resumo por dimensão'):
         dimensions_view(result)
-    items = build_checklist(store, call, startup, project)
-    st.download_button('Gerar rascunho da candidatura (.txt)', draft_text(call, startup, project, result, items),
+    items = match_checklist(store, call, startup, project)
+    st.download_button('Gerar rascunho da proposta (.txt)', draft_text(call, startup, project, result, items),
                        f"rascunho-{project['id']}-{call['id']}.txt", 'text/plain', icon=':material/edit_note:',
                        key='draft_' + call['id'] + project['id'], help='Texto de preparação a partir das regras registradas. Não é a proposta oficial.')
     st.caption('“Atende” refere-se às regras registradas e aos dados declarados, sem auditoria documental. Não é aprovação nem chance de aprovação.')
@@ -970,7 +1061,7 @@ VALIDITY_MARK = {EXPIRED: '🔴', SOON: '🟡', OK_VALID: '🟢', NO_DATE: '⚪'
 
 
 def vault_view(store, simulated):
-    st.caption('O escritório envia e mantém os documentos de cada startup. O checklist dos vínculos marca Enviado / Falta / Vencido a partir daqui.')
+    st.caption('O escritório envia e mantém os documentos de cada startup. O checklist dos matches marca Enviado / Falta / Vencido a partir daqui.')
     startups = store.all('startups')
     if not startups:
         st.info('Cadastre uma startup para guardar os documentos dela.')
@@ -979,27 +1070,34 @@ def vault_view(store, simulated):
     if simulated:
         st.info(DEMO_NOTICE + ' O envio de arquivos fica desativado na demonstração.')
     else:
-        st.warning('Versão sem login e sem criptografia: não envie documentos reais ou confidenciais. Use arquivos de teste.')
-        with st.form('vault_upload_' + startup['id'], clear_on_submit=True):
-            a, b = st.columns(2)
-            tipo = a.selectbox('Tipo de documento', DOC_TYPES)
-            validade = b.date_input('Validade (opcional)', value=None, format='DD/MM/YYYY', min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
-            file = st.file_uploader('Arquivo (PDF, PNG, JPG ou DOCX, até 5 MB)', type=['pdf', 'png', 'jpg', 'jpeg', 'docx'])
-            sent = st.form_submit_button('Enviar documento', type='primary')
-        if sent:
-            if file is None:
-                st.error('Selecione um arquivo.')
-            else:
-                try:
-                    add_document(store, startup['id'], tipo, file.name, file.getvalue(), validade)
-                    st.session_state.flash = 'Documento guardado no cofre.'
-                    st.rerun()
-                except ValueError as exc:
-                    st.error(str(exc))
+        upload_form(store, startup, 'vault_upload_')
     docs = startup_documents(store, startup['id'])
     if not docs:
         st.info('Nenhum documento no cofre desta startup.')
         return
+    _vault_table(store, startup, docs, simulated)
+
+
+def upload_form(store, startup, prefix):
+    st.warning('Versão sem login e sem criptografia: não envie documentos reais ou confidenciais. Use arquivos de teste.')
+    with st.form(prefix + startup['id'], clear_on_submit=True):
+        a, b = st.columns(2)
+        tipo = a.selectbox('Tipo de documento', DOC_TYPES)
+        validade = b.date_input('Validade (opcional)', value=None, format='DD/MM/YYYY', min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
+        file = st.file_uploader('Arquivo (PDF, PNG, JPG ou DOCX, até 5 MB)', type=['pdf', 'png', 'jpg', 'jpeg', 'docx'])
+        sent = st.form_submit_button('Enviar documento', type='primary')
+    if sent:
+        if file is None:
+            st.error('Selecione um arquivo.')
+        else:
+            try:
+                add_document(store, startup['id'], tipo, file.name, file.getvalue(), validade)
+                st.session_state.flash = 'Documento guardado no cofre.'
+                st.rerun()
+            except ValueError as exc:
+                st.error(str(exc))
+
+def _vault_table(store, startup, docs, simulated):
     st.dataframe([{'Tipo': d['tipo'], 'Nome': d['nome'] + (' · demonstração' if d.get('demo') else ''),
                    'Validade': date.fromisoformat(d['validade']).strftime('%d/%m/%Y') if d.get('validade') else '—',
                    'Situação': VALIDITY_MARK[validity_status(d)] + ' ' + validity_status(d), 'Enviado em': when(d.get('enviado_em'))}
@@ -1032,8 +1130,23 @@ def vault_view(store, simulated):
                 st.error(str(exc))
 
 
-def link_checklist_view(store, call, startup, project):
+def match_checklist(store, call, startup, project):
+    """Checklist do cofre + vínculos manuais: documento escolhido pelo escritório conta como Enviado (se não vencido)."""
     items = build_checklist(store, call, startup, project)
+    docs = {d['id']: d for d in startup_documents(store, startup['id'])}
+    for item in items:
+        link = store.get('tasks', f'{call["id"]}:{project["id"]}:link:{item["id"]}')
+        doc = docs.get((link or {}).get('doc_id'))
+        if item['secao'] == CHK_DOCS and doc:
+            item['linked_doc'] = doc['id']
+            if validity_status(doc) != EXPIRED:
+                item.update(situacao='Enviado · vinculado', cadastrado=doc['nome'], marcavel=False)
+    return items
+
+
+def link_checklist_view(store, call, startup, project):
+    items = match_checklist(store, call, startup, project)
+    vault_docs = {d['id']: d for d in startup_documents(store, startup['id'])}
     totals = checklist_summary(items)
     st.caption(f"Documentos obrigatórios: {totals['docs_sent']} de {totals['docs_total']} enviados · {totals['docs_missing']} faltando · "
                f"{totals['docs_expired']} vencido(s). Itens de decisão humana podem ser marcados como feitos.")
@@ -1061,6 +1174,15 @@ def link_checklist_view(store, call, startup, project):
                         done[item['id']] = value
                 else:
                     st.markdown(title)
+                if section == CHK_DOCS and vault_docs:
+                    options = ['—'] + list(vault_docs)
+                    current = item.get('linked_doc') if item.get('linked_doc') in vault_docs else '—'
+                    picked = st.selectbox('Vincular documento do cofre', options, index=options.index(current), key='link_' + key,
+                                          format_func=lambda i: 'Nenhum' if i == '—' else vault_docs[i]['tipo'] + ' · ' + vault_docs[i]['nome'])
+                    if picked != current:
+                        store.save('tasks', {'id': f'{call["id"]}:{project["id"]}:link:{item["id"]}', 'kind': 'doc_link',
+                                             'call_id': call['id'], 'project_id': project['id'], 'doc_id': None if picked == '—' else picked})
+                        st.rerun()
                 st.caption(f"Cadastrado: {item['cadastrado']} · Edital pede: {item['exigido']} · Página {item['pagina'] or 'web'}")
                 if item['trecho']:
                     with st.expander('Ver trecho do edital'):
@@ -1074,14 +1196,14 @@ def link_checklist_view(store, call, startup, project):
 
 
 def application_form(store, application, call, result, totals):
-    """Registro de andamento e resultado da candidatura. O motivo sugerido nunca é salvo sozinho."""
+    """Registro de andamento e resultado do match. O motivo sugerido nunca é salvo sozinho."""
     status = application.get('status', PREPARING)
     probe = application if status in LOST else {**application, 'status': NOT_SUBMITTED if deadline_info(call)['status'] == 'expired' else REJECTED}
     hint = suggest_reason(probe, call, result, totals)
     as_date = lambda v: date.fromisoformat(v) if v else None
     with st.expander('Registrar andamento e resultado', expanded=status != PREPARING):
         with st.form('application_' + application['id']):
-            new_status = st.selectbox('Status da candidatura', STATUSES, index=STATUSES.index(status) if status in STATUSES else 0)
+            new_status = st.selectbox('Status do match', STATUSES, index=STATUSES.index(status) if status in STATUSES else 0)
             a, b = st.columns(2)
             requested = a.number_input('Valor solicitado (R$)', min_value=0.0, step=1000.0,
                                        value=float(application['valor_solicitado']) if application.get('valor_solicitado') is not None else None)
@@ -1095,28 +1217,32 @@ def application_form(store, application, call, result, totals):
             reason = st.selectbox('Motivo (se reprovada ou não submetida)', options,
                                   index=options.index(application['motivo']) if application.get('motivo') in REASONS else 0)
             if hint:
-                st.caption(f'Sugestão de motivo, caso a candidatura não avance: {hint}. Não é salva automaticamente: escolha acima para registrar.')
+                st.caption(f'Sugestão de motivo, caso o match não avance: {hint}. Não é salva automaticamente: escolha acima para registrar.')
             note = st.text_area('Observação', application.get('motivo_obs', ''))
             save = st.form_submit_button('Salvar andamento', type='primary')
         if save:
             try:
                 update_application(store, application['id'], status=new_status, valor_solicitado=requested, valor_captado=captured,
                                    data_submissao=submitted, data_resultado=decided, motivo=None if reason == '—' else reason, motivo_obs=note)
-                st.session_state.flash = 'Andamento da candidatura salvo.'
+                st.session_state.flash = 'Andamento do match salvo.'
                 st.rerun()
             except ValueError as exc:
                 st.error(str(exc))
 
 
 def follow_up_view(store):
-    """Startup × edital: o que cada uma enviou (documentos x de y) e o status da candidatura."""
+    """Startup × edital: o que cada uma enviou (documentos x de y) e o status do match."""
     calls = {c['id']: c for c in store.all('calls')}
     startups = {s['id']: s for s in store.all('startups')}
     projects = {p['id']: p for p in store.all('projects')}
     applications = {a['id']: a for a in store.all('applications')}
     options = ['__all__'] + [cid for cid in calls if review_state(calls[cid]) == PUBLISHED or any(a['call_id'] == cid for a in applications.values())]
+    if not applications and len(options) == 1:
+        st.html(empty_state('Nenhum match ainda', 'Abra um edital publicado e clique em “Criar match” para acompanhar documentos e andamento.'))
+        st.button('Ir para Editais', icon=':material/description:', on_click=go, args=('Editais',), key='follow_empty_go')
+        return
     chosen = st.selectbox('Filtrar por edital', options, key='follow_call',
-                          format_func=lambda cid: 'Todos os editais com candidatura' if cid == '__all__' else calls[cid]['title'])
+                          format_func=lambda cid: 'Todos os editais com match' if cid == '__all__' else calls[cid]['title'])
     pairs = [(a['call_id'], a['project_id']) for a in applications.values()] if chosen == '__all__' else \
         [(chosen, pid) for pid in projects]
     rows = []
@@ -1125,19 +1251,19 @@ def follow_up_view(store):
         startup = startups.get(project['startup_id']) if project else None
         if not call or not startup:
             continue
-        totals = checklist_summary(build_checklist(store, call, startup, project))
+        totals = checklist_summary(match_checklist(store, call, startup, project))
         application = applications.get(f'{call_id}:{project_id}', {})
         rows.append({'Origem': origin_label(application) if application else origin_label(call if is_demo(call) else startup),
                      'Startup': startup['name'], 'Projeto': project['name'], 'Edital': call['title'],
                      'Documentos': f"{totals['docs_sent']} de {totals['docs_total']}",
-                     'Candidatura': application.get('status', 'Não iniciada'),
+                     'Match': application.get('status', 'Não iniciado'),
                      'Solicitado': brl(application.get('valor_solicitado')) if application.get('valor_solicitado') is not None else '—',
                      'Captado': brl(application.get('valor_captado')) if application.get('valor_captado') is not None else '—',
                      'Motivo': application.get('motivo') or '—'})
     if rows:
         st.dataframe(rows, hide_index=True, width='stretch')
     else:
-        st.info('Nenhuma candidatura registrada ainda. Inicie uma candidatura a partir de um vínculo.')
+        st.info('Nenhum match registrado ainda.')
 
 
 PROPONENT_KINDS = ['Startup', 'Polo/CETEPI', 'Parceria com universidade ou prefeitura']
@@ -1160,10 +1286,10 @@ def link_rows(store, call):
         pairs[project['id']] = (org, project)
         rows.append({'Proponente': org['name'], 'Tipo': org_kind(org), 'Projeto': project['name'], 'Resultado': verdict_label(result),
                      'Motivo principal': main_reason(result), 'Pendentes': result['pending'], 'Não atendidos': result['blockers'],
-                     'Candidatura': application.get('status') if application else '—'})
+                     'Match': application.get('status') if application else '—'})
     owners = {p['startup_id'] for p in store.all('projects')}
     rows += [{'Proponente': s['name'], 'Tipo': org_kind(s), 'Projeto': 'Sem projeto cadastrado', 'Resultado': 'Pendente de verificação',
-              'Motivo principal': 'Crie uma candidatura para comparar', 'Pendentes': 1, 'Não atendidos': 0, 'Candidatura': '—'}
+              'Motivo principal': 'Crie um projeto para comparar', 'Pendentes': 1, 'Não atendidos': 0, 'Match': '—'}
              for s in orgs.values() if s['id'] not in owners]
     order = {'Atende': 0, 'Pendente de verificação': 1, 'Não atende': 2}
     rows.sort(key=lambda r: order[r['Resultado']])
@@ -1181,9 +1307,9 @@ def compat_section(store, call):
     rows, pairs = link_rows(store, call)
     st.dataframe(rows, hide_index=True, width='stretch')
     if not pairs:
-        st.button('Nova candidatura →', on_click=go, args=('Candidaturas',), key='compat_new_' + call['id'])
+        st.button('Novo projeto →', on_click=go, args=('Matches',), key='compat_new_' + call['id'])
         return
-    chosen = st.selectbox('Abrir vínculo', list(pairs), key='links_open_' + call['id'],
+    chosen = st.selectbox('Abrir match', list(pairs), key='links_open_' + call['id'],
                           format_func=lambda pid: pairs[pid][0]['name'] + ' · ' + pairs[pid][1]['name'])
     link_detail(store, call, *pairs[chosen])
 
@@ -1210,7 +1336,7 @@ def startup_matches(store, startup):
     """Editais compatíveis com uma startup (antes: Match direto)."""
     projects = [p for p in store.all('projects') if p['startup_id'] == startup['id']]
     if not projects:
-        st.info('Esta startup ainda não tem candidatura/projeto. Crie em Candidaturas → Nova candidatura.')
+        st.info('Esta startup ainda não tem projeto. Crie em Matches → Novo projeto.')
         return
     project = pick('Projeto', projects, 'profile_project_' + startup['id'])
     calls = [c for c in sort_calls(store.all('calls')) if status_group(c) != 'Encerrado' and (review_state(c) == PUBLISHED or c.get('simulated'))]
@@ -1220,7 +1346,7 @@ def startup_matches(store, startup):
     results = {c['id']: (c, match(c, startup, project)) for c in calls}
     st.dataframe([{'Edital': c['title'], 'Situação': status_text(c), 'Prazo': deadline_label(c), 'Resultado': verdict_label(r),
                    'Motivo principal': main_reason(r)} for c, r in results.values()], hide_index=True, width='stretch')
-    chosen = st.selectbox('Abrir vínculo', list(results), key='profile_open_' + startup['id'], format_func=lambda cid: results[cid][0]['title'])
+    chosen = st.selectbox('Abrir match', list(results), key='profile_open_' + startup['id'], format_func=lambda cid: results[cid][0]['title'])
     link_detail(store, results[chosen][0], startup, project)
 
 
@@ -1254,27 +1380,118 @@ def startups_page(store, simulated):
         vault_view(store, simulated)
 
 
-def open_candidacy(store):
+def usable_matches(store):
     calls = {c['id']: c for c in store.all('calls')}
     projects = {p['id']: p for p in store.all('projects')}
     orgs = {s['id']: s for s in store.all('startups')}
-    usable = {a['id']: a for a in store.all('applications')
-              if a['call_id'] in calls and a['project_id'] in projects and projects[a['project_id']]['startup_id'] in orgs}
-    if not usable:
+    out = {}
+    for a in store.all('applications'):
+        project = projects.get(a['project_id'])
+        if a['call_id'] in calls and project and project['startup_id'] in orgs:
+            out[a['id']] = (a, calls[a['call_id']], orgs[project['startup_id']], project)
+    return out
+
+
+def set_active_match(match_id):
+    st.session_state.active_match = match_id
+    st.session_state.pop('new_match_call', None)  # evita o mesmo match renderizado duas vezes
+
+
+def match_documents(store, startup, simulated):
+    """Aba Documentos do match: enviar, baixar um a um e baixar tudo em .zip (documentos da startup no cofre)."""
+    if simulated:
+        st.info(DEMO_NOTICE + ' O envio de arquivos fica desativado na demonstração.')
+    else:
+        upload_form(store, startup, 'match_upload_')
+    docs = startup_documents(store, startup['id'])
+    if not docs:
+        st.html(empty_state('Nenhum documento', 'Envie os documentos da startup acima; o checklist passa a marcar o que já foi enviado.'))
         return
-    chosen = st.selectbox('Abrir candidatura', list(usable), key='open_candidacy',
-                          format_func=lambda i: orgs[projects[usable[i]['project_id']]['startup_id']]['name'] + ' · ' + calls[usable[i]['call_id']]['title'])
-    app_record = usable[chosen]
-    project = projects[app_record['project_id']]
-    link_detail(store, calls[app_record['call_id']], orgs[project['startup_id']], project)
+    files = []
+    for doc in sorted(docs, key=lambda d: DOC_TYPES.index(d['tipo'])):
+        data = read_document(doc)
+        left, right = st.columns([4, 1])
+        validity = date.fromisoformat(doc['validade']).strftime('%d/%m/%Y') if doc.get('validade') else 'sem validade'
+        left.markdown(f"**{md_escape(doc['tipo'])}** · {md_escape(doc['nome'])}  \n{validity_status(doc)} · {validity}")
+        if data is not None:
+            files.append((doc['nome'], data))
+            right.download_button('Baixar', data, doc['nome'], 'application/octet-stream', key='mdl_' + doc['id'], icon=':material/download:')
+        else:
+            right.caption('Sem arquivo (demonstração)')
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        used = set()
+        for name, data in files:
+            base, n = name, 1
+            while name in used:  # nomes repetidos não se sobrescrevem no .zip
+                n += 1
+                name = f'{n}-{base}'
+            used.add(name)
+            zf.writestr(name, data)
+    slug = ''.join(ch if ch.isalnum() else '-' for ch in startup['name']).strip('-').lower()
+    st.download_button('Baixar tudo (.zip)', buffer.getvalue(), f'documentos-{slug}.zip', 'application/zip', disabled=not files,
+                       icon=':material/folder_zip:', key='mzip_' + startup['id'], type='primary')
+    if not files:
+        st.caption('Nenhum arquivo real para compactar.')
+
+
+def match_header(application, org, call, eyebrow=''):
+    chips = chip(application.get('status', 'Em preparação'), 'info') + (chip('Demonstração') if is_demo(application) else '')
+    return ((f'<div class="eyebrow">{escape(eyebrow)}</div>' if eyebrow else '')
+            + f'<div class="im-card-title">{escape(org["name"])} · {escape(call["title"])}</div><div class="im-chips">{chips}</div>')
+
+
+def match_manage(store, record, simulated):
+    application, call, org, project = record
+    with st.container(border=True):
+        top, close = st.columns([5, 1])
+        top.html(match_header(application, org, call, 'Match ativo'))
+        close.button('Fechar', key='match_close', on_click=set_active_match, args=(None,), icon=':material/close:')
+        tab_summary, tab_check, tab_docs = st.tabs(['Resumo', 'Checklist', 'Documentos'])
+        with tab_summary:
+            link_detail(store, call, org, project, show_checklist=False)
+        with tab_check:
+            link_checklist_view(store, call, org, project)
+        with tab_docs:
+            match_documents(store, org, simulated)
+
+
+def close_new_match():
+    st.session_state.pop('new_match_call', None)
+
+
+def matches_list(store, simulated):
+    records = usable_matches(store)
+    new_call = store.get('calls', st.session_state.get('new_match_call') or '')
+    if new_call:
+        with st.container(border=True):
+            top, close = st.columns([5, 1])
+            top.html(f'<div class="eyebrow">Criar match</div><div class="im-card-title">{escape(new_call["title"])}</div>')
+            close.button('Fechar', key='new_match_close', on_click=close_new_match, icon=':material/close:')
+            st.caption('Escolha a startup e clique em “Criar match”.')
+            compat_section(store, new_call)
+    if not records:
+        if not new_call:
+            st.html(empty_state('Nenhum match ainda', 'Em Editais, clique em “Criar match” num card para ligar o edital a uma startup.'))
+            st.button('Ir para Editais', type='primary', icon=':material/description:', on_click=go, args=('Editais',), key='matches_empty_go')
+        return
+    active = st.session_state.get('active_match')
+    if active in records:
+        match_manage(store, records[active], simulated)
+    st.html(f'<div class="section-head">Todos os matches · {len(records)}</div>')
+    for match_id, (application, call, org, project) in records.items():
+        with st.container(border=True):
+            text, action = st.columns([5, 1])
+            text.html(match_header(application, org, call))
+            action.button('Gerenciar', key='manage_' + match_id, on_click=set_active_match, args=(match_id,),
+                          type='primary' if match_id == active else 'secondary', icon=':material/tune:')
 
 
 def candidaturas_page(store, simulated):
-    heading('Candidaturas', 'Edital × proponente: andamento, checklist, rascunho e resultado.')
-    tab_follow, tab_new, tab_results = st.tabs(['Andamento', 'Nova candidatura', 'Resultados'])
-    with tab_follow:
-        follow_up_view(store)
-        open_candidacy(store)
+    heading('Matches', 'Edital × startup: do sugerido ao resultado. Checklist, documentos e andamento de cada match.')
+    tab_list, tab_new, tab_results = st.tabs(['Matches', 'Novo projeto', 'Resultados'])
+    with tab_list:
+        matches_list(store, simulated)
     with tab_new:
         candidacy_form(store, simulated)
     with tab_results:
@@ -1317,15 +1534,15 @@ def inicio(store):
         st.caption('Aviso de edital alterado (comparação de versões) ainda não implementado.')
     with col_pending, st.container(border=True):
         st.markdown(f'**Pendências** · {len(pending)}')
-        st.caption('Documentos faltando ou vencidos e candidaturas sem resultado.')
+        st.caption('Documentos faltando ou vencidos e matches sem resultado.')
         for text in pending[:8]:
             st.markdown('- ' + md_escape(text))
         if not pending:
             st.caption('Nenhuma pendência registrada.')
         if pending:
-            st.button('Abrir candidaturas', key='home_candidacies', on_click=go, args=('Candidaturas',), icon=':material/assignment:')
+            st.button('Abrir matches', key='home_candidacies', on_click=go, args=('Matches',), icon=':material/assignment:')
     st.html('<div class="soon"><span class="tag demo">Em breve</span><div class="section-head">Visão da startup</div>'
-            'Cada startup verá, só para leitura, os editais que o escritório direcionou a ela e o checklist do vínculo. '
+            'Cada startup verá, só para leitura, os editais que o escritório direcionou a ela e o checklist do match. '
             'Ainda não disponível: hoje o InovaMatch é operado pelo escritório de projetos.</div>')
 
 
@@ -1344,7 +1561,7 @@ def home_pendencies(store):
             if totals['docs_missing'] or totals['docs_expired']:
                 out.append(f"{org['name']}: {totals['docs_missing']} documento(s) faltando e {totals['docs_expired']} vencido(s) para {call['title'][:60]}")
         elif a.get('status') == 'Submetida':
-            out.append(f"{org['name']}: candidatura submetida a {call['title'][:60]} sem resultado registrado")
+            out.append(f"{org['name']}: match inscrito em {call['title'][:60]} sem resultado registrado")
     for doc in store.all('documents'):
         status = validity_status(doc)
         if status in (EXPIRED, SOON) and doc['startup_id'] in orgs:
@@ -1365,7 +1582,7 @@ def _page(title):
     def render():
         store, simulated = CTX['store'], CTX['simulated']
         {'Início': lambda: inicio(store), 'Editais': lambda: radar(store, simulated), 'Startups': lambda: startups_page(store, simulated),
-         'Candidaturas': lambda: candidaturas_page(store, simulated), 'Alertas': lambda: alertas_page(store)}[title]()
+         'Matches': lambda: candidaturas_page(store, simulated), 'Alertas': lambda: alertas_page(store)}[title]()
     render.__name__ = 'page_' + title.encode('ascii', 'ignore').decode().lower()
     return render
 
@@ -1380,7 +1597,7 @@ def main():
         st.session_state.goto = 'Editais'
     elif legacy:
         st.session_state.goto = LEGACY_PAGES.get(legacy, legacy)
-    st.logo(str(Path(__file__).parent / 'assets' / 'logo.svg'), size='large')
+    st.logo(str(LOGO), size='large')
     pages = {title: st.Page(_page(title), title=title, icon=icon, url_path=slug, default=(slug == 'inicio'))
              for title, slug, icon in PAGE_DEFS}
     nav = st.navigation(list(pages.values()), position='sidebar')

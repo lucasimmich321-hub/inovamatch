@@ -40,7 +40,7 @@ def overview(store):
     table = {s['id']: {'Startup': s['name'], 'Área de atuação': s.get('sector') or 'Não informado',
                       'Projetos cadastrados': sum(p['startup_id'] == s['id'] for p in projects),
                       'Oportunidades analisáveis': 0, 'Potencialmente elegíveis': 0,
-                      'Com impedimentos': 0, 'Pendências': 0, 'Candidaturas em preparação': 0} for s in startups}
+                      'Com impedimentos': 0, 'Pendências': 0, 'Matches em preparação': 0} for s in startups}
     eligible, doc_pending = 0, 0
     for entry in matrix(store):
         row, result = table[entry['startup']['id']], entry['result']
@@ -53,7 +53,7 @@ def overview(store):
     preparing = 0
     for application in store.all('applications'):
         if application.get('status') == 'Em preparação' and application['startup_id'] in table:
-            table[application['startup_id']]['Candidaturas em preparação'] += 1
+            table[application['startup_id']]['Matches em preparação'] += 1
             preparing += 1
     return {'startups': len(startups), 'projects': len(projects), 'calls': len(calls),
             'analyzed': sum(bool(c.get('criteria')) for c in calls), 'eligible': eligible,

@@ -34,7 +34,7 @@ def test_all_pages_and_demo_matching_and_copilot():
     button(app, 'Carregar demonstração').click().run()
     clean(app)
     assert app.session_state['dataset'] == 'Demonstração'
-    for page in ['Startups', 'Candidaturas', 'Alertas', 'Início', 'Editais']:
+    for page in ['Startups', 'Matches', 'Alertas', 'Início', 'Editais']:
         navigate(app, page)
     # Editais › Startups compatíveis: edital × proponentes com Atende / Pendente / Não atende.
     summary = next(d for d in app.dataframe if 'Motivo principal' in d.value.columns)
@@ -44,7 +44,7 @@ def test_all_pages_and_demo_matching_and_copilot():
     task.check().run()
     clean(app)
     assert any(t['done'] for t in app.session_state['demo_data']['tasks'].values())
-    button(app, 'Iniciar candidatura').click().run()
+    button(app, 'Criar match').click().run()
     clean(app)
     real = [a for a in app.session_state['demo_data']['applications'].values() if not a.get('simulated')]
     assert [a['id'] for a in real] == ['demo-call-1:project-demo-verde']
@@ -67,14 +67,14 @@ def test_live_create_and_edit_startup_then_create_project():
     button(app, 'Salvar startup').click().run()
     clean(app)
     assert app.session_state['real_data']['startups'][sid]['name'] == 'Startup editada'
-    navigate(app, 'Candidaturas')  # "Cadastrar Projeto" virou "Nova candidatura"
+    navigate(app, 'Matches')  # "Cadastrar Projeto" virou "Nova candidatura"
     next(x for x in app.text_input if x.label == 'Nome do projeto *').set_value('Projeto ao vivo')
-    button(app, 'Salvar candidatura').click().run()
+    button(app, 'Salvar projeto').click().run()
     clean(app)
     assert len(app.session_state['real_data']['projects']) == 1
     assert next(iter(app.session_state['real_data']['projects'].values()))['startup_id'] == sid
     next(x for x in app.text_input if x.label == 'Nome do projeto *').set_value('Projeto editado')
-    button(app, 'Salvar candidatura').click().run()
+    button(app, 'Salvar projeto').click().run()
     clean(app)
     assert len(app.session_state['real_data']['projects']) == 1
     assert next(iter(app.session_state['real_data']['projects'].values()))['name'] == 'Projeto editado'
@@ -179,10 +179,10 @@ def test_automatic_pdf_analysis_prefills_review_and_integrates_portfolio(monkeyp
     revised = app.session_state['real_data']['calls'][call['id']]
     rule = next(c for c in revised['criteria'] if c['id'] == state_rule['id'])
     assert rule['confirmed'] and rule['extracted'] and rule['validation_status'] == 'validated'
-    button(app, 'Iniciar candidatura').click().run()  # aba "Startups compatíveis" do mesmo edital
+    button(app, 'Criar match').click().run()  # aba "Startups compatíveis" do mesmo edital
     clean(app)
     assert len(app.session_state['real_data']['applications']) == 1
     navigate(app, 'Startups')
     button(app, 'Recalcular todo o portfólio').click().run()
     clean(app)
-    assert app.dataframe[0].value['Candidaturas em preparação'].tolist() == [1]
+    assert app.dataframe[0].value['Matches em preparação'].tolist() == [1]

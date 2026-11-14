@@ -30,7 +30,7 @@ def test_modo_demonstracao_mostra_aviso_e_selo(monkeypatch):
     app = AppTest.from_file(APP, default_timeout=60).run()
     assert [o for o in app.selectbox[0].options] == ['Dados reais', 'Demonstração']
     next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
-    app = goto(app, 'Editais')
+    app = goto(app, 'Editais', open_first=False)
     assert not app.exception
     assert any('Você está na Demonstração' in w.value for w in app.warning)
     table = next(d for d in app.dataframe if 'Origem' in d.value.columns).value

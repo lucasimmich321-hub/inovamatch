@@ -137,7 +137,7 @@ def test_radar_hides_closed_and_off_focus_until_chips_are_used():
     store.save('calls', fixture_call('fapesc_66_2025', id='closed', title='Encerrado na fonte', source_closed=True, relevance='Relevante'))
     store.save('calls', fixture_call('fapesc_66_2025', id='off', title='Pós-graduação', recurring_schedule=False, relevance='Fora do foco'))
     app.session_state['real_data'] = data
-    goto(app, 'Editais')
+    goto(app, 'Editais', open_first=False)
     clean(app)
     titles = lambda: next(t for t in app.dataframe if 'Título' in t.value.columns).value['Título'].tolist()
     assert titles() == ['Inova Talentos']
