@@ -95,10 +95,18 @@ def merge_analysis(call, imported, kind='Edital / documento'):
                 target.append(value)
     result['extraction_warnings'] = list(dict.fromkeys(result.get('extraction_warnings', []) + imported.get('extraction_warnings', [])))
     result['recurring_schedule'] = result.get('recurring_schedule', False) or imported.get('recurring_schedule', False)
+    if imported.get('schedule'):
+        result['schedule'] = imported['schedule']
     if not result.get('deadline_confirmed'):
-        values = sorted({d['value'] for d in result['deadline_candidates']})
-        result['deadline'] = values[0] if len(values) == 1 else None
-        result['deadline_evidence'] = next((d['evidence'] for d in result['deadline_candidates'] if d['value'] == result['deadline']), '')
+        from .schedule import deadline_fields
+        suggested = deadline_fields(result.get('schedule') or [])
+        if suggested:
+            # Sugestão do quadro de cronograma; continua NÃO confirmada até a revisão.
+            result.update({k: v for k, v in suggested.items() if not (k.startswith('opening') and result.get('opening_confirmed'))})
+        else:
+            values = sorted({d['value'] for d in result['deadline_candidates']})
+            result['deadline'] = values[0] if len(values) == 1 else None
+            result['deadline_evidence'] = next((d['evidence'] for d in result['deadline_candidates'] if d['value'] == result['deadline']), '')
         result['deadline_confirmed'] = False
     result['conflicts'] = detect_conflicts(criteria, result.get('conflicts'), result['deadline_candidates'])
     if not same_analysis:

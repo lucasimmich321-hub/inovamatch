@@ -507,6 +507,13 @@ def summary_view(store, call):
     if summary.get('funding_candidates'):
         st.markdown('**Valores identificados — ainda não confirmados**')
         st.dataframe([{'Tipo': r['kind'], 'Valor': brl(r['value']), 'Página': r['page'], 'Evidência': r['evidence']} for r in summary['funding_candidates']], hide_index=True, width='stretch')
+    if call.get('schedule'):
+        st.markdown('**Cronograma identificado**')
+        fmt = lambda d: date.fromisoformat(d).strftime('%d/%m/%Y') if d else 'A definir'
+        st.dataframe([{'Etapa': r['etapa'], 'Início': fmt(r['inicio']), 'Fim': fmt(r['fim']), 'Página': r['page']} for r in call['schedule']],
+                     hide_index=True, width='stretch')
+        if call.get('deadline') and not call.get('deadline_confirmed') and call.get('deadline_source'):
+            st.warning(f"Prazo sugerido: {fmt(call['deadline'])} (fim da etapa de submissão). Ainda não confirmado: confira na fonte e nas retificações e confirme em “Revisar dados, prazo e conclusão”.")
     if call.get('deadline_candidates'):
         st.markdown('**Datas de etapas para revisão**')
         st.dataframe([{'Data sugerida': d['value'], 'Página': d['page'], 'Trecho': d['evidence'], 'Fonte': d['source']} for d in call['deadline_candidates']], hide_index=True, width='stretch')

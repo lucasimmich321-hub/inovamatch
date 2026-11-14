@@ -10,7 +10,7 @@ import re
 from .domain import normalize
 from .matching import FIELDS, dimension_for
 
-VERSION = '2.0'
+VERSION = '2.1'
 MAX_CRITERIA = 160
 SECTION_PATTERNS = [
     ('Despesas proibidas', r'(?:itens|despesas).{0,15}nao financi|nao financiaveis'),
@@ -199,7 +199,8 @@ def analyze(pages, source):
         region = []
         region_text = n
         for name, code in sorted(STATES.items(), key=lambda item: -len(item[0])):
-            if name == 'para' and 'pará' not in text.lower() and 'estado do para' not in n:
+            # "para" é preposição; só vale o Pará com acento como palavra inteira ("Parágrafo" contém "pará").
+            if name == 'para' and not re.search(r'\bpará\b', text.lower()) and 'estado do para' not in n:
                 continue
             if re.search(r'\b' + name + r'\b', region_text):
                 region.append(code)
@@ -317,7 +318,11 @@ def analyze(pages, source):
                 add(b, 'manual', 'manual', expenses, 'Despesa financiável identificada: ' + ', '.join(expenses), confidence='Média', note='Trecho identifica categorias, mas não garante lista exaustiva nem dispensa os limites do edital.')
         date_context = b['section'] == 'Cronograma' or bool(re.search(r'inscri|submiss|submetid|cronograma|cada mes|recebera.{0,30}(?:propostas|formulario)', n))
         if date_context:
-            if re.search(r'fluxo continuo|cada mes|mensalmente|10[ºo].{0,10}dia', n):
+            monthly = re.search(r'cada mes|mensalmente|10[ºo].{0,10}dia', n)
+            # "Até o dia 5 de cada mês" para substituir bolsista ou enviar relatório não é submissão recorrente.
+            about_proposals = re.search(r'propost|submiss|submet|inscri|recebera', n) and not re.search(
+                r'substitui\w*\s+(?:de |do |da )?bolsist|relatorio|pagament|prestacao de contas|repass|folha', n)
+            if re.search(r'fluxo continuo', n) or (monthly and about_proposals):
                 recurring = True
             for value, pos in date_values(text):
                 context = normalize(text[max(0, pos - 120):pos])
@@ -326,7 +331,7 @@ def analyze(pages, source):
                               'confidence': 'Média', 'review_status': 'Pendente de revisão'}
                     if not any(d['value'] == value and d['page'] == page for d in deadlines):
                         deadlines.append(record)
-            if recurring and re.search(r'cada mes|10[ºo].{0,10}dia', n):
+            if recurring and monthly and about_proposals:
                 add(b, 'manual', 'manual', text, 'Cronograma recorrente de submissão', confidence='Média')
         if len(criteria) == before and obligation:
             label = re.sub(r'^\d+(?:\.\d+)*\.?\s*', '', text)[:100]
@@ -342,8 +347,16 @@ def analyze(pages, source):
     if not criteria:
         warnings.append('Nenhuma exigência estruturada reconhecida. Revise o PDF e registre as regras não reconhecidas.')
     criteria.sort(key=lambda c: 0 if c['field'] == 'age_months' else 1)
+    # Cronograma em quadro: o fim da etapa de submissão vira o prazo SUGERIDO (nunca confirmado).
+    from .schedule import parse_schedule, deadline_fields
+    schedule = parse_schedule(pages, source)
+    from_schedule = deadline_fields(schedule)
+    deadline_evidence = next((d['evidence'] for d in deadlines if d['value'] == deadline), '')
+    if from_schedule:
+        deadline, deadline_evidence = from_schedule['deadline'], from_schedule['deadline_evidence']
     return {'criteria': criteria, 'observations': observations, 'sections': sections,
-            'deadline': deadline, 'deadline_evidence': next((d['evidence'] for d in deadlines if d['value'] == deadline), ''),
+            'deadline': deadline, 'deadline_evidence': deadline_evidence, 'schedule': schedule,
+            **{k: v for k, v in from_schedule.items() if k not in ('deadline', 'deadline_evidence')},
             'deadline_candidates': deadlines, 'deadline_confirmed': False, 'recurring_schedule': recurring,
             'extraction_summary': summary, 'extraction_warnings': warnings, 'extractor_version': VERSION,
             'requirements_status': 'Aguardando revisão' if criteria else 'Sem requisitos identificados'}
