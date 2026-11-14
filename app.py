@@ -57,11 +57,12 @@ h1,h2,h3 {font-family:var(--im-font);letter-spacing:-.02em;color:var(--im-dark);
 .block-container {max-width:1360px;padding-top:4.75rem;padding-bottom:3rem;}
 [data-testid="stSidebar"] {border-right:1px solid var(--im-border);background:#fff;}
 [data-testid="stSidebar"] .block-container {padding-top:2rem;}
-[data-testid="stMetric"] {background:#fff;border:1px solid var(--im-border);border-radius:14px;padding:18px 20px;}
+[data-testid="stMetric"] {background:#fff;border:1px solid var(--im-border);border-radius:14px;padding:16px 18px;min-height:118px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;}
 [data-testid="stMetricLabel"] {color:#4A5670;font-size:13px;}
 [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] * {white-space:normal !important;overflow:visible !important;text-overflow:clip !important;}
-[data-testid="stMetricValue"] {font-family:var(--im-font);font-weight:700;font-size:26px;}
-[data-testid="stMetricValue"], [data-testid="stMetricValue"] * {white-space:normal !important;overflow:visible !important;text-overflow:clip !important;}
+[data-testid="stMetricValue"] {font-family:var(--im-font);font-weight:700;font-size:clamp(18px, 1.7vw, 24px);}
+/* Número nunca quebra ("R$" e o valor na mesma linha); valores grandes usam formato compacto (brl_short). */
+[data-testid="stMetricValue"], [data-testid="stMetricValue"] * {white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
 [data-testid="stVerticalBlockBorderWrapper"] {border-color:var(--im-border) !important;border-radius:14px !important;background:#fff;}
 .eyebrow {color:#22304F;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;}
 .brand {display:flex;gap:11px;align-items:center;margin-bottom:27px;}
@@ -165,6 +166,25 @@ def brl(value):
     if value is None:
         return 'Não informado'
     return ('R$ ' + f'{value:,.2f}').replace(',', 'X').replace('.', ',').replace('X', '.')
+
+
+def brl_short(value):
+    """Formato compacto para cartões de números: R$ 860 mil, R$ 1,2 mi. O valor exato vai na ajuda (?) do cartão."""
+    if value is None:
+        return 'Não informado'
+    size = abs(value)
+    if size >= 1_000_000:
+        text = f'{value / 1_000_000:.1f}'.replace('.', ',').replace(',0', '') + ' mi'
+    elif size >= 1_000:
+        number = value / 1_000
+        text = (f'{number:.0f}' if number >= 10 or number == int(number) else f'{number:.1f}'.replace('.', ',')) + ' mil'
+    else:
+        return brl(value)
+    return 'R$ ' + text
+
+
+def money_help(value, text=''):
+    return f'Valor exato: {brl(value)}.' + (f' {text}' if text else '')
 
 
 def when(value, fallback='Não registrada'):
@@ -292,8 +312,8 @@ def office_results(store):
     if stats['simulated']:
         st.info('Dados de demonstração: os matches deste painel são SIMULADOS e não representam captação real.')
     a, b, c, d = st.columns(4)
-    a.metric('Captado', brl(stats['captado']), help=DEFINITIONS['Captado'])
-    b.metric('Deixou de captar', brl(stats['deixou_de_captar']), help=DEFINITIONS['Deixou de captar'])
+    a.metric('Captado', brl_short(stats['captado']), help=money_help(stats['captado'], DEFINITIONS['Captado']))
+    b.metric('Deixou de captar', brl_short(stats['deixou_de_captar']), help=money_help(stats['deixou_de_captar'], DEFINITIONS['Deixou de captar']))
     c.metric('Taxa de aprovação', '—' if stats['taxa_aprovacao'] is None else f"{stats['taxa_aprovacao'] * 100:.0f}%".replace('.', ','),
              help=DEFINITIONS['Taxa de aprovação'])
     d.metric('Em andamento', stats['em_andamento'], help=DEFINITIONS['Em andamento'])
@@ -1660,7 +1680,7 @@ def captacao_view(store, application, call, org):
     if is_demo(application):
         st.caption('Match de demonstração: datas e tarefas fictícias, guardadas só nesta sessão.')
     left, right = st.columns([2, 3])
-    left.metric('Valor aprovado', brl(application.get('valor_captado')))
+    left.metric('Valor aprovado', brl_short(application.get('valor_captado')), help=money_help(application.get('valor_captado')))
     with right.form('cap_value_' + aid):
         value = st.number_input('Corrigir valor aprovado (R$)', min_value=0.0, step=1000.0, value=float(application.get('valor_captado') or 0))
         save_value = st.form_submit_button('Salvar valor')
@@ -1907,8 +1927,9 @@ def institutional_dashboard(store):
     st.html('<div class="section-head">Dashboard institucional</div>')
     a, b, c, d, e = st.columns(5)
     a.metric('Startups no portfólio', data['startups'])
-    b.metric('Recursos solicitados', brl(data['requested']), help='Soma do valor solicitado de todos os matches registrados.')
-    c.metric('Recursos captados', brl(data['captured']), help='Soma do valor aprovado dos matches Aprovados.')
+    b.metric('Recursos solicitados', brl_short(data['requested']),
+             help=money_help(data['requested'], 'Soma do valor solicitado de todos os matches registrados.'))
+    c.metric('Recursos captados', brl_short(data['captured']), help=money_help(data['captured'], 'Soma do valor aprovado dos matches Aprovados.'))
     d.metric('Taxa de aprovação', '—' if data['approval_rate'] is None else f"{data['approval_rate'] * 100:.0f}%",
              help='Aprovados ÷ (Aprovados + Reprovados). Desistências ficam fora da conta.')
     e.metric('Nota média', '—' if data['average_score'] is None else f"{scoring.text(data['average_score'])} / 10",

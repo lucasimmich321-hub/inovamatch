@@ -420,7 +420,7 @@ def test_panel_screen_with_demo_and_empty_state():
     clean(app)
     metrics = {m.label: m.value for m in app.metric}
     # 8 matches da demonstração: aprovados R$ 90.000 + R$ 60.000; reprovado (140 mil) e desistência (120 mil).
-    assert metrics['Captado'] == 'R$ 150.000,00' and metrics['Deixou de captar'] == 'R$ 260.000,00'
+    assert metrics['Captado'] == 'R$ 150 mil' and metrics['Deixou de captar'] == 'R$ 260 mil'  # compacto; exato na ajuda
     assert metrics['Taxa de aprovação'] == '67%' and metrics['Em andamento'] == '4'
     assert any('Dados de demonstração' in i.value for i in app.info)
     assert any(e.label == 'Como cada número é calculado' for e in app.expander)
