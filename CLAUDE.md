@@ -79,3 +79,6 @@ Foco: MVP para demonstração, não sistema completo.
     a aba ativa pode voltar para "Resumo" depois de salvar (rerun do Streamlit); lembretes não são enviados (só aparecem na tela);
     .ics não foi aberto em Google Agenda/Outlook (só validado em teste); tela não vista em navegador real (só AppTest);
     editais reais só sugerem datas se o cronograma tiver sido lido do PDF.
+- 14/11/2026: correção em Matches: "Gerenciar" abria o painel no topo, mas o rerun mantinha a rolagem e o usuário ficava na lista.
+  Agora o painel ocupa o lugar da lista (botão "Voltar para todos os matches") e a página rola até ele (components.html,
+  só no rerun do clique). A rolagem não foi vista em navegador real.

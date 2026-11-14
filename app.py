@@ -10,6 +10,7 @@ from pathlib import Path
 
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 
 from inovamatch.demo import load_demo
 from inovamatch.domain import STATES, deadline_info, now_iso, today
@@ -1396,6 +1397,7 @@ def usable_matches(store):
 
 def set_active_match(match_id):
     st.session_state.active_match = match_id
+    st.session_state.scroll_to_match = bool(match_id)  # no próximo rerun, rola a página até o painel
     st.session_state.pop('new_match_call', None)  # evita o mesmo match renderizado duas vezes
 
 
@@ -1445,6 +1447,11 @@ def match_header(application, org, call, eyebrow=''):
 
 def match_manage(store, record, simulated):
     application, call, org, project = record
+    st.html('<div id="im-match-ativo"></div>')
+    if st.session_state.pop('scroll_to_match', False):
+        # O Streamlit mantém a rolagem no rerun; sem isto o usuário continua onde clicou e não vê o painel.
+        components.html('<script>setTimeout(() => window.parent.document.getElementById("im-match-ativo")'
+                        '?.scrollIntoView({behavior: "smooth", block: "start"}), 150);</script>', height=0)
     with st.container(border=True):
         top, close = st.columns([5, 1])
         top.html(match_header(application, org, call, 'Match ativo'))
@@ -1610,7 +1617,11 @@ def matches_list(store, simulated):
         return
     active = st.session_state.get('active_match')
     if active in records:
+        # O painel ocupa o lugar da lista: abrir um match não deixa o usuário parado na lista.
         match_manage(store, records[active], simulated)
+        st.button(f'Voltar para todos os matches ({len(records)})', key='match_back', on_click=set_active_match, args=(None,),
+                  icon=':material/arrow_back:')
+        return
     st.html(f'<div class="section-head">Todos os matches · {len(records)}</div>')
     for match_id, (application, call, org, project) in records.items():
         with st.container(border=True):
