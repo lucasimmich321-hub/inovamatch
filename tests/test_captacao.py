@@ -32,7 +32,7 @@ def test_captacao_smoke():
     assert 'Startup\\, edital\\; teste' in ics.replace('\r\n ', '') and '[Demonstração]' in ics
 
 
-def test_demo_carrega_3_matches_so_na_demonstracao():
+def test_demo_carrega_8_matches_so_na_demonstracao():
     import sys
     from pathlib import Path
     from streamlit.testing.v1 import AppTest
@@ -42,9 +42,9 @@ def test_demo_carrega_3_matches_so_na_demonstracao():
     next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
     goto(app, 'Matches')
     assert not app.exception
-    assert len([b for b in app.button if b.label == 'Gerenciar']) == 3
+    assert len([b for b in app.button if b.label == 'Gerenciar']) == 8
     statuses = {a['status'] for a in app.session_state['demo_data']['applications'].values() if a['id'].startswith('demo-call-')}
-    assert statuses == {apps.SUGGESTED, apps.PREPARING, apps.APPROVED}
+    assert statuses == set(apps.STATUSES)  # o ciclo inteiro aparece na demonstração
     assert not app.session_state['real_data'].get('applications')  # nada no modo real
 
 
@@ -105,3 +105,28 @@ def test_planos_simulados_liberam_e_bloqueiam():
     goto(app, 'Planos')
     table = next(d for d in app.dataframe if 'Recurso' in d.value.columns).value
     assert 'Em breve' in table['Premium'].tolist() and set(table.iloc[-1, 1:]) == {'A definir'}
+
+
+def test_nota_e_dashboard_institucional():
+    import sys
+    from pathlib import Path
+    from streamlit.testing.v1 import AppTest
+    from inovamatch import score
+    from inovamatch.demo import demo_matches, load_demo
+    from inovamatch.matching import match
+    sys.path.insert(0, str(Path(__file__).parent))
+    from nav import goto
+    store = Store({})
+    load_demo(store)
+    demo_matches(store)
+    blocked = match(store.get('calls', 'demo-call-3'), store.get('startups', 'demo-energia'), store.get('projects', 'project-demo-energia'))
+    assert score.compute(blocked)['value'] <= score.BLOCKER_CAP  # impedimento limita a nota
+    app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
+    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    goto(app, 'Início')
+    metrics = {m.label: m.value for m in app.metric}
+    assert not app.exception and metrics['Startups no portfólio'] == '6' and metrics['Nota média'].endswith('/ 10')
+    assert any(d.label == 'Exportar relatório (CSV)' for d in app.get('download_button'))
+    app.session_state['plan'] = 'Básico'
+    app.run()
+    assert 'Startups no portfólio' not in {m.label for m in app.metric}  # Início simples fora do Institucional

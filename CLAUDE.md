@@ -47,7 +47,7 @@ Foco: MVP para demonstração, não sistema completo.
 ## Dados: real x demonstração
 - Todo registro tem origem = "real" ou "demo". Match é demo se o edital ou a startup for demo. Interface: seletor "Dados reais"/"Demonstração", aviso amarelo em demo e selo laranja "Demonstração".
 - Real: crawler da FAPESC (inovamatch/crawler.py), import por URL ou PDF (inovamatch/radar.py), entrada manual; armazenado na sessão ou em SQLite (inovamatch/storage.py).
-- Demonstração: gerada por código Python (inovamatch/demo.py com 2 editais abertos e 3 startups; demo_matches cria um 3º edital encerrado e 3 matches prontos, vault.demo_documents, office_stats.demo_applications com 10 matches históricos). Os JSON em docs/ e tests/fixtures/ são só registros de verificação; o app não os lê.
+- Demonstração: gerada por código Python (inovamatch/demo.py com 2 editais abertos e 3 startups; demo_matches cria um 3º edital encerrado, mais 3 startups e 8 matches prontos, sem órfãos; o botão não carrega mais os 10 históricos de office_stats.demo_applications, vault.demo_documents, office_stats.demo_applications com 10 matches históricos). Os JSON em docs/ e tests/fixtures/ são só registros de verificação; o app não os lê.
 - Tabela completa em docs/ESTADO_REAL.md.
 - Editais de referência (PDFs reais da FAPESC): Nascer 24/2026 (inscrições 05/05 a 15/06/2026), GCUB 53/2026 (04/09 a 05/10/2026) e FAPESC 54/2026 (10/09 a 20/10/2026). Bons para dados reais e para testar a extração.
 
@@ -136,3 +136,17 @@ Foco: MVP para demonstração, não sistema completo.
   - .DS_Store no .gitignore.
   - Passada de tela pelo subagente Sonnet NÃO feita: a sessão não tem ferramenta de navegador (nem Claude in Chrome nem
     navegador embutido) e não há Playwright/Selenium no .venv (instalar seria dependência nova, precisa de aprovação).
+- 14/11/2026: ajustes de planos + Fase 3 (nota 0–10 e dashboard institucional). 228 testes.
+  - Planos: "Registrar andamento e resultado" exige Intermediário; "Gerar rascunho da proposta" exige Premium (cartão
+    "Disponível no plano X"); no Gratuito a faixa diz "Impedido: motivos disponíveis no plano Básico". Tela Planos lista
+    rascunho, explicação da nota e "Dashboard institucional (no Início)" — marcado "Sim" no Institucional porque foi construído nesta fase.
+  - inovamatch/score.py: nota 0–10 "calculada por regras" (obrigatório peso 2, opcional 1; pendente vale metade; não atendido 0;
+    impedimento limita a 4,0; depois da inscrição o prazo encerrado sai da conta). Selo no card e no topo do Gerenciar; métrica e
+    "Como a nota foi calculada" (Básico+) no Resumo. "Match forte" = nota ≥ 8.
+  - inovamatch/dashboard.py + institutional_dashboard (Início, só Institucional; os outros planos veem o Início simples):
+    startups, recursos solicitados/captados, taxa de aprovação, nota média, funil por status (st.bar_chart), próximos prazos
+    (7 e 30 dias), pendências críticas (impedidos, documentos vencidos, tarefas atrasadas), projetos aprovados e "Exportar relatório (CSV)".
+  - Demonstração: 6 startups e 8 matches (todos os status do ciclo), todos ligados a editais existentes. O edital encerrado aceita
+    Tecnologia e Saúde. Testes ajustados ao tamanho novo: test_app (6 linhas de compatibilidade), test_office (painel da demo),
+    test_captacao (8 matches).
+  - Não verificado em navegador: aparência do dashboard e do gráfico (o Kalil vai mandar prints).

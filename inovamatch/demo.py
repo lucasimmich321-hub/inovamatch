@@ -63,12 +63,13 @@ def load_demo(store):
 
 
 def demo_matches(store):
-    """3 matches FICTÍCIOS prontos para a página Matches (só na base de demonstração, via "Carregar demonstração").
+    """8 matches FICTÍCIOS prontos para a página Matches (só na base de demonstração, via "Carregar demonstração").
 
-    1. Recém-criado (Sugerido), checklist vazio.  2. Em preparação, checklist e documentos pela metade.
-    3. Aprovado num edital fictício encerrado, com datas, tarefas e lembretes na aba Captação.
+    Os 3 primeiros: recém-criado (Sugerido), checklist pela metade (Em preparação) e Aprovado com captação.
+    Mais 3 startups fictícias e 5 matches (Inscrito, Reprovado, Desistiu, Em preparação, Aprovado) para o dashboard.
+    Todos ligados a editais e projetos existentes (nenhum match órfão).
     """
-    from .applications import APPROVED, PREPARING, SUGGESTED, update_application
+    from .applications import APPROVED, NOT_SUBMITTED, PREPARING, REJECTED, SUBMITTED, SUGGESTED, update_application
     from .link_checklist import DOCS, build_checklist
     from .portfolio import register_application
     from .vault import startup_documents
@@ -81,7 +82,12 @@ def demo_matches(store):
         # Edital fictício já encerrado: o match aprovado precisa de um edital com resultado divulgado.
         base = store.get('calls', 'demo-call-1')
         source = 'SIMULADO · regulamento de demonstração 3'
+        # Aceita Tecnologia e Saúde (a Oeste Energia, de Energia, fica de fora: é o match Reprovado).
+        criteria = [{**c, 'expected': ['Tecnologia', 'Saúde'], 'label': 'Área temática do projeto',
+                     'evidence': 'O projeto deve pertencer às áreas Tecnologia ou Saúde.'} if c['field'] == 'theme' else c
+                    for c in base['criteria']]
         store.save('calls', {**base, 'id': 'demo-call-3', 'title': '[SIMULADO] Subvenção Inovação (encerrado)', 'source_label': source,
+                             'criteria': criteria,
                              'deadline': day(-60), 'opening_date': day(-100), 'deadline_evidence': 'SIMULADO · inscrições encerradas.',
                              'opening_evidence': 'SIMULADO · inscrições abertas de 100 a 60 dias atrás.',
                              'schedule': [{'etapa': e, 'inicio': a, 'fim': b, 'page': None, 'source': source, 'continuous': False,
@@ -89,7 +95,23 @@ def demo_matches(store):
                                           [('Submissão das propostas', day(-100), day(-60)), ('Divulgação do resultado final', day(-20), day(-20)),
                                            ('Assinatura do termo de outorga', day(3), day(3))]],
                              'summary': 'Edital fictício encerrado, usado só para demonstrar a gestão da captação.'})
-    plan = [('demo-call-2', 'demo-fora', SUGGESTED), ('demo-call-1', 'demo-pendente', PREPARING), ('demo-call-3', 'demo-verde', APPROVED)]
+    extra = [('demo-agro', 'Vale Agro Digital', 'Tecnologia', '2019-06-01', 40_000, 120_000),
+             ('demo-energia', 'Oeste Energia', 'Energia', '2021-02-15', 20_000, 140_000),
+             ('demo-bio', 'Serra Biotec', 'Saúde', '2018-09-10', 35_000, 90_000)]
+    for sid, name, sector, opened, counterpart, requested in extra:
+        if store.get('startups', sid):
+            continue
+        store.save('startups', {'id': sid, 'name': name, 'state': 'SC', 'city': 'Joaçaba', 'opened_on': opened, 'cnpj': '',
+                                'legal_type': 'Sociedade Limitada', 'size': 'ME', 'sector': sector,
+                                'description': 'Startup fictícia para demonstração.', 'counterpart': counterpart,
+                                'documents': ['Cartão CNPJ', 'Certidão fiscal'], 'simulated': True, 'origem': 'demo'})
+        store.save('projects', {'id': 'project-' + sid, 'startup_id': sid, 'name': 'Projeto ' + name, 'objective': 'Projeto simulado.',
+                                'description': 'Projeto simulado.', 'theme': sector, 'stage': 'Protótipo', 'requested': requested,
+                                'budget': requested + counterpart, 'expenses': ['Equipamentos', 'Bolsas'],
+                                'team': 'Equipe fictícia', 'simulated': True, 'origem': 'demo'})
+    plan = [('demo-call-2', 'demo-fora', SUGGESTED), ('demo-call-1', 'demo-pendente', PREPARING), ('demo-call-3', 'demo-verde', APPROVED),
+            ('demo-call-1', 'demo-agro', SUBMITTED), ('demo-call-3', 'demo-energia', REJECTED), ('demo-call-3', 'demo-agro', NOT_SUBMITTED),
+            ('demo-call-2', 'demo-bio', PREPARING), ('demo-call-3', 'demo-bio', APPROVED)]
     created = []
     for call_id, startup_id, status in plan:
         call, startup, project = store.get('calls', call_id), store.get('startups', startup_id), store.get('projects', 'project-' + startup_id)
@@ -99,6 +121,15 @@ def demo_matches(store):
         store.save('applications', {**record, 'simulated': True, 'origem': 'demo'})
         if status == SUGGESTED:
             update_application(store, record['id'], status=SUGGESTED)
+        elif status == SUBMITTED:
+            update_application(store, record['id'], status=SUBMITTED, data_submissao=day(-3))
+        elif status == REJECTED:
+            update_application(store, record['id'], status=REJECTED, data_submissao=day(-62), data_resultado=day(-20),
+                               motivo='Reprovada no mérito', motivo_obs='Dado de demonstração.')
+        elif status == NOT_SUBMITTED:
+            update_application(store, record['id'], status=NOT_SUBMITTED, motivo='Desistência da startup', motivo_obs='Dado de demonstração.')
+        elif status == APPROVED and startup_id != 'demo-verde':
+            update_application(store, record['id'], status=APPROVED, data_submissao=day(-62), data_resultado=day(-20), valor_captado=60_000)
         elif status == PREPARING:
             # Metade do checklist marcada e um documento do cofre vinculado.
             items = [i for i in build_checklist(store, call, startup, project) if i['marcavel']]
