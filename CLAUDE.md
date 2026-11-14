@@ -45,7 +45,7 @@ Foco: MVP para demonstração, não sistema completo.
 - A tabela crua do crawler vira expander "Detalhes da consulta". Fonte que não funciona não aparece como opção.
 
 ## Dados: real x demonstração
-- Todo registro tem origem = "real" ou "demo". Match é demo se o edital ou a startup for demo. Interface: seletor "Dados reais"/"Demonstração", aviso amarelo em demo e selo de origem pequeno em cada registro: "Fictício" (laranja) ou "Real (FAPESC)" / "Real" (origin.provenance).
+- Todo registro tem origem = "real" ou "demo". Match é demo se o edital ou a startup for demo. Interface: base "Dados reais" por padrão (o seletor da lateral foi removido em 14/11; a Demonstração só entra pelo botão do Início com a base vazia), aviso amarelo em demo e selo de origem pequeno em cada registro: "Fictício" (laranja) ou "Real (FAPESC)" / "Real" (origin.provenance).
 - Real: crawler da FAPESC (inovamatch/crawler.py), import por URL ou PDF (inovamatch/radar.py), entrada manual; armazenado na sessão ou em SQLite (inovamatch/storage.py).
 - Demonstração: gerada por código Python (inovamatch/demo.py com 2 editais abertos e 3 startups; demo_matches cria um 3º edital encerrado, mais 3 startups e 8 matches prontos, sem órfãos; o botão não carrega mais os 10 históricos de office_stats.demo_applications, vault.demo_documents, office_stats.demo_applications com 10 matches históricos). Os JSON em docs/ e tests/fixtures/ são só registros de verificação; o app não os lê.
 - Tabela completa em docs/ESTADO_REAL.md.
@@ -259,3 +259,15 @@ Foco: MVP para demonstração, não sistema completo.
     Empresa, Pesquisador / ICT, Estudante / bolsista, área Geral (nenhuma ≥ 5). Na base inteira (114 editais, quase todos sem PDF lido),
     91 ficaram com público "Não identificado" e 101 com área "Geral / não identificado".
   - Não verificado em navegador (selos e marca "conferir" no card); Publicação rápida conferida só pelo AppTest.
+- 14/11/2026: removido da lateral o bloco "Espaço de trabalho" (seletor de base, "Carregar demonstração", legenda) e o aviso de sessão.
+  238 testes (5 testes ajustados ao que saiu). sidebar_legend apagada. Nenhuma solução nova no lugar (pedido do Kalil).
+  - Ficou quebrado ou vazio: não há como trocar de base. Demonstração só pelo "Carregar demonstração" do Início, que aparece apenas com a
+    base real vazia (sem editais e sem startups) e no perfil Institucional; depois de "Atualizar editais" ou cadastrar algo, a demo fica
+    inacessível. Da Demonstração não há volta para Dados reais (só recarregando a página, que zera a sessão).
+  - Textos que agora apontam para algo que não existe: aviso amarelo da demo e info de Editais ("escolha Dados reais na barra lateral",
+    app.py ~985 e ~2288); estado vazio de perfil sem startup ("Troque para o perfil Institucional e carregue a demonstração").
+    README.md, docs/ESTADO_REAL.md e docs/VALIDACAO_EXTRACAO.md ainda citam o seletor/botão da lateral.
+  - Continua funcionando: exportar sessão (JSON) no popover do usuário; perfil → startup, Minha startup e dashboard, desde que a base
+    certa já esteja carregada. Importar sessão nunca existiu.
+  - O aviso "Dados só nesta sessão: exporte antes de sair" sumiu; resta só a dica do botão "Exportar dados da sessão".
+- 14/11/2026: auditoria de mockups (só leitura) em .ai/notes/2026-11-14-auditoria-mockups.md (fora do git).

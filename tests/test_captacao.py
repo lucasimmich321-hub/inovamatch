@@ -146,6 +146,7 @@ def test_alertas_simulados_por_plano():
     app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
     goto(app, 'Alertas')
     assert any('Nenhum aviso agora' in h.value for h in app.get('html'))  # modo real vazio
+    goto(app, 'Início')  # sem o bloco da lateral, a demonstração só carrega pelo Início com a base vazia
     next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
     goto(app, 'Alertas')
     assert not app.exception and 6 <= len(app.code) <= 8

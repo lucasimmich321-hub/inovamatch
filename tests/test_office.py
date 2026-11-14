@@ -65,7 +65,7 @@ def test_dataset_choice_survives_page_changes():
     next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
     for page in ['Editais', 'Startups', 'Início']:
         goto(app, page)
-        assert app.session_state['dataset'] == 'Demonstração' and app.sidebar.selectbox[0].value == 'Demonstração'
+        assert app.session_state['dataset'] == 'Demonstração'  # seletor da lateral removido; a base fica na sessão
 
 
 def test_compatible_startups_in_call_detail_with_verdict_and_reason():
@@ -415,6 +415,7 @@ def test_panel_screen_with_demo_and_empty_state():
     goto(app, 'Matches')  # resultados do escritório: Candidaturas › Resultados
     clean(app)
     assert any('Nenhum match finalizado' in i.value for i in app.info)
+    goto(app, 'Início')  # o botão de demonstração ficou só no Início com a base vazia
     next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
     goto(app, 'Matches')
     clean(app)

@@ -28,7 +28,6 @@ def test_origem_gravada_em_editais_startups_e_matches(monkeypatch):
 def test_modo_demonstracao_mostra_aviso_e_selo(monkeypatch):
     monkeypatch.delenv('INOVAMATCH_STORAGE', raising=False)
     app = AppTest.from_file(APP, default_timeout=60).run()
-    assert [o for o in app.selectbox[0].options] == ['Dados reais', 'Demonstração']
     next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
     app = goto(app, 'Editais', open_first=False)
     assert not app.exception
@@ -51,7 +50,7 @@ def test_selo_de_origem_real_fapesc_e_ficticio():
     assert match_provenance(None, crawler, {'name': 'Real SA', 'origem': 'real'}) == 'Real'
 
 
-def test_dashboard_e_legenda_nos_dados_reais(monkeypatch):
+def test_dashboard_nos_dados_reais(monkeypatch):
     from inovamatch import dashboard
     from inovamatch.demo import add_example_startups
     monkeypatch.delenv('INOVAMATCH_STORAGE', raising=False)
@@ -62,12 +61,11 @@ def test_dashboard_e_legenda_nos_dados_reais(monkeypatch):
     load_demo(demo)
     assert dashboard.build(demo)['fictitious']
     app = AppTest.from_file(APP, default_timeout=60).run()
-    html = ' '.join(h.value for h in app.get('html'))
-    captions = ' '.join(c.value for c in app.caption)
-    assert 'Nesta base: 0 startup(s)' in captions and '8 matches fictícios' not in captions
+    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    assert any('Valores fictícios: startups e matches de demonstração' in h.value for h in app.get('html'))
+    app = AppTest.from_file(APP, default_timeout=60).run()
     app.session_state['real_data'] = real.data
     app.run()
     assert any('Sem dados reais ainda' in h.value for h in app.get('html'))
-    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
-    assert any('Valores fictícios: startups e matches de demonstração' in h.value for h in app.get('html'))
-    assert '8 matches fictícios' in ' '.join(c.value for c in app.caption)
+    # Sem o bloco da lateral, com a base real não vazia não há como ir para a demonstração.
+    assert not any(b.label == 'Carregar demonstração' for b in app.button)

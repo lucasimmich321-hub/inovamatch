@@ -2245,17 +2245,6 @@ def user_block(store, simulated):
                                help='Baixa os dados desta sessão: eles somem ao recarregar ou fechar o site.')
 
 
-def sidebar_legend(store, simulated):
-    """Legenda do espaço de trabalho: o texto fixo dos fictícios só na Demonstração; em Dados reais, a contagem da base."""
-    if simulated:
-        return '6 startups, 3 editais e 8 matches fictícios para experimentar o fluxo completo.'
-    startups, calls, apps = store.all('startups'), store.all('calls'), store.all('applications')
-    real = lambda rows: sum(not is_demo(r) for r in rows)
-    text = f'Nesta base: {real(startups)} startup(s), {real(calls)} edital(is) e {real(apps)} match(es) reais.'
-    fict = len(startups) - real(startups)
-    return text + (f' Mais {fict} startup(s) de exemplo (fictícias).' if fict else '')
-
-
 def _page(title):
     def render():
         store, simulated = CTX['store'], CTX['simulated']
@@ -2289,14 +2278,8 @@ def main():
     options = [ORIGIN_LABELS['real'], ORIGIN_LABELS[DEMO]]
     current = st.session_state.get('dataset', options[0])
     dataset = current if current in options else options[0]  # sessão antiga ("Meus dados") cai em Dados reais
-    legend = None
-    if can('multi_startup'):  # "Espaço de trabalho" só no Institucional; os outros perfis ficam na base atual
-        with st.sidebar:
-            st.caption('ESPAÇO DE TRABALHO')
-            # Chave amarrada ao valor: quando a base muda (inclusive pelo botão de demonstração), nasce um seletor novo já com o valor certo.
-            dataset = st.selectbox('Base de dados', options, index=options.index(dataset), key='_dataset_widget_' + dataset, label_visibility='collapsed')
-            st.button('Carregar demonstração', on_click=demo_activate, width='stretch', icon=':material/play_circle:')
-            legend = st.empty()  # preenchida depois que a base é aberta (contagem real em "Dados reais")
+    # O bloco "Espaço de trabalho" (seletor de base, "Carregar demonstração", legenda) saiu da lateral (pedido do Kalil, 14/11).
+    # A base vem só da sessão: "Dados reais" por padrão; "Demonstração" só pelo botão do Início com a base vazia (demo_activate).
     st.session_state.dataset = dataset
     simulated = dataset == ORIGIN_LABELS[DEMO]
     if simulated:
@@ -2308,13 +2291,9 @@ def main():
         storage_mode = os.environ.get('INOVAMATCH_STORAGE', 'session').lower()
         path = os.environ.get('INOVAMATCH_DB', 'data/inovamatch.db') if storage_mode == 'sqlite' else None
         store = Store(st.session_state.setdefault('real_data', {}), path=path)
-    if legend is not None:
-        legend.caption(sidebar_legend(store, simulated))
     if not can('multi_startup'):
         store = ScopedStore(store, plans.PERSONA_STARTUP[current_plan()])
     with st.sidebar:
-        st.caption('Dados só nesta sessão: exporte antes de sair.' if simulated or not store.path
-                   else 'SQLite local: dados compartilhados neste servidor.')
         user_block(store, simulated)
     goto = st.session_state.pop('goto', None)
     if goto in pages:
