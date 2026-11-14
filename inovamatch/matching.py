@@ -74,6 +74,9 @@ def evaluate(criterion, startup, project, on=None):
     result['confidence'] = c.get('confidence')
     result['review_status'] = c.get('review_status') or ('Validado' if c.get('confirmed') else 'Pendente')
     result['provisional_status'] = PENDING
+    if c.get('ai_generated') and c.get('evidence_status') != 'Verificado no texto':
+        result['reason'] = 'Citação da IA não verificada na página da fonte. Corrija a evidência antes de avaliar.'
+        return result
     if c.get('validation_status') == 'rejected':
         result['reason'] = 'Sugestão descartada na revisão.'
         return result

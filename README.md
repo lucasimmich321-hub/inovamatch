@@ -3,7 +3,15 @@ Radar inteligente de editais de fomento
 
 **Do edital encontrado à candidatura preparada.**
 
-Plataforma de inteligência e gestão de captação para incubadoras, iniciada no Hackathon Incubadora Joaçaba / Inovale 2026. Python 3.11+, Streamlit, Requests, BeautifulSoup, PyMuPDF e SQLite. Não exige API de IA, modelo local, Docker, cartão ou serviço pago.
+Plataforma de inteligência e gestão de captação para incubadoras, iniciada no Hackathon Incubadora Joaçaba / Inovale 2026. Python 3.11+, Streamlit, Requests, BeautifulSoup, PyMuPDF e SQLite. O fluxo original continua sem API paga ou modelo local. A análise OpenAI é opcional e paga por uso, protegida por senha e cotas; veja o [guia da IA](docs/IA_OPENAI.md). Não há Docker ou modelo pesado local.
+
+## Análise opcional com OpenAI
+
+O painel **Análise com IA · acesso restrito**, dentro do edital, usa o SDK oficial, Responses API e saída estruturada por Pydantic. O botão **Analisar edital com IA** só pode gerar chamadas após autenticação, seleção de páginas e autorização explícita. A chave é lida apenas de `st.secrets["OPENAI_API_KEY"]` ou de variável de ambiente; a senha vem de `INOVAMATCH_DEMO_PASSWORD`.
+
+Sem esses segredos, apenas o recurso pago fica desativado. O resultado preserva fatos/interpretações, confere citações na página e gera critérios pendentes para revisão, integrados ao match. Há cache, limites por sessão/servidor, registro de tokens e proteção contra exposição de erros de credencial.
+
+**Configuração, roteiro com PDF oficial, limites e teste real pendente:** [docs/IA_OPENAI.md](docs/IA_OPENAI.md). Os segredos serão configurados somente no Streamlit, conforme sua escolha; os testes locais usam transporte simulado, sem consumo da API.
 
 ## Evolução prioritária: requisitos que chegam prontos para o match
 
@@ -111,7 +119,7 @@ O prazo considera a data em `America/Sao_Paulo`; “encerra hoje” solicita con
 - Use **Exportar dados em JSON** e **Baixar análise em CSV** antes de encerrar. O JSON é uma cópia para consulta; esta versão não inclui importação/restauração por interface.
 - SQLite local salva e edita cadastros sem serviço externo. Faça backup de `data/inovamatch.db` quando o app estiver parado. Não publique esse arquivo no GitHub.
 - Não há autenticação nem upload de documentos empresariais confidenciais. O upload de PDF se destina aos editais públicos. Não inclua informações sigilosas em uma demonstração pública.
-- Não há chave paga, telemetria da aplicação ou envio do cadastro a uma IA. O Streamlit tem coleta de estatísticas desativada na configuração. A fonte tipográfica visual é opcional via Google Fonts, com fallback local; o fluxo funciona sem ela.
+- A análise opcional com IA envia somente o texto das páginas do edital explicitamente selecionadas; cadastros de startups/projetos não são enviados. O SDK recebe a chave apenas no servidor, usa `store=False` e não usa ferramentas pagas adicionais. Não há telemetria própria da aplicação. O Streamlit tem coleta de estatísticas desativada na configuração. A fonte tipográfica visual é opcional via Google Fonts, com fallback local; o fluxo funciona sem ela.
 
 ## Testar
 
@@ -159,11 +167,11 @@ git push origin main
 
 3. Entre em `https://share.streamlit.io/` com sua conta e autorize o GitHub.
 4. Clique em **Create app / New app**, selecione `lucasimmich321-hub/inovamatch`, branch `main` e arquivo principal `app.py`.
-5. Em **Advanced settings**, selecione Python **3.11 ou superior**, de preferência 3.11 ou 3.12. Não adicione secrets; não são necessários. Mantenha `INOVAMATCH_STORAGE` ausente para usar o modo de sessão.
+5. Em **Advanced settings**, selecione Python **3.11 ou superior**, de preferência 3.11 ou 3.12. Para o fluxo gratuito, não são necessários secrets. Para a IA opcional, configure as duas propriedades somente no painel conforme o [guia](docs/IA_OPENAI.md). Mantenha `INOVAMATCH_STORAGE` ausente para usar o modo de sessão.
 6. Clique em **Deploy** e aguarde a instalação de `requirements.txt`. Ajuste o compartilhamento para público e copie a URL `https://…streamlit.app` que a plataforma fornecer.
 7. Abra uma janela anônima e valide demonstração, criação ao vivo, leitura de PDF e busca da FAPESC. Reinicializações e hibernação do plano gratuito podem apagar dados e exigir recarregamento.
 
-O código está preparado para esse deploy gratuito. O envio ao GitHub e a publicação no Community Cloud são etapas distintas. Não há URL pública da aplicação até concluir **Deploy** no Streamlit. Nenhuma assinatura, cartão ou API paga é necessária para este MVP.
+O código está preparado para esse deploy gratuito. O envio ao GitHub e a publicação no Community Cloud são etapas distintas. Não há URL pública da aplicação até concluir **Deploy** no Streamlit. O fluxo por regras e a hospedagem continuam gratuitos. Apenas a análise opcional pela OpenAI exige API paga por uso e configuração própria de credenciais/cota.
 
 ## Atualizar o site já publicado
 
@@ -173,7 +181,7 @@ O código está preparado para esse deploy gratuito. O envio ao GitHub e a publi
 4. Se a atualização não aparecer, abra o app em `share.streamlit.io`, confira o repositório/branch/entrada e use **Manage app → Reboot app**. Não crie uma assinatura paga nem um segundo app para atualizar o existente.
 5. Confirme que existe o botão **Analisar requisitos automaticamente**, as cinco abas do edital e o menu **Portfólio da Incubadora**. Faça o fluxo com um PDF e confira as evidências antes de validar requisitos.
 
-Esta atualização não exige novas dependências, API, segredo ou serviço. Não há persistência compartilhada entre usuários: a gestão é feita no espaço de trabalho da sessão atual. Autenticação, banco durável e colaboração simultânea continuam fora desta versão.
+A análise opcional acrescenta os pacotes `openai` e `pydantic`, instalados automaticamente de `requirements.txt` no rebuild. Para usá-la, configure os segredos conforme o [guia de IA](docs/IA_OPENAI.md). As funcionalidades anteriores não exigem chave. Não há persistência compartilhada entre usuários: a gestão é feita no espaço de trabalho da sessão atual. A senha da IA protege apenas a função paga; autenticação de toda a equipe, banco durável e colaboração simultânea continuam fora desta versão.
 
 ## Estrutura
 
@@ -191,6 +199,13 @@ inovamatch/sources.py     Adaptadores oficiais independentes
 inovamatch/filters.py     Filtros do radar
 inovamatch/portfolio.py   Comparações em escala e indicadores
 inovamatch/acceptance.py  Conferência dos casos de referência
+inovamatch/ai_config.py   Segredos do servidor, senha e cota da sessão
+inovamatch/ai_schema.py   Contrato Pydantic da Responses API
+inovamatch/ai_engine.py   SDK, blocos, evidências, cache e limites
+inovamatch/ai_ui.py       Painel pago protegido e relatório exportável
+inovamatch/call_status.py Situação de inscrições baseada em dados revisados
+scripts/validate_ai_live.py  Ensaio pago com execução explícita
+docs/IA_OPENAI.md        Configurar e testar a IA no Streamlit
 scripts/validate_live.py  Aceitação separada com dois PDFs oficiais
 tests/fixtures/          Trechos oficiais e referência parcial
 docs/VALIDACAO_EXTRACAO.md  Relatório atual de testes e limites
@@ -201,4 +216,4 @@ requirements-dev.txt     Dependências dos testes
 VALIDACAO.md              Evidências da verificação desta entrega
 ```
 
-O projeto evita infraestrutura adicional: sem banco remoto, modelo de IA, OCR, filas ou agendador. Para evolução após o hackathon, os próximos pontos são autenticação, armazenamento durável e revisão de critérios mais abrangente.
+O projeto evita infraestrutura adicional: sem banco remoto, modelo de IA local, OCR, filas ou agendador. A IA remota opcional só é usada mediante autenticação e ação explícita. Para evolução após o hackathon, os próximos pontos são autenticação, armazenamento durável e revisão de critérios mais abrangente.

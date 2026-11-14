@@ -19,6 +19,8 @@ from inovamatch.documents import merge_analysis, automatic_analysis
 from inovamatch.portfolio import overview, matrix, recalculate, register_application
 from inovamatch.sources import SOURCES
 from inovamatch.filters import filter_calls, funding_value
+from inovamatch.ai_ui import render_ai
+from inovamatch.call_status import call_situation
 
 st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon='◈', layout='wide')
 
@@ -297,11 +299,19 @@ def metadata_editor(store, call):
         summary = st.text_area('Resumo / público-alvo / restrições gerais', call.get('summary', ''))
         funding = st.number_input('Valor total disponível no edital (R$)', min_value=0.0,
                                    value=float(call['funding']) if call.get('funding') is not None else None, step=1000.0)
+        opening = st.date_input('Data de abertura das inscrições', date.fromisoformat(call['opening_date']) if call.get('opening_date') else None,
+                                min_value=date(2000, 1, 1), max_value=date(2100, 12, 31), format='DD/MM/YYYY')
+        opening_evidence = st.text_area('Evidência da data de abertura — trecho e página', call.get('opening_evidence', ''))
+        opening_confirmed = st.checkbox('Conferi a data de abertura na fonte oficial', value=bool(call.get('opening_confirmed')))
         deadline = st.date_input('Data-limite de inscrição — sugestão precisa de revisão',
                                  date.fromisoformat(call['deadline']) if call.get('deadline') else None,
                                  min_value=date(2000, 1, 1), max_value=date(2100, 12, 31), format='DD/MM/YYYY')
         evidence = st.text_area('Trecho e página que comprovam o prazo (inclua horário, se houver)', call.get('deadline_evidence', ''))
         confirmed = st.checkbox('Confirmei o prazo na fonte e nas retificações', value=bool(call.get('deadline_confirmed')))
+        statuses = ['Situação não confirmada', 'Aberto', 'Encerrado', 'Futuro']
+        manual_status = st.selectbox('Situação declarada explicitamente pela fonte', statuses, index=statuses.index(call.get('registration_status', statuses[0])))
+        status_evidence = st.text_area('Trecho oficial que declara a situação das inscrições', call.get('registration_status_evidence', ''))
+        status_confirmed = st.checkbox('Conferi esta situação na fonte e nas retificações atuais', value=bool(call.get('registration_status_confirmed')))
         complete = st.checkbox('Revisei integralmente o edital, os anexos e as retificações e registrei todos os critérios obrigatórios',
                                 value=bool(call.get('criteria_complete')))
         submit = st.form_submit_button('Salvar revisão do edital', type='primary')
@@ -310,6 +320,10 @@ def metadata_editor(store, call):
             st.error('Informe um título.')
         elif confirmed and (not deadline or not evidence.strip()):
             st.error('Para confirmar o prazo, informe a data e o trecho da fonte.')
+        elif opening_confirmed and (not opening or not opening_evidence.strip()):
+            st.error('Para confirmar a abertura, informe a data e a evidência oficial.')
+        elif status_confirmed and (manual_status == statuses[0] or not status_evidence.strip()):
+            st.error('Para confirmar a situação, informe o estado e o trecho da fonte oficial.')
         elif complete and not any(c.get('validation_status') != 'rejected' for c in call.get('criteria', [])):
             st.error('Registre critérios antes de declarar a revisão integral.')
         elif complete and any(not c.get('resolved') for c in call.get('conflicts', [])):
@@ -318,6 +332,10 @@ def metadata_editor(store, call):
             store.save('calls', {**call, 'title': title.strip(), 'institution': institution, 'summary': summary,
                                  'funding': funding, 'deadline': deadline.isoformat() if deadline else None,
                                  'deadline_evidence': evidence.strip(), 'deadline_confirmed': confirmed,
+                                 'opening_date': opening.isoformat() if opening else None, 'opening_evidence': opening_evidence.strip(),
+                                 'opening_confirmed': opening_confirmed, 'registration_status': manual_status,
+                                 'registration_status_evidence': status_evidence.strip(), 'registration_status_confirmed': status_confirmed,
+                                 'ai_schedule_reviewed': bool(confirmed or status_confirmed),
                                  'criteria_complete': complete, 'reviewed_at': now_iso()})
             st.rerun()
 
@@ -404,6 +422,13 @@ def criteria_editor(store, call):
                          'reference_date': reference_date.isoformat() if reference_date else None,
                          'validation_status': 'validated' if confirmed else 'pending', 'review_status': 'Validado' if confirmed else 'Pendente de revisão',
                          'classification': 'Obrigatório' if mandatory else 'Classificatório', 'dimension': dimension, 'reviewed_at': now_iso()}
+            if criterion.get('ai_generated'):
+                from inovamatch.ai_engine import checked_ai_evidence
+                located = checked_ai_evidence(criterion, call)
+                criterion['evidence_status'] = 'Verificado no texto' if located else 'Não verificado'
+                if confirmed and not located:
+                    st.error('A citação da IA não foi localizada na página do documento associado. Corrija o trecho ou carregue a fonte antes de confirmar.')
+                    return
             store.save('calls', {**call, 'criteria': [c for c in criteria if c['id'] != criterion['id']] + [criterion], 'criteria_complete': False})
             st.session_state['pending_criterion_' + call['id']] = criterion['id']
             st.rerun()
@@ -414,6 +439,7 @@ def criteria_editor(store, call):
 
 def summary_view(store, call):
     st.markdown('**' + call.get('institution', 'Instituição não informada') + '**')
+    st.write('Situação das inscrições: ' + call_situation(call))
     summary = call.get('extraction_summary', {})
     st.write(call.get('summary') or 'Resumo ainda não revisado.')
     for field, label in [('objective', 'Objetivo identificado'), ('target_audience', 'Público-alvo identificado'), ('themes', 'Áreas / linhas temáticas identificadas')]:
@@ -531,6 +557,7 @@ def call_detail(store, call):
     if call.get('deadline_confirmed'):
         st.caption('Data-limite confirmada na revisão: ' + date.fromisoformat(call['deadline']).strftime('%d/%m/%Y'))
     source_link(call)
+    render_ai(store, call)
     if call.get('url') and not call.get('simulated'):
         if st.button('Analisar requisitos automaticamente', type='primary', key='auto_' + call['id']):
             try:
@@ -709,7 +736,7 @@ def radar(store, simulated):
         st.info('Nenhum edital corresponde ao filtro.')
         return
     st.caption(f'{len(filtered)} edital(is) · A abertura de uma chamada não garante elegibilidade.')
-    st.dataframe([{'Instituição': c.get('institution'), 'Título': c['title'], 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_info(c)['label'],
+    st.dataframe([{'Instituição': c.get('institution'), 'Título': c['title'], 'Situação das inscrições': call_situation(c), 'Situação na fonte': c.get('source_status', 'Não confirmada'), 'Prazo': deadline_info(c)['label'],
                    'Análise de requisitos': 'Revisão integral declarada' if c.get('criteria_complete') else c.get('requirements_status', 'Não analisado'),
                    'Valor identificado': brl(funding_value(c)), 'Última verificação': c.get('last_seen_at') or c.get('discovered_at'),
                    'Fonte oficial': c.get('url'), 'PDF': c.get('pdf_url') or c.get('document_url')} for c in filtered], hide_index=True, width='stretch')
