@@ -30,7 +30,8 @@ from inovamatch.applications import (STATUSES, REASONS, SUGGESTED, PREPARING, SU
                                      migrate_statuses, suggest_reason, update_application)
 from inovamatch import captacao
 from inovamatch.office_stats import DEFINITIONS, PERIODS, compute as compute_office, demo_applications, period_bounds, to_csv as office_csv
-from inovamatch.components import band, card, chip, empty_state
+from inovamatch.components import band, card, chip, empty_state, locked
+from inovamatch import plans
 from inovamatch import attention
 from inovamatch.filters import STATUS_FILTERS
 from inovamatch.origin import DEMO, LABELS as ORIGIN_LABELS, badge_html as origin_badge, is_demo, label as origin_label
@@ -123,6 +124,21 @@ LEGACY_PAGES = {'Dashboard': 'Início', 'Painel': 'Início', 'Radar de Editais':
 CTX = {}
 
 
+def current_plan():
+    return plans.normalize(st.session_state.get('plan'))
+
+
+def can(feature):
+    return plans.allows(current_plan(), feature)
+
+
+def locked_card(feature, key):
+    """Cartão "Disponível no plano X" + link para a tela Planos (oculta no menu: a navegação continua com 5 páginas)."""
+    st.html(locked(plans.required(feature), plans.FEATURE_NAMES[feature], current_plan()))
+    if CTX.get('plans_page'):
+        st.page_link(CTX['plans_page'], label='Ver planos', icon=':material/workspace_premium:')
+
+
 def go(page, call_id=None):
     st.session_state.goto = LEGACY_PAGES.get(page, page)
     if call_id:
@@ -136,6 +152,7 @@ def demo_activate():
     demo_applications(Store(data))
     demo_matches(Store(data))  # 3 matches prontos (sugerido, em preparação, aprovado com captação)
     st.session_state.dataset = ORIGIN_LABELS[DEMO]
+    st.session_state.plan = plans.DEFAULT  # demonstração abre no plano Institucional (tudo liberado)
     st.session_state.goto = 'Início'
 
 
@@ -1031,6 +1048,10 @@ def styled_requirements(rows):
 
 def attention_bands(reason, items, pend):
     """Topo do match: vermelho para o que impede, âmbar para o que falta preencher. Nunca só texto cinza."""
+    if not can('requirements'):  # Gratuito: o status aparece, os pontos e as sugestões não
+        if reason:
+            st.html(band('fail', 'Impedido'))
+        return
     if reason:
         st.html(band('fail', f'Impedido: {reason}', items))
     if pend:
@@ -1039,6 +1060,12 @@ def attention_bands(reason, items, pend):
 
 def verdict_banner(result):
     reason, items = attention.impediments(result)
+    if not can('requirements'):
+        if reason:
+            st.html(band('fail', 'Impedido'))
+        elif not result['pending']:
+            st.success('Match forte: atende a todas as regras registradas, segundo os dados declarados.')
+        return
     if reason:
         st.html(band('fail', f'Impedido: {reason}', items))
     elif result['pending']:
@@ -1104,13 +1131,17 @@ def link_detail(store, call, startup, project, show_checklist=True, compact=Fals
         save_analysis(store, call, startup, project, result)
         st.session_state.flash = 'Match criado (em preparação).'
         st.rerun()
-    with st.expander('Justificativas e evidências da comparação', expanded=not compact):
-        result_table(result, 'match')
-    if show_checklist:
+    if not can('requirements'):
+        locked_card('requirements', 'req_' + call['id'] + project['id'])
+    else:
+        with st.expander('Justificativas e evidências da comparação', expanded=not compact):
+            result_table(result, 'match')
+    if show_checklist and can('manage'):
         with st.expander('Checklist do match', expanded=True):
             link_checklist_view(store, call, startup, project)
-    with st.expander('Resumo por dimensão'):
-        dimensions_view(result)
+    if can('requirements'):
+        with st.expander('Resumo por dimensão'):
+            dimensions_view(result)
     items = match_checklist(store, call, startup, project)
     st.download_button('Gerar rascunho da proposta (.txt)', draft_text(call, startup, project, result, items),
                        f"rascunho-{project['id']}-{call['id']}.txt", 'text/plain', icon=':material/edit_note:',
@@ -1367,7 +1398,8 @@ def compat_section(store, call):
     if review_state(call) != PUBLISHED and not call.get('simulated'):
         st.caption('Edital ainda em revisão: o resultado usa critérios que podem mudar até a publicação.')
     rows, pairs = link_rows(store, call)
-    st.dataframe(rows, hide_index=True, width='stretch')
+    st.dataframe(rows, hide_index=True, width='stretch', column_order=None if can('requirements') else  # Gratuito: sem os pontos que reduzem
+                 [k for k in (rows[0] if rows else {}) if k not in ('Motivo principal', 'Pendentes', 'Não atendidos')])
     if not pairs:
         st.button('Novo projeto →', on_click=go, args=('Matches',), key='compat_new_' + call['id'])
         return
@@ -1407,7 +1439,8 @@ def startup_matches(store, startup):
         return
     results = {c['id']: (c, match(c, startup, project)) for c in calls}
     st.dataframe([{'Edital': c['title'], 'Situação': status_text(c), 'Prazo': deadline_label(c), 'Resultado': verdict_label(r),
-                   'Motivo principal': main_reason(r)} for c, r in results.values()], hide_index=True, width='stretch')
+                   'Motivo principal': main_reason(r)} for c, r in results.values()], hide_index=True, width='stretch',
+                 column_order=None if can('requirements') else ['Edital', 'Situação', 'Prazo', 'Resultado'])
     chosen = st.selectbox('Abrir match', list(results), key='profile_open_' + startup['id'], format_func=lambda cid: results[cid][0]['title'])
     link_detail(store, results[chosen][0], startup, project)
 
@@ -1418,7 +1451,10 @@ def startups_list(store):
         startup_profile(store, startups)
     # Visão geral e acompanhamento ficam recolhidos: o topo da tela é a startup escolhida.
     with st.expander('Visão do portfólio e acompanhamento por edital', expanded=not startups):
-        portfolio_view(store)
+        if can('multi_startup'):
+            portfolio_view(store)
+        else:
+            locked_card('multi_startup', 'lk_portfolio')
 
 
 def startup_profile(store, startups):
@@ -1545,15 +1581,31 @@ def match_manage(store, record, simulated):
         # O que importa primeiro: impedimento, pendências e próximo prazo. Detalhes ficam nas abas.
         attention_bands(*info)
         st.caption('Próximo prazo: ' + next_deadline(store, application, call))
-        tab_summary, tab_check, tab_docs, tab_cap = st.tabs(['Resumo', 'Checklist', 'Documentos', 'Captação'])
+        tab_summary, tab_check, tab_docs, tab_cap, tab_ai = st.tabs(['Resumo', 'Checklist', 'Documentos', 'Captação', 'Copiloto de IA'])
         with tab_summary:
             link_detail(store, call, org, project, show_checklist=False, compact=True)
+        full = can('manage')
         with tab_check:
-            link_checklist_view(store, call, org, project)
+            if full:
+                link_checklist_view(store, call, org, project)
+            else:
+                locked_card('manage', 'lk_chk')
         with tab_docs:
-            match_documents(store, org, simulated)
+            if full:
+                match_documents(store, org, simulated)
+            else:
+                locked_card('manage', 'lk_docs')
         with tab_cap:
-            captacao_view(store, application, call, org)
+            if full:
+                captacao_view(store, application, call, org)
+            else:
+                locked_card('manage', 'lk_cap')
+        with tab_ai:
+            if can('copilot'):
+                st.html(empty_state('Copiloto de IA · Em breve', 'Vai sugerir textos e próximos passos para este match. '
+                                    'Ainda não construído: nenhuma chamada de IA é feita aqui.'))
+            else:
+                locked_card('copilot', 'lk_ai')
 
 
 def fmt_day(value):
@@ -1728,7 +1780,10 @@ def candidaturas_page(store, simulated):
     with tab_new:
         candidacy_form(store, simulated)
     with tab_results:
-        office_results(store)
+        if can('multi_startup'):
+            office_results(store)
+        else:
+            locked_card('multi_startup', 'lk_results')
 
 
 def inicio(store):
@@ -1829,11 +1884,19 @@ def alertas_page(store):
         st.caption('Enquanto isso, prazos e pendências aparecem no Início.')
 
 
+def planos_page():
+    heading('Planos', 'Simulação para a demonstração: sem login, sem cobrança e sem gravar a escolha. Preços a definir.')
+    st.html(f'<div class="im-chips">{chip("Demonstração")}{chip(f"Plano atual: {current_plan()}", "info")}</div>')
+    st.dataframe([dict(zip(['Recurso'] + plans.PLANS, row)) for row in plans.COMPARISON], hide_index=True, width='stretch')
+    st.caption('“Em breve” = ainda não construído. Troque o plano em “Plano (simulação)”, na barra lateral.')
+
+
 def _page(title):
     def render():
         store, simulated = CTX['store'], CTX['simulated']
         {'Início': lambda: inicio(store), 'Editais': lambda: radar(store, simulated), 'Startups': lambda: startups_page(store, simulated),
-         'Matches': lambda: candidaturas_page(store, simulated), 'Alertas': lambda: alertas_page(store)}[title]()
+         'Matches': lambda: candidaturas_page(store, simulated), 'Alertas': lambda: alertas_page(store),
+         'Planos': planos_page}[title]()
     render.__name__ = 'page_' + title.encode('ascii', 'ignore').decode().lower()
     return render
 
@@ -1851,6 +1914,9 @@ def main():
     st.logo(str(LOGO), size='large')
     pages = {title: st.Page(_page(title), title=title, icon=icon, url_path=slug, default=(slug == 'inicio'))
              for title, slug, icon in PAGE_DEFS}
+    # "Planos" é oculta no menu (as 5 páginas continuam as mesmas); abre pelo link "Ver planos".
+    pages['Planos'] = CTX['plans_page'] = st.Page(_page('Planos'), title='Planos', icon=':material/workspace_premium:',
+                                                  url_path='planos', visibility='hidden')
     nav = st.navigation(list(pages.values()), position='sidebar')
     with st.sidebar:
         st.caption('ESPAÇO DE TRABALHO')
@@ -1862,7 +1928,13 @@ def main():
         dataset = st.selectbox('Base de dados', options, index=options.index(current), key='_dataset_widget_' + current, label_visibility='collapsed')
         st.session_state.dataset = dataset
         st.button('Carregar demonstração', on_click=demo_activate, width='stretch', icon=':material/play_circle:')
-        st.caption('3 startups e 2 editais fictícios para experimentar o fluxo completo.')
+        st.caption('3 startups, 3 editais e 3 matches fictícios para experimentar o fluxo completo.')
+        # Plano: simulação, sem login e sem persistência. Mesmo padrão de chave da base de dados.
+        plan = current_plan()
+        chosen = st.selectbox('Plano (simulação)', plans.PLANS, index=plans.PLANS.index(plan), key='_plan_widget_' + plan,
+                              help='Demonstração: mostra o que cada plano libera. Sem login, sem cobrança, não é salvo.')
+        st.session_state.plan = chosen
+        st.caption('Plano simulado para demonstração.')
     simulated = dataset == ORIGIN_LABELS[DEMO]
     if simulated:
         store = Store(st.session_state.setdefault('demo_data', {}))

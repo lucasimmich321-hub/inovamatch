@@ -123,3 +123,16 @@ Foco: MVP para demonstração, não sistema completo.
   - Início: matches impedidos em vermelho no topo de Pendências; "Abrir matches" é a ação principal; "Em breve" recolhido.
   - Startups: perfil escolhido e "Falta preencher" no topo; portfólio e acompanhamento em expansor (aberto só sem startups).
   - Não verificado em navegador: cores, faixas e reflow em tela estreita (teste de tela não rodado).
+- 14/11/2026: Fase 2 (perfis e planos, SIMULAÇÃO). 227 testes.
+  - inovamatch/plans.py: Gratuito, Básico, Intermediário, Premium, Institucional; recurso → plano mínimo; tabela comparativa.
+  - Barra lateral: "Plano (simulação)" (sem login, sem persistência; padrão e demonstração = Institucional).
+  - Gratuito: verdict, "match forte" e "Impedido" sem detalhes; tabela de requisitos, motivos e sugestões bloqueados.
+    Básico: requisitos, pontos que reduzem e "Falta preencher". Intermediário: abas Checklist, Documentos e Captação.
+    Premium: aba "Copiloto de IA" com "Em breve" (sem chamada). Institucional: portfólio/acompanhamento e Resultados.
+  - Bloqueio = cartão "Disponível no plano X" (components.locked) + link "Ver planos" para a página Planos, oculta no menu
+    (st.Page visibility='hidden'; a navegação continua com 5 páginas). Preços "A definir"; alertas por e-mail e copiloto "Em breve".
+  - Score: não existe nota de 0 a 10 (portfolio.py: "sem pontuações"); o indicador é o veredito de matching.match
+    (Com impedimentos / Precisa de informações / Potencialmente elegível) + contagens totais e por dimensão.
+  - .DS_Store no .gitignore.
+  - Passada de tela pelo subagente Sonnet NÃO feita: a sessão não tem ferramenta de navegador (nem Claude in Chrome nem
+    navegador embutido) e não há Playwright/Selenium no .venv (instalar seria dependência nova, precisa de aprovação).

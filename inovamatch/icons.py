@@ -5,6 +5,7 @@ Uso: icon('calendar') -> <svg …>. Decorativos por padrão (aria-hidden); o tex
 from html import escape
 
 PATHS = {
+    'lock': '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
     'calendar': '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
     'clock': '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     'check': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',

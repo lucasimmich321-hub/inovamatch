@@ -12,3 +12,6 @@ data/
 *.pem
 *.key
 work/
+
+# macOS
+.DS_Store

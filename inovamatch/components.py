@@ -36,3 +36,9 @@ def band(kind, title, items=(), prefix=''):
     role = ' role="alert"' if kind == 'fail' else ''
     return (f'<div class="im-band im-band-{kind}"{role}>{icon("alert", 18)}<div><strong>{escape(title)}</strong>'
             + (f'<ul>{lis}</ul>' if lis else '') + '</div></div>')
+
+
+def locked(plan, feature, current):
+    """Recurso bloqueado pelo plano (simulação). O link para a tela Planos vem logo abaixo, como st.page_link."""
+    return (f'<div class="im-empty">{icon("lock", 26)}<div class="im-empty-title">Disponível no plano {escape(plan)}</div>'
+            f'<p>{escape(feature)}. Plano atual (simulação): {escape(current)}.</p></div>')

@@ -83,3 +83,25 @@ def test_impedido_e_pendencias_visiveis_na_demo():
     assert 'Impedido: falta dado obrigatório para avaliar' in html and 'Falta preencher: dados da startup' in html
     table = next(d for d in app.dataframe if 'Exigência' in d.value.columns).value
     assert 'Sem dado' in table['Resultado'].tolist()
+
+
+def test_planos_simulados_liberam_e_bloqueiam():
+    import sys
+    from pathlib import Path
+    from streamlit.testing.v1 import AppTest
+    sys.path.insert(0, str(Path(__file__).parent))
+    from nav import goto
+    app = AppTest.from_file(str(Path(__file__).parents[1] / 'app.py'), default_timeout=60).run()
+    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    assert app.session_state['plan'] == 'Institucional'
+    app.session_state['active_match'] = 'demo-call-1:project-demo-pendente'
+    goto(app, 'Matches')
+    assert any('Exigência' in d.value.columns for d in app.dataframe)  # Institucional: tudo liberado
+    app.session_state['plan'] = 'Gratuito'
+    app.run()
+    html = ' '.join(h.value for h in app.get('html'))
+    assert not app.exception and 'Disponível no plano Básico' in html and 'Disponível no plano Intermediário' in html
+    assert not any('Exigência' in d.value.columns for d in app.dataframe)
+    goto(app, 'Planos')
+    table = next(d for d in app.dataframe if 'Recurso' in d.value.columns).value
+    assert 'Em breve' in table['Premium'].tolist() and set(table.iloc[-1, 1:]) == {'A definir'}
