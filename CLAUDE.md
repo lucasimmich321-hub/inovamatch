@@ -22,6 +22,8 @@ Foco: MVP para demonstração, não sistema completo.
 - Nunca apresentar dado de teste como real. Se algo não funcionar ou não puder ser testado, diga.
 - Uma fase por vez; ao terminar, PARE e espere "segue". Ao parar, entregue: comando para ver a mudança, "o que você vai ver de diferente" em 3 a 5 linhas, e o que ainda não funciona.
 - Modo economia (limite de uso do usuário curto): sem screenshots e sem navegador headless, salvo pedido.
+- Teste de tela no navegador só quando for realmente necessário, e sempre por um subagente Sonnet, nunca pelo agente principal.
+- A API de IA (ai_*.py) é configurada pelo Kalil. Nada de chamada real a ela em desenvolvimento nem em testes: use mock ou cache. Chamada real só se o Kalil pedir.
 
 ## Como rodar
 - Python do projeto: o do .venv (o comando "streamlit" global não existe).
@@ -99,3 +101,13 @@ Foco: MVP para demonstração, não sistema completo.
   Fluxo real Editais → Criar match → Criar match → Matches: lido no código e reproduzido antes pelo protocolo websocket;
   cria e lista o match. Exige startup com projeto (sem projeto aparece "Novo projeto →").
   Não verificado em navegador: o clique em "Gerenciar" e a rolagem.
+- 14/11/2026: ajustes na tabela de requisitos do match e na demonstração. 225 testes.
+  - Coluna "Obrigatório": o campo varia de verdade (a extração marca "preferencial"/seleção como não obrigatório),
+    então a caixa desabilitada virou texto "Obrigatório" / "Opcional".
+  - Coluna "Exigência": requirement_text em app.py escreve unidade e contexto ("mínimo de 24 meses", "até R$ 150.000,00",
+    "mínimo de 10% de contrapartida…", "até 09/12/2026", "estado: SC"). matching.evaluate passou a levar o 'op' na linha.
+  - Demonstração: o "Não atende" de Saúde e Impacto × Horizonte Digital não era o prazo (os editais abertos já têm prazo
+    futuro, +25 e +5 dias a partir de hoje), e sim sede PR e área Tecnologia. Horizonte Digital (fictícia) agora é SC e Saúde:
+    atende Saúde e Impacto e segue "Não atende" no Inovação Catarinense, por área. Só o match Aprovado usa o edital encerrado
+    (por isso ele aparece "Com impedimentos" por prazo). Teste de contagem de elegíveis atualizado (1→2, 0→1).
+  - Não verificado em navegador: a aparência das colunas novas.

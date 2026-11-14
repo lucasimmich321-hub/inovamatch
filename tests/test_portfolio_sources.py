@@ -50,10 +50,10 @@ def test_scale_recalculation_after_edit_and_application_tracking(sqlite, tmp_pat
     register_application(store, call, startup, project)
     stats = overview(store)
     assert stats['startups'] == 3 and stats['projects'] == 3 and stats['preparing'] == 1
-    assert stats['eligible'] == 1
+    assert stats['eligible'] == 2  # Araucária × Inovação Catarinense e Horizonte × Saúde e Impacto
     store.save('startups', {**startup, 'state': 'PR'})
     assert recalculate(store, startup_id=startup['id']) == 2
-    assert overview(store)['eligible'] == 0
+    assert overview(store)['eligible'] == 1
     assert store.get('analyses', 'demo-call-1:project-demo-verde')['verdict'] == 'Com impedimentos'
 
 

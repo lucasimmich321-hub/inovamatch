@@ -170,6 +170,40 @@ def display(value):
     return str(value)
 
 
+def _number(value):
+    text = f'{value:,.2f}'.rstrip('0').rstrip('.') if isinstance(value, float) else f'{value:,}'
+    return text.replace(',', 'X').replace('.', ',').replace('X', '.')
+
+
+def requirement_text(row):
+    """Exigência com unidade e contexto ("mínimo de 24 meses", "até R$ 150.000,00", "até 15/09/2026"), nunca valor solto."""
+    expected, field, op = row.get('expected'), row.get('field'), row.get('op')
+    if row.get('id') == 'deadline':
+        return f"até {date.fromisoformat(expected).strftime('%d/%m/%Y')}" if expected else 'Prazo não informado'
+    if expected is None or expected == '' or expected == []:
+        return 'Não informado'
+    prefix = {'min': 'mínimo de ', 'max': 'até ', 'eq': '', 'neq': 'diferente de '}.get(op, '')
+    if isinstance(expected, (int, float)) and not isinstance(expected, bool):
+        if field in ('requested', 'budget', 'counterpart'):
+            return prefix + brl(expected)
+        if field in ('age_months', 'duration_months'):
+            return f'{prefix}{_number(expected)} meses'
+        if field == 'counterpart_pct':
+            return f'{prefix}{_number(expected)}% de contrapartida (sobre o orçamento total)'
+        if field == 'trl':
+            return f'{prefix}TRL {_number(expected)}'
+        return prefix + _number(expected)
+    if isinstance(expected, list):
+        items = ', '.join(str(x) for x in expected)
+        label = FIELDS.get(field, ('',))[0].lower()
+        lead = {'in': f'{label}: ' + ('um destes: ' if len(expected) > 1 else ''), 'contains_all': 'todos: ', 'subset': 'somente: ',
+                'not_in': 'fora de: ', 'disjoint': 'nenhum destes: ', 'contains': 'contém: '}.get(op, '')
+        return lead + items
+    if op == 'present':
+        return 'informar ' + FIELDS.get(field, (str(expected),))[0].lower()
+    return prefix + str(expected)
+
+
 def pick(label, records, key, name='name', preferred=None):
     if not records:
         return None
@@ -962,8 +996,8 @@ ESSENTIAL_COLUMNS = ['Requisito', 'Resultado', 'Obrigatório', 'Exigência', 'Da
 
 def result_table(result, key):
     rows = [{'Requisito': r['requirement'], 'Escopo': {'startup': 'Empresa', 'project': 'Projeto', 'call': 'Edital'}[r['scope']],
-             'Exigência': display(r['expected']), 'Dados declarados': display(r['actual']), 'Resultado': r['status'],
-             'Obrigatório': r['mandatory'], 'Justificativa': r['reason'], 'Fonte': r['source'],
+             'Exigência': requirement_text(r), 'Dados declarados': display(r['actual']), 'Resultado': r['status'],
+             'Obrigatório': 'Obrigatório' if r['mandatory'] else 'Opcional', 'Justificativa': r['reason'], 'Fonte': r['source'],
              'Página': r['page'], 'Evidência': r['evidence']} for r in result['rows']]
     for target, row in zip(rows, result['rows']):
         target['Dimensão'] = DIMENSIONS.get(row.get('dimension'), 'Elegibilidade obrigatória')

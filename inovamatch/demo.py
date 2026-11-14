@@ -14,7 +14,8 @@ def _demo_schedule(days, source):
 def load_demo(store):
     records = [
         ('demo-verde', 'Araucária Tech', 'SC', '2020-01-10', 'Tecnologia', 30_000),
-        ('demo-fora', 'Horizonte Digital', 'PR', '2020-03-01', 'Tecnologia', 30_000),
+        # Horizonte (Saúde, SC): atende o edital Saúde e Impacto e não atende o Inovação Catarinense (área temática).
+        ('demo-fora', 'Horizonte Digital', 'SC', '2020-03-01', 'Saúde', 30_000),
         ('demo-pendente', 'Semente Lab', None, None, None, None),
     ]
     for sid, name, state, opened, sector, counterpart in records:

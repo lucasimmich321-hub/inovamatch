@@ -71,6 +71,7 @@ def evaluate(criterion, startup, project, on=None):
               'reason': '', 'source': c.get('source', ''), 'page': c.get('page'), 'evidence': c.get('evidence', '')}
     result['dimension'] = c.get('dimension') or dimension_for(c.get('field'))
     result['field'] = c.get('field')
+    result['op'] = c.get('op')  # para a tela escrever a exigência com contexto ("mínimo de", "até")
     result['confidence'] = c.get('confidence')
     result['review_status'] = c.get('review_status') or ('Validado' if c.get('confirmed') else 'Pendente')
     result['provisional_status'] = PENDING

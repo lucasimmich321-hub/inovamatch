@@ -46,3 +46,21 @@ def test_demo_carrega_3_matches_so_na_demonstracao():
     statuses = {a['status'] for a in app.session_state['demo_data']['applications'].values() if a['id'].startswith('demo-call-')}
     assert statuses == {apps.SUGGESTED, apps.PREPARING, apps.APPROVED}
     assert not app.session_state['real_data'].get('applications')  # nada no modo real
+
+
+def test_exigencia_com_contexto_e_primeiro_match_da_demo_atende():
+    import app as ui
+    from inovamatch.demo import demo_matches, load_demo
+    from inovamatch.matching import match
+    store = Store({})
+    load_demo(store)
+    demo_matches(store)
+    call, startup, project = store.get('calls', 'demo-call-2'), store.get('startups', 'demo-fora'), store.get('projects', 'project-demo-fora')
+    result = match(call, startup, project)
+    assert result['verdict'] == 'Potencialmente elegível'
+    texts = {r['requirement']: ui.requirement_text(r) for r in result['rows']}
+    assert texts['CNPJ há pelo menos 24 meses'] == 'mínimo de 24 meses'
+    assert texts['Teto por projeto'] == 'até R$ 150.000,00'
+    assert texts['Contrapartida financeira'].startswith('mínimo de 10% de contrapartida')
+    assert texts['Prazo de inscrição'].startswith('até ')
+    assert ui.requirement_text({'expected': 5, 'field': 'trl', 'op': 'min', 'mandatory': False}) == 'mínimo de TRL 5'
