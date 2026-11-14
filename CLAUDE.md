@@ -326,3 +326,23 @@ Foco: MVP para demonstração, não sistema completo.
   - Dashboard: "Pendências críticas" (faixa vermelha, até 10) virou expansor recolhido "Pendências · N", no máximo 3 itens, texto âmbar;
     vermelho só para "Impedido". Faixa da demonstração em uma linha.
   - Não verificado em navegador: clique no logo, aba ativa depois de "Iniciar match" (open_tab → aba Matches), cores das pendências.
+- 14/11/2026: curadoria de critérios (itens 10 e 11 do Kalil). 248 testes (`pytest -q tests`; o `pytest -q` sem pasta passou a coletar o .venv, ver abaixo).
+  - data/curadoria/fapesc-65-2025.json, -66-2025.json e -54-2024.json (versionados; .gitignore: `data/*` + `!data/curadoria/`): critérios extraídos
+    do PDF com trecho, página e fonte. NENHUM validado (65/2025: 133 critérios, 15 comparáveis; 66/2025: 145 e 20; 54/2024: 104 e 16).
+    Chave = dedup_key (URL canônica; os ids dos registros mudam a cada coleta). Gerados por scripts/gerar_curadoria.py (não sobrescreve; --force recomeça).
+  - inovamatch/curadoria.py: apply (arquivo manda; no início da sessão em cada base, depois de "Atualizar editais" e ao carregar a demonstração),
+    sync (grava de volta ao salvar/validar/excluir critério na tela do edital), counts. Nada mudou na fórmula do match.
+  - Tela do edital › critérios: "Critérios validados X de N", "Faltam validar" e "Comparáveis pelo match X de Y".
+  - 65/2025 corrigido no arquivo (continua pendente de conferência): porte vira "MEI não admitido" (not_in) e "Plano de Trabalho" sai dos documentos
+    da startup (continua como documento do projeto, item 5.4.5). Campo "correcoes" do arquivo registra isso.
+  - Extrator (requirements_engine.NEGATION): "não será admitida", "não podem participar", "vedado", "proibido" não invertem mais natureza jurídica e porte.
+  - Verificado por AppTest com SQLite temporário: marcar "Conferi esta exigência na fonte" grava no arquivo e uma sessão nova mostra "1 de 133".
+    SQLite persiste startups, projetos, editais e validações. NÃO persiste: a base Demonstração (sempre em sessão), a base escolhida e o perfil.
+    Modo sessão (padrão) perde tudo ao recarregar, menos a curadoria, que volta do arquivo.
+  - scripts/preparar_pitch.sh: seed das 7 empresas fictícias (scripts/seed_match_test.py), curadoria e app em SQLite (data/teste_match.db, fora do git), porta 8502.
+  - Prazos/situação dos 3 editais abertos: NENHUM confirmado. Os três estão sem prazo de inscrição na fonte (65/2025 e 66/2025: cronograma só
+    com lançamento 25/11/2025 e consulta de elegibilidade até 30/06/2027, que não é prazo de inscrição; 54/2024: "fluxo contínuo" no título).
+    A Publicação rápida exige data e o "Conferi na fonte", que é atestado seu; não marquei por você.
+  - Limitações conhecidas: ai_ui.py (não alterado) valida em lote sem passar pelo arquivo (só "Conferi esta exigência" grava de volta);
+    a extração ainda pode classificar exigência de projeto como "documento da startup" (caso do Plano de Trabalho); `pytest -q` na raiz coleta o .venv
+    (greenlet/playwright, vindos do trabalho e2e fora desta tarefa), use `pytest -q tests`.

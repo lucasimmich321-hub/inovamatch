@@ -1,0 +1,3238 @@
+{
+ "estado": "pendente de conferência humana",
+ "edital": "Edital de Chamada Pública FAPESC nº 54/2024 Programa Inova Talentos — FAPESC e IEL/SC em Fluxo Contínuo",
+ "dedup_key": "https://fapesc.sc.gov.br/edital-de-chamada-publica-fapesc-no-54-2024-programa-inova-talentos-fapesc-e-iel-sc-em-fluxo-continuo",
+ "url": "https://fapesc.sc.gov.br/edital-de-chamada-publica-fapesc-no-54-2024-programa-inova-talentos-fapesc-e-iel-sc-em-fluxo-continuo/",
+ "fonte": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+ "correcoes": [],
+ "criteria": [
+  {
+   "id": "auto-84c55bc51ac650184b44",
+   "label": "As instituições intervenientes, ou seja, empresas, ICTs e entidades do Terceiro Setor, que tiverem i",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "3.1. As instituições intervenientes, ou seja, empresas, ICTs e entidades do Terceiro Setor, que tiverem interesse no Programa deverão se registrar junto ao IEL/SC, via site http://ielsc.org.br/inovatalentos ou e-mail inovatalentos@ielsc.org.br, o qual deverá realizar a assessoria técnica e o acompanhamento da submissão da proposta pelo(a) proponente, junto à interveniente, na plataforma FAPESC, disponível no site http://plataforma.fapesc.sc.gov.br/fapesc.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "3.1. As instituições intervenientes, ou seja, empresas, ICTs e entidades do Terceiro Setor, que tiverem interesse no Programa deverão se registrar junto ao IEL/SC, via site http://ielsc.org.br/inovatalentos ou e-mail inovatalentos@ielsc.org.br, o qual deverá realizar a assessoria técnica e o acompanhamento da submissão da proposta pelo(a) proponente, junto à interveniente, na plataforma FAPESC, disponível no site http://plataforma.fapesc.sc.gov.br/fapesc.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "3.1. As instituições intervenientes, ou seja, empresas, ICTs e entidades do Terceiro Setor, que tiverem interesse no Programa deverão se registrar junto ao IEL/SC, via site http://ielsc.org.br/inovatalentos ou e-mail inovatalentos@ielsc.org.br, o qual deverá realizar a assessoria técnica e o acompanhamento da submissão da proposta pelo(a) proponente, junto à interveniente, na plataforma FAPESC, disponível no site http://plataforma.fapesc.sc.gov.br/fapesc."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-a70f659461ebae3dfff7",
+   "label": "O IEL/SC, antecipada e trimestralmente, repassará os recursos para pagamento dos bolsistas à FAPESC,",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "3.3. O IEL/SC, antecipada e trimestralmente, repassará os recursos para pagamento dos bolsistas à FAPESC, correspondentes ao número e à modalidade de bolsas. Se o projeto possuir saldo remanescente, este valor será descontado e discriminado na declaração de repasse ou devolvido a interveniente, conforme item 12.2 deste Edital.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "3.3. O IEL/SC, antecipada e trimestralmente, repassará os recursos para pagamento dos bolsistas à FAPESC, correspondentes ao número e à modalidade de bolsas. Se o projeto possuir saldo remanescente, este valor será descontado e discriminado na declaração de repasse ou devolvido a interveniente, conforme item 12.2 deste Edital.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "3.3. O IEL/SC, antecipada e trimestralmente, repassará os recursos para pagamento dos bolsistas à FAPESC, correspondentes ao número e à modalidade de bolsas. Se o projeto possuir saldo remanescente, este valor será descontado e discriminado na declaração de repasse ou devolvido a interveniente, conforme item 12.2 deste Edital."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-f29836cdec7ea489750b",
+   "label": "Possuir cadastro atualizado na plataforma FAPESC, disponível no link http://plataforma.fapesc.sc.gov",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.1.1. Possuir cadastro atualizado na plataforma FAPESC, disponível no link http://plataforma.fapesc.sc.gov.br/fapesc.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.1.1. Possuir cadastro atualizado na plataforma FAPESC, disponível no link http://plataforma.fapesc.sc.gov.br/fapesc.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.1.1. Possuir cadastro atualizado na plataforma FAPESC, disponível no link http://plataforma.fapesc.sc.gov.br/fapesc."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-60cca1f6e5350f67c1ca",
+   "label": "Ser obrigatoriamente o(a) coordenador(a) do projeto e o(a) principal responsável pela sua submissão ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.1.2. Ser obrigatoriamente o(a) coordenador(a) do projeto e o(a) principal responsável pela sua submissão na plataforma FAPESC, por seu desenvolvimento até a aprovação do relatório técnico final de atividades do(a)s bolsistas pela FAPESC.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.1.2. Ser obrigatoriamente o(a) coordenador(a) do projeto e o(a) principal responsável pela sua submissão na plataforma FAPESC, por seu desenvolvimento até a aprovação do relatório técnico final de atividades do(a)s bolsistas pela FAPESC.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.1.2. Ser obrigatoriamente o(a) coordenador(a) do projeto e o(a) principal responsável pela sua submissão na plataforma FAPESC, por seu desenvolvimento até a aprovação do relatório técnico final de atividades do(a)s bolsistas pela FAPESC."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-aaf1774c532302a2ef76",
+   "label": "Estado de residência do coordenador",
+   "field": "coordinator_state",
+   "scope": "project",
+   "op": "in",
+   "expected": [
+    "SC"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.1.3. Residir no Estado de Santa Catarina.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.1.3. Residir no Estado de Santa Catarina."
+    }
+   ],
+   "confidence": "Alta",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-392260ef336fbfad80ee",
+   "label": "Titulação mínima do coordenador",
+   "field": "coordinator_degree",
+   "scope": "project",
+   "op": "in",
+   "expected": [
+    "Graduação",
+    "Especialização",
+    "Mestrado",
+    "Doutorado"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.1.4. Possuir titulação mínima de graduação.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.1.4. Possuir titulação mínima de graduação."
+    }
+   ],
+   "confidence": "Alta",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-fa6dc9522f279097d611",
+   "label": "Possuir vínculo empregatício ou funcional com a instituição interveniente. Entende-se como vínculo e",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.1.5. Possuir vínculo empregatício ou funcional com a instituição interveniente. Entende-se como vínculo empregatício ou funcional a relação de trabalho que se estabelece entre uma pessoa que presta serviço remunerado a outra pessoa, seja ela física ou jurídica, que a remunera. Essa relação é de subordinação, não eventual e onerosa, em que o empregado depende do salário pago pelo empregador. Uma pessoa jurídica não pode contribuir em uma relação de emprego com outra.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.1.5. Possuir vínculo empregatício ou funcional com a instituição interveniente. Entende-se como vínculo empregatício ou funcional a relação de trabalho que se estabelece entre uma pessoa que presta serviço remunerado a outra pessoa, seja ela física ou jurídica, que a remunera. Essa relação é de subordinação, não eventual e onerosa, em que o empregado depende do salário pago pelo empregador. Uma pessoa jurídica não pode contribuir em uma relação de emprego com outra.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.1.5. Possuir vínculo empregatício ou funcional com a instituição interveniente. Entende-se como vínculo empregatício ou funcional a relação de trabalho que se estabelece entre uma pessoa que presta serviço remunerado a outra pessoa, seja ela física ou jurídica, que a remunera. Essa relação é de subordinação, não eventual e onerosa, em que o empregado depende do salário pago pelo empregador. Uma pessoa jurídica não pode contribuir em uma relação de emprego com outra."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-f73bde3475a36f5e46f9",
+   "label": "Possuir carga horária compatível com o período de atividades do(a)s bolsistas.",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.1.6. Possuir carga horária compatível com o período de atividades do(a)s bolsistas.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.1.6. Possuir carga horária compatível com o período de atividades do(a)s bolsistas.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.1.6. Possuir carga horária compatível com o período de atividades do(a)s bolsistas."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-0907d8e625a269e26f33",
+   "label": "Estar regular quanto à prestação de contas com a Administração Pública Estadual. Na existência de pe",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.1.7. Estar regular quanto à prestação de contas com a Administração Pública Estadual. Na existência de pendências de qualquer natureza, esta deverá ser dirimida no prazo máximo de 60 (sessenta) dias, sob pena de desclassificação da proposta.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.1.7. Estar regular quanto à prestação de contas com a Administração Pública Estadual. Na existência de pendências de qualquer natureza, esta deverá ser dirimida no prazo máximo de 60 (sessenta) dias, sob pena de desclassificação da proposta.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.1.7. Estar regular quanto à prestação de contas com a Administração Pública Estadual. Na existência de pendências de qualquer natureza, esta deverá ser dirimida no prazo máximo de 60 (sessenta) dias, sob pena de desclassificação da proposta."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-bf8fc405db27b0d4646f",
+   "label": "Ser obrigatoriamente a instituição de vínculo do(a) proponente do projeto.",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.2.1. Ser obrigatoriamente a instituição de vínculo do(a) proponente do projeto.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.2.1. Ser obrigatoriamente a instituição de vínculo do(a) proponente do projeto.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.2.1. Ser obrigatoriamente a instituição de vínculo do(a) proponente do projeto."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-ff496e0e59d0cb2bc918",
+   "label": "Estado",
+   "field": "state",
+   "scope": "startup",
+   "op": "in",
+   "expected": [
+    "SC"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.2.2. Ser empresa, Instituição de Ciência, Tecnologia e Inovação (ICT) ou entidade do Terceiro Setor, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) em Santa Catarina.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.2.2. Ser empresa, Instituição de Ciência, Tecnologia e Inovação (ICT) ou entidade do Terceiro Setor, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) em Santa Catarina."
+    }
+   ],
+   "confidence": "Alta",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-e0855c71cfe7a82add2a",
+   "label": "CNPJ da instituição informado",
+   "field": "cnpj",
+   "scope": "startup",
+   "op": "present",
+   "expected": "Informado",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.2.2. Ser empresa, Instituição de Ciência, Tecnologia e Inovação (ICT) ou entidade do Terceiro Setor, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) em Santa Catarina.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.2.2. Ser empresa, Instituição de Ciência, Tecnologia e Inovação (ICT) ou entidade do Terceiro Setor, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) em Santa Catarina."
+    }
+   ],
+   "confidence": "Alta",
+   "confidence_note": "Verifica presença, não regularidade cadastral.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-40494050af371cc45d43",
+   "label": "Tipos de instituições admitidas",
+   "field": "organization_type",
+   "scope": "startup",
+   "op": "in",
+   "expected": [
+    "Empresa",
+    "ICT",
+    "Terceiro Setor"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 2,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.2.2. Ser empresa, Instituição de Ciência, Tecnologia e Inovação (ICT) ou entidade do Terceiro Setor, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) em Santa Catarina.",
+   "evidences": [
+    {
+     "page": 2,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.2.2. Ser empresa, Instituição de Ciência, Tecnologia e Inovação (ICT) ou entidade do Terceiro Setor, sediada e com Cadastro Nacional de Pessoa Jurídica (CNPJ) em Santa Catarina."
+    }
+   ],
+   "confidence": "Alta",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-454708e98f6fe06ac5b2",
+   "label": "Estar cadastrada na plataforma FAPESC, disponível por meio do link http://plataforma.fapesc.sc.gov.b",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.2.3. Estar cadastrada na plataforma FAPESC, disponível por meio do link http://plataforma.fapesc.sc.gov.br/fapesc. Ressalta-se que o(a) representante legal da interveniente deverá estar previamente cadastrado(a) na plataforma para possibilitar o registro completo.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.2.3. Estar cadastrada na plataforma FAPESC, disponível por meio do link http://plataforma.fapesc.sc.gov.br/fapesc. Ressalta-se que o(a) representante legal da interveniente deverá estar previamente cadastrado(a) na plataforma para possibilitar o registro completo.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.2.3. Estar cadastrada na plataforma FAPESC, disponível por meio do link http://plataforma.fapesc.sc.gov.br/fapesc. Ressalta-se que o(a) representante legal da interveniente deverá estar previamente cadastrado(a) na plataforma para possibilitar o registro completo."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-50791263ef1dfe9002b6",
+   "label": "Estar regular quanto à prestação de contas com a Administração Pública Estadual. Na existência de pe",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.2.4. Estar regular quanto à prestação de contas com a Administração Pública Estadual. Na existência de pendências de qualquer natureza, esta deverá ser dirimida no prazo máximo de 60 (sessenta) dias, sob pena de desclassificação da proposta.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.2.4. Estar regular quanto à prestação de contas com a Administração Pública Estadual. Na existência de pendências de qualquer natureza, esta deverá ser dirimida no prazo máximo de 60 (sessenta) dias, sob pena de desclassificação da proposta.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.2.4. Estar regular quanto à prestação de contas com a Administração Pública Estadual. Na existência de pendências de qualquer natureza, esta deverá ser dirimida no prazo máximo de 60 (sessenta) dias, sob pena de desclassificação da proposta."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-b673b3faee6d096a4c2d",
+   "label": "Documentos: Plano de Trabalho",
+   "field": "documents",
+   "scope": "startup",
+   "op": "contains_all",
+   "expected": [
+    "Plano de Trabalho"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "readiness",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.2.5. Repassar ao IEL/SC, trimestralmente, os recursos para pagamento das bolsas na quantidade e nas modalidades previstas no plano de trabalho.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.2.5. Repassar ao IEL/SC, trimestralmente, os recursos para pagamento das bolsas na quantidade e nas modalidades previstas no plano de trabalho."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-645c77ce86df1e8dca8a",
+   "label": "Ser submetida por um(a) único(a) proponente.",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.3.1. Ser submetida por um(a) único(a) proponente.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.3.1. Ser submetida por um(a) único(a) proponente.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.3.1. Ser submetida por um(a) único(a) proponente."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-66cdcc3cb978f3d96670",
+   "label": "Estado de execução do projeto",
+   "field": "execution_state",
+   "scope": "project",
+   "op": "in",
+   "expected": [
+    "SC"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.3.2. Ser desenvolvida no Estado de Santa Catarina.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.3.2. Ser desenvolvida no Estado de Santa Catarina."
+    }
+   ],
+   "confidence": "Alta",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-43a876d7121f59826f36",
+   "label": "Documentos: Plano de Trabalho",
+   "field": "project_documents",
+   "scope": "project",
+   "op": "contains_all",
+   "expected": [
+    "Plano de Trabalho"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "readiness",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.3.3. Ser submetida na plataforma FAPESC, disponível por meio do link http://plataforma.fapesc.sc.gov.br/fapesc, até o dia 10 (dez) de cada mês, conforme tabela presente no cronograma, item 5, sendo obrigatório o preenchimento de todos os campos, os quais darão origem ao Plano de Trabalho.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.3.3. Ser submetida na plataforma FAPESC, disponível por meio do link http://plataforma.fapesc.sc.gov.br/fapesc, até o dia 10 (dez) de cada mês, conforme tabela presente no cronograma, item 5, sendo obrigatório o preenchimento de todos os campos, os quais darão origem ao Plano de Trabalho."
+    },
+    {
+     "page": 8,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "1.2. Adequação do Plano de Trabalho Detalhamento e clareza na formulação do projeto; pertinência e aderência aos objetivos da Chamada; correlação e coerência entre o objetivo geral, objetivos específicos, metodologias e resultados esperados."
+    },
+    {
+     "page": 8,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "10.2. O prazo limite para a assinatura do Plano de Trabalho do Projeto ou a vinculação"
+    },
+    {
+     "page": 9,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.2.10. Plano de Trabalho do Bolsista (Anexo II), devidamente rubricado, assinado e digitalizado."
+    },
+    {
+     "page": 10,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.8. O(a) bolsista deverá dedicar-se exclusivamente às atividades objeto do Plano de Trabalho na modalidade presencial, com carga horária de 30 (trinta) horas/semanais, seguindo horário definido pela Interveniente."
+    },
+    {
+     "page": 10,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.9. A prorrogação da bolsa somente será realizada mediante justificativa apresentada pela interveniente, novo Plano de Trabalho do Bolsista e novo Termo de Compromisso de Bolsa FAPESC, devidamente assinados, após análise realizada pela FAPESC."
+    },
+    {
+     "page": 11,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "13.1.2. Todos os resultados previstos no Plano de Trabalho do projeto que não forem alcançados deverão ser justificados no Relatório Técnico de Atividades."
+    },
+    {
+     "page": 11,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "13.1.6. Sempre que necessário, a FAPESC poderá solicitar ao(à) proponente a apresentação de relatórios do Plano de Trabalho, bem como realizar acompanhamento da estruturação e implantação do Plano de Trabalho descrito. O(a) proponente também deverá, obrigatoriamente, prestar as informações sobre a atuação do(a)s bolsistas e resultados alcançados nas ações, por meio de relatórios e indicadores de desempenho."
+    },
+    {
+     "page": 23,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "2.1 Resumo do Plano de Trabalho 3. DAS ETAPAS E METAS Insira nas tabelas as etapas, metas e entregas associadas, assegurando que o cronograma seja compatível com a duração da bolsa e do projeto. Inclua as informações de forma direta e concisa. Título da Etapa 1: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 2: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 3: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 4: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos 3 O presente documento está disponível apenas para leitura e não deve ser apresentado para fins de vinculação de bolsista, sendo válido apenas quando enviado pela FAPESC."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-a64b5bcb4e6dd8f6a0b3",
+   "label": "Cronograma recorrente de submissão",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.3.3. Ser submetida na plataforma FAPESC, disponível por meio do link http://plataforma.fapesc.sc.gov.br/fapesc, até o dia 10 (dez) de cada mês, conforme tabela presente no cronograma, item 5, sendo obrigatório o preenchimento de todos os campos, os quais darão origem ao Plano de Trabalho.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.3.3. Ser submetida na plataforma FAPESC, disponível por meio do link http://plataforma.fapesc.sc.gov.br/fapesc, até o dia 10 (dez) de cada mês, conforme tabela presente no cronograma, item 5, sendo obrigatório o preenchimento de todos os campos, os quais darão origem ao Plano de Trabalho.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.3.3. Ser submetida na plataforma FAPESC, disponível por meio do link http://plataforma.fapesc.sc.gov.br/fapesc, até o dia 10 (dez) de cada mês, conforme tabela presente no cronograma, item 5, sendo obrigatório o preenchimento de todos os campos, os quais darão origem ao Plano de Trabalho."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-9295fc0ba076c6525073",
+   "label": "Prazo inicial de execução do projeto",
+   "field": "duration_months",
+   "scope": "project",
+   "op": "max",
+   "expected": 12,
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.3.6. Prever projetos com prazo de execução de até 12 (doze) meses, prorrogáveis por mais 12 (doze) meses, condicionado à avaliação substanciada da FAPESC, conforme o novo Plano de Trabalho e com a situação das metas estabelecidas.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.3.6. Prever projetos com prazo de execução de até 12 (doze) meses, prorrogáveis por mais 12 (doze) meses, condicionado à avaliação substanciada da FAPESC, conforme o novo Plano de Trabalho e com a situação das metas estabelecidas."
+    }
+   ],
+   "confidence": "Alta",
+   "confidence_note": "Prorrogações e condições excepcionais exigem revisão.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-fdbc50e0b0b98966c52e",
+   "label": "Documentos com alternativas ou condições",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.3.6. Prever projetos com prazo de execução de até 12 (doze) meses, prorrogáveis por mais 12 (doze) meses, condicionado à avaliação substanciada da FAPESC, conforme o novo Plano de Trabalho e com a situação das metas estabelecidas.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.3.6. Prever projetos com prazo de execução de até 12 (doze) meses, prorrogáveis por mais 12 (doze) meses, condicionado à avaliação substanciada da FAPESC, conforme o novo Plano de Trabalho e com a situação das metas estabelecidas.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.3.6. Prever projetos com prazo de execução de até 12 (doze) meses, prorrogáveis por mais 12 (doze) meses, condicionado à avaliação substanciada da FAPESC, conforme o novo Plano de Trabalho e com a situação das metas estabelecidas."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-9748ed3f5867e6886854",
+   "label": "Não serão aceitas propostas enviadas por qualquer outro meio.",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.3.8. Não serão aceitas propostas enviadas por qualquer outro meio.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.3.8. Não serão aceitas propostas enviadas por qualquer outro meio.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.3.8. Não serão aceitas propostas enviadas por qualquer outro meio."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-462c47e38339f9ff08f9",
+   "label": "Documentos: Currículo Lattes",
+   "field": "project_documents",
+   "scope": "project",
+   "op": "contains_all",
+   "expected": [
+    "Currículo Lattes"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "readiness",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.4.3. Ter currículo atualizado na Plataforma Lattes do CNPq.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.4.3. Ter currículo atualizado na Plataforma Lattes do CNPq."
+    },
+    {
+     "page": 9,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.2.6. Currículo atualizado na Plataforma Lattes do CNPq."
+    },
+    {
+     "page": 11,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "● material intelectual indexado divulgado no Currículo Lattes."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-d6c27342e457ca6208de",
+   "label": "Documentos: Currículo Lattes",
+   "field": "project_documents",
+   "scope": "project",
+   "op": "contains_all",
+   "expected": [
+    "Currículo Lattes"
+   ],
+   "mandatory": false,
+   "classification": "Classificatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "readiness",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.4.4. Possuir, preferencialmente, Registro ORCID vinculado e/ou Índice-H (H-index) comprovado por meio do Currículo Lattes e perfil Scopus ativo ou perfil Web of Science ativo.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.4.4. Possuir, preferencialmente, Registro ORCID vinculado e/ou Índice-H (H-index) comprovado por meio do Currículo Lattes e perfil Scopus ativo ou perfil Web of Science ativo."
+    },
+    {
+     "page": 9,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.2.7. Preferencialmente, cópia do registro ORCID vinculado e/ou Índice-H (H-index) comprovado por meio do currículo Lattes e perfil Scopus ativo ou perfil Web of Science ativo."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-f1174ae3ae67e2176274",
+   "label": "Condições adicionais da cláusula",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "4.4.4. Possuir, preferencialmente, Registro ORCID vinculado e/ou Índice-H (H-index) comprovado por meio do Currículo Lattes e perfil Scopus ativo ou perfil Web of Science ativo.",
+   "mandatory": false,
+   "classification": "Classificatório",
+   "requirement_type": "Elegibilidade",
+   "dimension": "eligibility",
+   "page": 3,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "4.4.4. Possuir, preferencialmente, Registro ORCID vinculado e/ou Índice-H (H-index) comprovado por meio do Currículo Lattes e perfil Scopus ativo ou perfil Web of Science ativo.",
+   "evidences": [
+    {
+     "page": 3,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "4.4.4. Possuir, preferencialmente, Registro ORCID vinculado e/ou Índice-H (H-index) comprovado por meio do Currículo Lattes e perfil Scopus ativo ou perfil Web of Science ativo."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Uma parte da cláusula foi estruturada; condições complementares precisam de interpretação.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-a5917b5972a381faec1b",
+   "label": "Cronograma recorrente de submissão",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "ATIVIDADES DATAS Lançamento da Chamada Pública no site da FAPESC 25/09/2024 Submissão das propostas na plataforma FAPESC A partir de 25/09/2024, até o 10º dia de cada mês. Análise de admissibilidade das propostas de projetos Até o 5º dia útil após a data de submissão. Julgamento de mérito das propostas de projetos Até 25 dias da data de submissão. Divulgação dos projetos aprovados no site da FAPESC Até 30 dias da data de submissão. Assinatura do Plano de Trabalho do projeto ou vinculação do bolsista Até 90 dias da data de divulgação dos resultados no site da FAPESC.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Cronograma",
+   "dimension": "eligibility",
+   "page": 4,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "ATIVIDADES DATAS Lançamento da Chamada Pública no site da FAPESC 25/09/2024 Submissão das propostas na plataforma FAPESC A partir de 25/09/2024, até o 10º dia de cada mês. Análise de admissibilidade das propostas de projetos Até o 5º dia útil após a data de submissão. Julgamento de mérito das propostas de projetos Até 25 dias da data de submissão. Divulgação dos projetos aprovados no site da FAPESC Até 30 dias da data de submissão. Assinatura do Plano de Trabalho do projeto ou vinculação do bolsista Até 90 dias da data de divulgação dos resultados no site da FAPESC.",
+   "evidences": [
+    {
+     "page": 4,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "ATIVIDADES DATAS Lançamento da Chamada Pública no site da FAPESC 25/09/2024 Submissão das propostas na plataforma FAPESC A partir de 25/09/2024, até o 10º dia de cada mês. Análise de admissibilidade das propostas de projetos Até o 5º dia útil após a data de submissão. Julgamento de mérito das propostas de projetos Até 25 dias da data de submissão. Divulgação dos projetos aprovados no site da FAPESC Até 30 dias da data de submissão. Assinatura do Plano de Trabalho do projeto ou vinculação do bolsista Até 90 dias da data de divulgação dos resultados no site da FAPESC."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-101c485f3b3b9fdba111",
+   "label": "Os recursos deverão ser depositados em conta específica desta Chamada Pública, que será movimentada ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "6.3. Os recursos deverão ser depositados em conta específica desta Chamada Pública, que será movimentada exclusivamente pela FAPESC.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Recursos financeiros",
+   "dimension": "eligibility",
+   "page": 4,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "6.3. Os recursos deverão ser depositados em conta específica desta Chamada Pública, que será movimentada exclusivamente pela FAPESC.",
+   "evidences": [
+    {
+     "page": 4,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "6.3. Os recursos deverão ser depositados em conta específica desta Chamada Pública, que será movimentada exclusivamente pela FAPESC."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-e4cd7b18b865297a0a07",
+   "label": "Documentos com alternativas ou condições",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "6.8. A solicitação de troca de modalidade, em razão da conclusão de mestrado ou de doutorado, deverá ser comprovada com a apresentação do diploma (frente e verso) e poderá ser concedida nos casos em que:",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Recursos financeiros",
+   "dimension": "eligibility",
+   "page": 5,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "6.8. A solicitação de troca de modalidade, em razão da conclusão de mestrado ou de doutorado, deverá ser comprovada com a apresentação do diploma (frente e verso) e poderá ser concedida nos casos em que:",
+   "evidences": [
+    {
+     "page": 5,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "6.8. A solicitação de troca de modalidade, em razão da conclusão de mestrado ou de doutorado, deverá ser comprovada com a apresentação do diploma (frente e verso) e poderá ser concedida nos casos em que:"
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-202a3d1877aa3e015cc0",
+   "label": "Documentos com alternativas ou condições",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "6.9. Quando concedida a troca de modalidade de bolsa, deverão ser enviados novo Termo de Compromisso de Bolsa e novo Plano de Trabalho, devidamente ajustados.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Recursos financeiros",
+   "dimension": "eligibility",
+   "page": 5,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "6.9. Quando concedida a troca de modalidade de bolsa, deverão ser enviados novo Termo de Compromisso de Bolsa e novo Plano de Trabalho, devidamente ajustados.",
+   "evidences": [
+    {
+     "page": 5,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "6.9. Quando concedida a troca de modalidade de bolsa, deverão ser enviados novo Termo de Compromisso de Bolsa e novo Plano de Trabalho, devidamente ajustados."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-e7d52466b2077c586f94",
+   "label": "O projeto submetido pelo(a) proponente deverá prever o pagamento de bolsas, visando possibilitar o f",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "7.1. O projeto submetido pelo(a) proponente deverá prever o pagamento de bolsas, visando possibilitar o fortalecimento da equipe responsável pela execução de projetos em PDI, por meio da incorporação de bolsista qualificado para execução de atividade específica em PDI.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Recursos financeiros",
+   "dimension": "eligibility",
+   "page": 5,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "7.1. O projeto submetido pelo(a) proponente deverá prever o pagamento de bolsas, visando possibilitar o fortalecimento da equipe responsável pela execução de projetos em PDI, por meio da incorporação de bolsista qualificado para execução de atividade específica em PDI.",
+   "evidences": [
+    {
+     "page": 5,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "7.1. O projeto submetido pelo(a) proponente deverá prever o pagamento de bolsas, visando possibilitar o fortalecimento da equipe responsável pela execução de projetos em PDI, por meio da incorporação de bolsista qualificado para execução de atividade específica em PDI."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-50fc36d088046743b2b8",
+   "label": "É vedada a utilização de bolsistas para o desempenho de atividades que não estejam estritamente vinc",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "7.7. É vedada a utilização de bolsistas para o desempenho de atividades que não estejam estritamente vinculadas à execução dos projetos de pesquisa e aos Planos de Trabalho aprovados.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Recursos financeiros",
+   "dimension": "eligibility",
+   "page": 6,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "7.7. É vedada a utilização de bolsistas para o desempenho de atividades que não estejam estritamente vinculadas à execução dos projetos de pesquisa e aos Planos de Trabalho aprovados.",
+   "evidences": [
+    {
+     "page": 6,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "7.7. É vedada a utilização de bolsistas para o desempenho de atividades que não estejam estritamente vinculadas à execução dos projetos de pesquisa e aos Planos de Trabalho aprovados."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-38f7dbb7b1cbbff9150d",
+   "label": "Documentos com alternativas ou condições",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "7.9. O(a) bolsista deverá exercer suas atividades no local definido em seu Plano de Trabalho. Em casos excepcionais, caso seja necessário seu deslocamento, caberá à interveniente providenciar os recursos necessários, bem como responsabilizar-se civilmente.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Recursos financeiros",
+   "dimension": "eligibility",
+   "page": 6,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "7.9. O(a) bolsista deverá exercer suas atividades no local definido em seu Plano de Trabalho. Em casos excepcionais, caso seja necessário seu deslocamento, caberá à interveniente providenciar os recursos necessários, bem como responsabilizar-se civilmente.",
+   "evidences": [
+    {
+     "page": 6,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "7.9. O(a) bolsista deverá exercer suas atividades no local definido em seu Plano de Trabalho. Em casos excepcionais, caso seja necessário seu deslocamento, caberá à interveniente providenciar os recursos necessários, bem como responsabilizar-se civilmente."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-7d7fe184e53f9ad0fedb",
+   "label": "Documentos: Termo de disponibilidade de carga horária",
+   "field": "project_documents",
+   "scope": "project",
+   "op": "contains_all",
+   "expected": [
+    "Termo de disponibilidade de carga horária"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Recursos financeiros",
+   "dimension": "readiness",
+   "page": 6,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "7.12. O(a)s bolsistas deverão preencher o Termo de Disponibilidade de Carga Horária, conforme Anexo III.",
+   "evidences": [
+    {
+     "page": 6,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "7.12. O(a)s bolsistas deverão preencher o Termo de Disponibilidade de Carga Horária, conforme Anexo III."
+    },
+    {
+     "page": 9,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.2.11. Termo de Disponibilidade de Carga Horária (Anexo III), devidamente rubricado, assinado e digitalizado."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-d5162205002885159296",
+   "label": "No momento da submissão na plataforma FAPESC, o proponente deverá apresentar, obrigatoriamente, os s",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "8.1. No momento da submissão na plataforma FAPESC, o proponente deverá apresentar, obrigatoriamente, os seguintes documentos digitalizados, frente e verso, quando necessário, e em formato PDF:",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 6,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "8.1. No momento da submissão na plataforma FAPESC, o proponente deverá apresentar, obrigatoriamente, os seguintes documentos digitalizados, frente e verso, quando necessário, e em formato PDF:",
+   "evidences": [
+    {
+     "page": 6,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "8.1. No momento da submissão na plataforma FAPESC, o proponente deverá apresentar, obrigatoriamente, os seguintes documentos digitalizados, frente e verso, quando necessário, e em formato PDF:"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-d9c52e698d0af13ec5fb",
+   "label": "Documentos: Comprovante de vínculo",
+   "field": "project_documents",
+   "scope": "project",
+   "op": "contains_all",
+   "expected": [
+    "Comprovante de vínculo"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 6,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "8.1.1. Comprovante de vínculo funcional/empregatício do(a) proponente do projeto, assinado pelo(a) representante legal ou representante do departamento de recursos humanos da interveniente.",
+   "evidences": [
+    {
+     "page": 6,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "8.1.1. Comprovante de vínculo funcional/empregatício do(a) proponente do projeto, assinado pelo(a) representante legal ou representante do departamento de recursos humanos da interveniente."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-b0279a05c05b7f4375dd",
+   "label": "Declaração do(a) proponente comprometendo-se a apresentar os documentos solicitados na contratação, ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "8.1.2. Declaração do(a) proponente comprometendo-se a apresentar os documentos solicitados na contratação, de coordenar o projeto, de possuir carga horária que seja compatível com o período de atividades do(a) bolsista e atestando a veracidade das informações dos documentos apresentados, caso o projeto seja selecionado.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 6,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "8.1.2. Declaração do(a) proponente comprometendo-se a apresentar os documentos solicitados na contratação, de coordenar o projeto, de possuir carga horária que seja compatível com o período de atividades do(a) bolsista e atestando a veracidade das informações dos documentos apresentados, caso o projeto seja selecionado.",
+   "evidences": [
+    {
+     "page": 6,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "8.1.2. Declaração do(a) proponente comprometendo-se a apresentar os documentos solicitados na contratação, de coordenar o projeto, de possuir carga horária que seja compatível com o período de atividades do(a) bolsista e atestando a veracidade das informações dos documentos apresentados, caso o projeto seja selecionado."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-38e667a856e3733f17fb",
+   "label": "Documentos: Carta de compromisso",
+   "field": "project_documents",
+   "scope": "project",
+   "op": "contains_all",
+   "expected": [
+    "Carta de compromisso"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 6,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "8.1.3. Carta de compromisso da interveniente oferecendo garantia de apoio às atividades do projeto de PDI e de disponibilização dos meios e recursos necessários para a execução da proposta aprovada, assinada pelo(a) representante legal ou outorgado.",
+   "evidences": [
+    {
+     "page": 6,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "8.1.3. Carta de compromisso da interveniente oferecendo garantia de apoio às atividades do projeto de PDI e de disponibilização dos meios e recursos necessários para a execução da proposta aprovada, assinada pelo(a) representante legal ou outorgado."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-59ad57763948a6233410",
+   "label": "Documentos: Diploma",
+   "field": "project_documents",
+   "scope": "project",
+   "op": "contains_all",
+   "expected": [
+    "Diploma"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 6,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "8.1.4. Cópia do diploma (frente e verso) de nível superior do(a) proponente do projeto de PD&I. O diploma de nível superior de graduação, mestrado e/ou doutorado do(a) proponente adquirido fora do país deverá ser validado por uma instituição de ensino de nível superior do Brasil, que possua curso na área correlata, reconhecido pelo MEC.",
+   "evidences": [
+    {
+     "page": 6,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "8.1.4. Cópia do diploma (frente e verso) de nível superior do(a) proponente do projeto de PD&I. O diploma de nível superior de graduação, mestrado e/ou doutorado do(a) proponente adquirido fora do país deverá ser validado por uma instituição de ensino de nível superior do Brasil, que possua curso na área correlata, reconhecido pelo MEC."
+    },
+    {
+     "page": 9,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.2.4. Cópia do diploma (frente e verso) de nível superior da mais alta titulação do(a) bolsista. O diploma de nível superior de graduação, mestrado e/ou doutorado adquirido fora do país deverá ser validado por uma instituição de ensino de nível superior do Brasil, que possua curso na área correlata, reconhecido pelo MEC."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-b763ef8608d84cd2d674",
+   "label": "Condições adicionais da cláusula",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "8.1.4. Cópia do diploma (frente e verso) de nível superior do(a) proponente do projeto de PD&I. O diploma de nível superior de graduação, mestrado e/ou doutorado do(a) proponente adquirido fora do país deverá ser validado por uma instituição de ensino de nível superior do Brasil, que possua curso na área correlata, reconhecido pelo MEC.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 6,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "8.1.4. Cópia do diploma (frente e verso) de nível superior do(a) proponente do projeto de PD&I. O diploma de nível superior de graduação, mestrado e/ou doutorado do(a) proponente adquirido fora do país deverá ser validado por uma instituição de ensino de nível superior do Brasil, que possua curso na área correlata, reconhecido pelo MEC.",
+   "evidences": [
+    {
+     "page": 6,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "8.1.4. Cópia do diploma (frente e verso) de nível superior do(a) proponente do projeto de PD&I. O diploma de nível superior de graduação, mestrado e/ou doutorado do(a) proponente adquirido fora do país deverá ser validado por uma instituição de ensino de nível superior do Brasil, que possua curso na área correlata, reconhecido pelo MEC."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Uma parte da cláusula foi estruturada; condições complementares precisam de interpretação.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-f96c5d8d2c6f6c103ce6",
+   "label": "Documentos: Documento de identificação",
+   "field": "project_documents",
+   "scope": "project",
+   "op": "contains_all",
+   "expected": [
+    "Documento de identificação"
+   ],
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 6,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "8.1.5. Documento oficial de identificação, que contenha CPF e possua validade de até 10 (dez) anos da data de emissão:",
+   "evidences": [
+    {
+     "page": 6,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "8.1.5. Documento oficial de identificação, que contenha CPF e possua validade de até 10 (dez) anos da data de emissão:"
+    },
+    {
+     "page": 9,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.2.1. Documento oficial de identificação, que contenha CPF e possua validade de até 10 (dez) anos da data de emissão:"
+    },
+    {
+     "page": 16,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "01.682.869/0001- 26, com sede no Parque Tecnológico ALFA, Rodovia José Carlos Daux, 600 (SC 401), Km 01, Módulo 12A, Prédio CELTA/FAPESC, 5º andar, Bairro João Paulo, Florianópolis, Santa Catarina, CEP 88030-902, doravante denominada FAPESC. 2 DO BOLSISTA Nome: Estado Civil: Nacionalidade: CPF: Raça/Etnia: Documento de Identificação2: Órgão Expedidor: Data de Expedição: UF: Profissão: Data de Nascimento: Sexo: Nome do Pai: Nome da Mãe: Endereço Residencial: Bairro: CEP: Cidade: País: Telefone: Celular: E-mail: Tempo de residência no Estado de SC: 1 O presente documento está disponível apenas para leitura e não deve ser apresentado para fins de vinculação de bolsista, sendo válido apenas quando enviado pela FAPESC. 2Documento oficial de identificação, que contenha CPF e possua validade de até 10 (dez) anos da data de emissão:"
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Disponibilidade declarada; validade, titular e etapa de envio devem ser conferidos.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-e979db09252d5905a837",
+   "label": "Documentos com alternativas ou condições",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "8.1.6. Cópia do comprovante de residência atualizado com data de emissão de, no máximo, 90 (noventa) dias anteriores (contas de água, energia, gás, TV, internet, telefone fixo, celular, contrato ou recibo de aluguel) no Estado de Santa Catarina. Em caso de comprovante de residência que não esteja em nome do(a) proponente, deverá ser apresentada declaração do titular informando que o(a) proponente reside no endereço descrito no comprovante de residência. Não serão aceitos, para fins de comprovação de residência, certidões de",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 6,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "8.1.6. Cópia do comprovante de residência atualizado com data de emissão de, no máximo, 90 (noventa) dias anteriores (contas de água, energia, gás, TV, internet, telefone fixo, celular, contrato ou recibo de aluguel) no Estado de Santa Catarina. Em caso de comprovante de residência que não esteja em nome do(a) proponente, deverá ser apresentada declaração do titular informando que o(a) proponente reside no endereço descrito no comprovante de residência. Não serão aceitos, para fins de comprovação de residência, certidões de",
+   "evidences": [
+    {
+     "page": 6,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "8.1.6. Cópia do comprovante de residência atualizado com data de emissão de, no máximo, 90 (noventa) dias anteriores (contas de água, energia, gás, TV, internet, telefone fixo, celular, contrato ou recibo de aluguel) no Estado de Santa Catarina. Em caso de comprovante de residência que não esteja em nome do(a) proponente, deverá ser apresentada declaração do titular informando que o(a) proponente reside no endereço descrito no comprovante de residência. Não serão aceitos, para fins de comprovação de residência, certidões de"
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-3302f28ea94b25c7fae4",
+   "label": "No momento da submissão, a proposta deverá informar o número de bolsas e as modalidades que serão vi",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "8.2. No momento da submissão, a proposta deverá informar o número de bolsas e as modalidades que serão vinculadas em cada projeto de PDI, considerando os seguintes aspectos:",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 7,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "8.2. No momento da submissão, a proposta deverá informar o número de bolsas e as modalidades que serão vinculadas em cada projeto de PDI, considerando os seguintes aspectos:",
+   "evidences": [
+    {
+     "page": 7,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "8.2. No momento da submissão, a proposta deverá informar o número de bolsas e as modalidades que serão vinculadas em cada projeto de PDI, considerando os seguintes aspectos:"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-c7f2c3628715fcceb731",
+   "label": "Em caso de alteração substancial do projeto, a proposta deverá ser novamente submetida na plataforma",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "8.3. Em caso de alteração substancial do projeto, a proposta deverá ser novamente submetida na plataforma FAPESC, devendo cumprir todas as etapas previstas no item 5, cronograma. 9. DA ANÁLISE DE ADMISSIBILIDADE E JULGAMENTO DAS PROPOSTAS DE PROJETOS Todas as propostas serão analisadas conforme a sequência de etapas descritas abaixo:",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 7,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "8.3. Em caso de alteração substancial do projeto, a proposta deverá ser novamente submetida na plataforma FAPESC, devendo cumprir todas as etapas previstas no item 5, cronograma. 9. DA ANÁLISE DE ADMISSIBILIDADE E JULGAMENTO DAS PROPOSTAS DE PROJETOS Todas as propostas serão analisadas conforme a sequência de etapas descritas abaixo:",
+   "evidences": [
+    {
+     "page": 7,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "8.3. Em caso de alteração substancial do projeto, a proposta deverá ser novamente submetida na plataforma FAPESC, devendo cumprir todas as etapas previstas no item 5, cronograma. 9. DA ANÁLISE DE ADMISSIBILIDADE E JULGAMENTO DAS PROPOSTAS DE PROJETOS Todas as propostas serão analisadas conforme a sequência de etapas descritas abaixo:"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-46ab59494d00b672b07d",
+   "label": "Não será permitido integrar o CPAA, o(a)s proponentes desta Chamada Pública ou membros das equipes d",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "9.2.2. Não será permitido integrar o CPAA, o(a)s proponentes desta Chamada Pública ou membros das equipes dos projetos. É vedado a qualquer membro do Comitê julgar propostas de projetos em que:",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 7,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "9.2.2. Não será permitido integrar o CPAA, o(a)s proponentes desta Chamada Pública ou membros das equipes dos projetos. É vedado a qualquer membro do Comitê julgar propostas de projetos em que:",
+   "evidences": [
+    {
+     "page": 7,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "9.2.2. Não será permitido integrar o CPAA, o(a)s proponentes desta Chamada Pública ou membros das equipes dos projetos. É vedado a qualquer membro do Comitê julgar propostas de projetos em que:"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-ceea104a7da1a3ccf0ac",
+   "label": "O CPAA poderá realizar, a qualquer tempo, diligências para verificar a autenticidade das informações",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "9.2.8. O CPAA poderá realizar, a qualquer tempo, diligências para verificar a autenticidade das informações e documentos apresentados pelo(a)s proponentes de propostas de projetos ou para esclarecer dúvidas e omissões. Em qualquer situação, devem ser observados os princípios da isonomia, da impessoalidade e da transparência. 10. DA PUBLICAÇÃO DOS RESULTADOS",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 8,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "9.2.8. O CPAA poderá realizar, a qualquer tempo, diligências para verificar a autenticidade das informações e documentos apresentados pelo(a)s proponentes de propostas de projetos ou para esclarecer dúvidas e omissões. Em qualquer situação, devem ser observados os princípios da isonomia, da impessoalidade e da transparência. 10. DA PUBLICAÇÃO DOS RESULTADOS",
+   "evidences": [
+    {
+     "page": 8,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "9.2.8. O CPAA poderá realizar, a qualquer tempo, diligências para verificar a autenticidade das informações e documentos apresentados pelo(a)s proponentes de propostas de projetos ou para esclarecer dúvidas e omissões. Em qualquer situação, devem ser observados os princípios da isonomia, da impessoalidade e da transparência. 10. DA PUBLICAÇÃO DOS RESULTADOS"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-086355f437da21f7c2a4",
+   "label": "É vedada a contratação de bolsista que possua vínculo funcional, societário, contratual ou que tenha",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.1.1. É vedada a contratação de bolsista que possua vínculo funcional, societário, contratual ou que tenha qualquer tipo de conflito de interesse com o(a) proponente do projeto ou com a interveniente.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 9,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.1.1. É vedada a contratação de bolsista que possua vínculo funcional, societário, contratual ou que tenha qualquer tipo de conflito de interesse com o(a) proponente do projeto ou com a interveniente.",
+   "evidences": [
+    {
+     "page": 9,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.1.1. É vedada a contratação de bolsista que possua vínculo funcional, societário, contratual ou que tenha qualquer tipo de conflito de interesse com o(a) proponente do projeto ou com a interveniente."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-9b4cd031e2b38db2ce19",
+   "label": "Documentos com alternativas ou condições",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.2.2. Comprovante de residência atualizado no Estado de Santa Catarina, dos últimos 90 (noventa) dias. Em caso de comprovante de residência que não esteja em nome do(a) bolsista deverá ser apresentada declaração de residência assinada pelo titular do documento, informando que o(a) bolsista reside no endereço informado.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 9,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.2.2. Comprovante de residência atualizado no Estado de Santa Catarina, dos últimos 90 (noventa) dias. Em caso de comprovante de residência que não esteja em nome do(a) bolsista deverá ser apresentada declaração de residência assinada pelo titular do documento, informando que o(a) bolsista reside no endereço informado.",
+   "evidences": [
+    {
+     "page": 9,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.2.2. Comprovante de residência atualizado no Estado de Santa Catarina, dos últimos 90 (noventa) dias. Em caso de comprovante de residência que não esteja em nome do(a) bolsista deverá ser apresentada declaração de residência assinada pelo titular do documento, informando que o(a) bolsista reside no endereço informado."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-30149407fcb3856931d6",
+   "label": "Cópia do diploma (frente e verso) de nível superior da mais alta titulação do(a) bolsista. O diploma",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.2.4. Cópia do diploma (frente e verso) de nível superior da mais alta titulação do(a) bolsista. O diploma de nível superior de graduação, mestrado e/ou doutorado adquirido fora do país deverá ser validado por uma instituição de ensino de nível superior do Brasil, que possua curso na área correlata, reconhecido pelo MEC.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 9,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.2.4. Cópia do diploma (frente e verso) de nível superior da mais alta titulação do(a) bolsista. O diploma de nível superior de graduação, mestrado e/ou doutorado adquirido fora do país deverá ser validado por uma instituição de ensino de nível superior do Brasil, que possua curso na área correlata, reconhecido pelo MEC.",
+   "evidences": [
+    {
+     "page": 9,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.2.4. Cópia do diploma (frente e verso) de nível superior da mais alta titulação do(a) bolsista. O diploma de nível superior de graduação, mestrado e/ou doutorado adquirido fora do país deverá ser validado por uma instituição de ensino de nível superior do Brasil, que possua curso na área correlata, reconhecido pelo MEC."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-a08b5b124411b1e9c072",
+   "label": "Os documentos para vinculação do(a) bolsista devem ser enviados à FAPESC conforme procedimento descr",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.3. Os documentos para vinculação do(a) bolsista devem ser enviados à FAPESC conforme procedimento descrito na Tabela 3: Etapas da contratação de bolsistas: Tabela 3: Etapas da contratação de bolsistas ETAPA DATA 1. Indicação, via IEL/SC, de bolsista Em até 90 (noventa) dias da divulgação do resultado no site da FAPESC 2. Envio da documentação completa à FAPESC para vinculação de bolsista Até o dia 15 de cada mês 3. Início das atividades do(a) bolsista No 1º dia útil do mês subsequente do envio",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Submissão",
+   "dimension": "readiness",
+   "page": 9,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.3. Os documentos para vinculação do(a) bolsista devem ser enviados à FAPESC conforme procedimento descrito na Tabela 3: Etapas da contratação de bolsistas: Tabela 3: Etapas da contratação de bolsistas ETAPA DATA 1. Indicação, via IEL/SC, de bolsista Em até 90 (noventa) dias da divulgação do resultado no site da FAPESC 2. Envio da documentação completa à FAPESC para vinculação de bolsista Até o dia 15 de cada mês 3. Início das atividades do(a) bolsista No 1º dia útil do mês subsequente do envio",
+   "evidences": [
+    {
+     "page": 9,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.3. Os documentos para vinculação do(a) bolsista devem ser enviados à FAPESC conforme procedimento descrito na Tabela 3: Etapas da contratação de bolsistas: Tabela 3: Etapas da contratação de bolsistas ETAPA DATA 1. Indicação, via IEL/SC, de bolsista Em até 90 (noventa) dias da divulgação do resultado no site da FAPESC 2. Envio da documentação completa à FAPESC para vinculação de bolsista Até o dia 15 de cada mês 3. Início das atividades do(a) bolsista No 1º dia útil do mês subsequente do envio"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-f3e0de01e3b5de847b87",
+   "label": "A etapa 2, envio da documentação completa à FAPESC para vinculação de bolsista, deverá ocorrer no pr",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.3.1. A etapa 2, envio da documentação completa à FAPESC para vinculação de bolsista, deverá ocorrer no prazo de 90 (noventa) dias previstos na etapa 1, seleção de bolsista realizada pelo IEL/SC, a contar da divulgação do resultado no site da FAPESC.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 9,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.3.1. A etapa 2, envio da documentação completa à FAPESC para vinculação de bolsista, deverá ocorrer no prazo de 90 (noventa) dias previstos na etapa 1, seleção de bolsista realizada pelo IEL/SC, a contar da divulgação do resultado no site da FAPESC.",
+   "evidences": [
+    {
+     "page": 9,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.3.1. A etapa 2, envio da documentação completa à FAPESC para vinculação de bolsista, deverá ocorrer no prazo de 90 (noventa) dias previstos na etapa 1, seleção de bolsista realizada pelo IEL/SC, a contar da divulgação do resultado no site da FAPESC."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-d39057536a6a3cf3c539",
+   "label": "A etapa 3, início das atividades do(a) bolsista, deverá ocorrer no prazo de 90 (noventa) dias previs",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.3.3. A etapa 3, início das atividades do(a) bolsista, deverá ocorrer no prazo de 90 (noventa) dias previstos na Tabela 3: Etapas da contratação de bolsistas.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 10,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.3.3. A etapa 3, início das atividades do(a) bolsista, deverá ocorrer no prazo de 90 (noventa) dias previstos na Tabela 3: Etapas da contratação de bolsistas.",
+   "evidences": [
+    {
+     "page": 10,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.3.3. A etapa 3, início das atividades do(a) bolsista, deverá ocorrer no prazo de 90 (noventa) dias previstos na Tabela 3: Etapas da contratação de bolsistas."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-c4cb5be41ccbf56d104f",
+   "label": "Os documentos para a implementação das bolsas devem ser enviados até o dia 15 (quinze) de cada mês, ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.4. Os documentos para a implementação das bolsas devem ser enviados até o dia 15 (quinze) de cada mês, observando o modelo enviado pela FAPESC. Todas as alterações, ajustes e/ou correções solicitadas pela FAPESC deverão ser finalizadas pelo(a) proponente até o dia 20 (vinte) de cada mês.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 10,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.4. Os documentos para a implementação das bolsas devem ser enviados até o dia 15 (quinze) de cada mês, observando o modelo enviado pela FAPESC. Todas as alterações, ajustes e/ou correções solicitadas pela FAPESC deverão ser finalizadas pelo(a) proponente até o dia 20 (vinte) de cada mês.",
+   "evidences": [
+    {
+     "page": 10,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.4. Os documentos para a implementação das bolsas devem ser enviados até o dia 15 (quinze) de cada mês, observando o modelo enviado pela FAPESC. Todas as alterações, ajustes e/ou correções solicitadas pela FAPESC deverão ser finalizadas pelo(a) proponente até o dia 20 (vinte) de cada mês."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-ef514390bb0dfade8212",
+   "label": "Os documentos de vinculação do(a) bolsista deverão ser assinados pelo(a) proponente, pela intervenie",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.5. Os documentos de vinculação do(a) bolsista deverão ser assinados pelo(a) proponente, pela interveniente, pelo IEL/SC e pelo(a) bolsista, e encaminhados à FAPESC para assinatura final do Presidente antes do início da vigência da bolsa. Caso o envio ocorra fora do prazo a vinculação não será realizada.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 10,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.5. Os documentos de vinculação do(a) bolsista deverão ser assinados pelo(a) proponente, pela interveniente, pelo IEL/SC e pelo(a) bolsista, e encaminhados à FAPESC para assinatura final do Presidente antes do início da vigência da bolsa. Caso o envio ocorra fora do prazo a vinculação não será realizada.",
+   "evidences": [
+    {
+     "page": 10,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.5. Os documentos de vinculação do(a) bolsista deverão ser assinados pelo(a) proponente, pela interveniente, pelo IEL/SC e pelo(a) bolsista, e encaminhados à FAPESC para assinatura final do Presidente antes do início da vigência da bolsa. Caso o envio ocorra fora do prazo a vinculação não será realizada."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-a4a42b0a48ed69bbf0c6",
+   "label": "O(a) bolsista deverá dedicar-se exclusivamente às atividades objeto do Plano de Trabalho na modalida",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.8. O(a) bolsista deverá dedicar-se exclusivamente às atividades objeto do Plano de Trabalho na modalidade presencial, com carga horária de 30 (trinta) horas/semanais, seguindo horário definido pela Interveniente.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 10,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.8. O(a) bolsista deverá dedicar-se exclusivamente às atividades objeto do Plano de Trabalho na modalidade presencial, com carga horária de 30 (trinta) horas/semanais, seguindo horário definido pela Interveniente.",
+   "evidences": [
+    {
+     "page": 10,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.8. O(a) bolsista deverá dedicar-se exclusivamente às atividades objeto do Plano de Trabalho na modalidade presencial, com carga horária de 30 (trinta) horas/semanais, seguindo horário definido pela Interveniente."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-6ed01c39644bb40367b4",
+   "label": "A solicitação de cancelamento da bolsa deverá conter as seguintes informações:",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.11. A solicitação de cancelamento da bolsa deverá conter as seguintes informações:",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 10,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.11. A solicitação de cancelamento da bolsa deverá conter as seguintes informações:",
+   "evidences": [
+    {
+     "page": 10,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.11. A solicitação de cancelamento da bolsa deverá conter as seguintes informações:"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-1c7475cdbbf7f6fc3b55",
+   "label": "A solicitação de cancelamento da bolsa deve ser enviada à FAPESC até o dia 10 (dez) do mês de desvin",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.12. A solicitação de cancelamento da bolsa deve ser enviada à FAPESC até o dia 10 (dez) do mês de desvinculação, para registro, cálculo e pagamento proporcional da bolsa, quando necessário. Após esse prazo não será possível realizar o pagamento proporcional",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 10,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.12. A solicitação de cancelamento da bolsa deve ser enviada à FAPESC até o dia 10 (dez) do mês de desvinculação, para registro, cálculo e pagamento proporcional da bolsa, quando necessário. Após esse prazo não será possível realizar o pagamento proporcional",
+   "evidences": [
+    {
+     "page": 10,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.12. A solicitação de cancelamento da bolsa deve ser enviada à FAPESC até o dia 10 (dez) do mês de desvinculação, para registro, cálculo e pagamento proporcional da bolsa, quando necessário. Após esse prazo não será possível realizar o pagamento proporcional"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-737c127ae22f107da098",
+   "label": "A substituição do(a) bolsista será realizada mediante solicitação do(a) proponente ou interveniente,",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.14. A substituição do(a) bolsista será realizada mediante solicitação do(a) proponente ou interveniente, enviada à FAPESC via IEL/SC, devendo conter as seguintes informações:",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 10,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.14. A substituição do(a) bolsista será realizada mediante solicitação do(a) proponente ou interveniente, enviada à FAPESC via IEL/SC, devendo conter as seguintes informações:",
+   "evidences": [
+    {
+     "page": 10,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.14. A substituição do(a) bolsista será realizada mediante solicitação do(a) proponente ou interveniente, enviada à FAPESC via IEL/SC, devendo conter as seguintes informações:"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-c2733eeedb722c33268b",
+   "label": "Encerrada a vigência dos projetos e após o aceite do relatório técnico final, a interveniente, por m",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "12.2. Encerrada a vigência dos projetos e após o aceite do relatório técnico final, a interveniente, por meio do IEL/SC, deverá solicitar à FAPESC a devolução do saldo financeiro remanescente não utilizado no pagamento das bolsas, quando houver, mediante requerimento assinado pela interveniente.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 11,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "12.2. Encerrada a vigência dos projetos e após o aceite do relatório técnico final, a interveniente, por meio do IEL/SC, deverá solicitar à FAPESC a devolução do saldo financeiro remanescente não utilizado no pagamento das bolsas, quando houver, mediante requerimento assinado pela interveniente.",
+   "evidences": [
+    {
+     "page": 11,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "12.2. Encerrada a vigência dos projetos e após o aceite do relatório técnico final, a interveniente, por meio do IEL/SC, deverá solicitar à FAPESC a devolução do saldo financeiro remanescente não utilizado no pagamento das bolsas, quando houver, mediante requerimento assinado pela interveniente."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-51c05ef980c6dda14e1d",
+   "label": "Todos os resultados previstos no Plano de Trabalho do projeto que não forem alcançados deverão ser j",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "13.1.2. Todos os resultados previstos no Plano de Trabalho do projeto que não forem alcançados deverão ser justificados no Relatório Técnico de Atividades.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 11,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "13.1.2. Todos os resultados previstos no Plano de Trabalho do projeto que não forem alcançados deverão ser justificados no Relatório Técnico de Atividades.",
+   "evidences": [
+    {
+     "page": 11,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "13.1.2. Todos os resultados previstos no Plano de Trabalho do projeto que não forem alcançados deverão ser justificados no Relatório Técnico de Atividades."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-493f704e25de0f395a1c",
+   "label": "Os relatórios técnicos deverão ser encaminhados à FAPESC em até 10 (dez) dias, contados do último di",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "13.1.3. Os relatórios técnicos deverão ser encaminhados à FAPESC em até 10 (dez) dias, contados do último dia do período descrito no documento.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 11,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "13.1.3. Os relatórios técnicos deverão ser encaminhados à FAPESC em até 10 (dez) dias, contados do último dia do período descrito no documento.",
+   "evidences": [
+    {
+     "page": 11,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "13.1.3. Os relatórios técnicos deverão ser encaminhados à FAPESC em até 10 (dez) dias, contados do último dia do período descrito no documento."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-12c65e0d121710f6e5ea",
+   "label": "No caso de desvinculação do bolsista, durante a vigência do projeto, o Relatório Técnico Final será ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "13.1.4. No caso de desvinculação do bolsista, durante a vigência do projeto, o Relatório Técnico Final será referente a todo o período vigência da bolsa ou referente ao período posterior ao envio do último relatório técnico parcial, devendo ser encaminhado à FAPESC em até 10 (dez) dias, contados do último dia de atividade do(a) bolsista.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 11,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "13.1.4. No caso de desvinculação do bolsista, durante a vigência do projeto, o Relatório Técnico Final será referente a todo o período vigência da bolsa ou referente ao período posterior ao envio do último relatório técnico parcial, devendo ser encaminhado à FAPESC em até 10 (dez) dias, contados do último dia de atividade do(a) bolsista.",
+   "evidences": [
+    {
+     "page": 11,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "13.1.4. No caso de desvinculação do bolsista, durante a vigência do projeto, o Relatório Técnico Final será referente a todo o período vigência da bolsa ou referente ao período posterior ao envio do último relatório técnico parcial, devendo ser encaminhado à FAPESC em até 10 (dez) dias, contados do último dia de atividade do(a) bolsista."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-5a27a51b397cdaa16cdb",
+   "label": "Sempre que necessário, a FAPESC poderá solicitar ao(à) proponente a apresentação de relatórios do Pl",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "13.1.6. Sempre que necessário, a FAPESC poderá solicitar ao(à) proponente a apresentação de relatórios do Plano de Trabalho, bem como realizar acompanhamento da estruturação e implantação do Plano de Trabalho descrito. O(a) proponente também deverá, obrigatoriamente, prestar as informações sobre a atuação do(a)s bolsistas e resultados alcançados nas ações, por meio de relatórios e indicadores de desempenho.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 11,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "13.1.6. Sempre que necessário, a FAPESC poderá solicitar ao(à) proponente a apresentação de relatórios do Plano de Trabalho, bem como realizar acompanhamento da estruturação e implantação do Plano de Trabalho descrito. O(a) proponente também deverá, obrigatoriamente, prestar as informações sobre a atuação do(a)s bolsistas e resultados alcançados nas ações, por meio de relatórios e indicadores de desempenho.",
+   "evidences": [
+    {
+     "page": 11,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "13.1.6. Sempre que necessário, a FAPESC poderá solicitar ao(à) proponente a apresentação de relatórios do Plano de Trabalho, bem como realizar acompanhamento da estruturação e implantação do Plano de Trabalho descrito. O(a) proponente também deverá, obrigatoriamente, prestar as informações sobre a atuação do(a)s bolsistas e resultados alcançados nas ações, por meio de relatórios e indicadores de desempenho."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-1ab5d489539d3ee6cd4a",
+   "label": "O IEL/SC deverá disponibilizar bolsistas para atuar, junto à FAPESC, na coordenação do Programa Inov",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "13.2.1. O IEL/SC deverá disponibilizar bolsistas para atuar, junto à FAPESC, na coordenação do Programa Inova Talentos e operacionalização das bolsas concedidas nos projetos submetidos, conforme modalidade e critérios deste Edital, sem ônus à FAPESC.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 12,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "13.2.1. O IEL/SC deverá disponibilizar bolsistas para atuar, junto à FAPESC, na coordenação do Programa Inova Talentos e operacionalização das bolsas concedidas nos projetos submetidos, conforme modalidade e critérios deste Edital, sem ônus à FAPESC.",
+   "evidences": [
+    {
+     "page": 12,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "13.2.1. O IEL/SC deverá disponibilizar bolsistas para atuar, junto à FAPESC, na coordenação do Programa Inova Talentos e operacionalização das bolsas concedidas nos projetos submetidos, conforme modalidade e critérios deste Edital, sem ônus à FAPESC."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-d0423a83ee0a9cd928a8",
+   "label": "A quantidade de bolsistas deverá ser proporcional ao número de bolsas ativas nas intervenientes, con",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "13.2.2. A quantidade de bolsistas deverá ser proporcional ao número de bolsas ativas nas intervenientes, considerando todas as Chamadas Públicas vinculadas ao Programa Inova Talentos, conforme Tabela 4: Relação de bolsas ativas x bolsistas na operacionalização: Tabela 4: Relação de bolsas ativas x bolsista para operacionalização Bolsas ativas no Programa N.º de bolsistas 10 a 70 71 a 200 201 a 400 401 a 600 14. DA PROPRIEDADE INTELECTUAL",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 12,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "13.2.2. A quantidade de bolsistas deverá ser proporcional ao número de bolsas ativas nas intervenientes, considerando todas as Chamadas Públicas vinculadas ao Programa Inova Talentos, conforme Tabela 4: Relação de bolsas ativas x bolsistas na operacionalização: Tabela 4: Relação de bolsas ativas x bolsista para operacionalização Bolsas ativas no Programa N.º de bolsistas 10 a 70 71 a 200 201 a 400 401 a 600 14. DA PROPRIEDADE INTELECTUAL",
+   "evidences": [
+    {
+     "page": 12,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "13.2.2. A quantidade de bolsistas deverá ser proporcional ao número de bolsas ativas nas intervenientes, considerando todas as Chamadas Públicas vinculadas ao Programa Inova Talentos, conforme Tabela 4: Relação de bolsas ativas x bolsistas na operacionalização: Tabela 4: Relação de bolsas ativas x bolsista para operacionalização Bolsas ativas no Programa N.º de bolsistas 10 a 70 71 a 200 201 a 400 401 a 600 14. DA PROPRIEDADE INTELECTUAL"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-46ef486aab449ac01a5b",
+   "label": "Os direitos de propriedade intelectual (PI) sobre os resultados do projeto deverão seguir as normas ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "14.1. Os direitos de propriedade intelectual (PI) sobre os resultados do projeto deverão seguir as normas internas da instituição de vínculo empregatício do(a) proponente, bem como das normativas relativas a PI, nacionais e estaduais.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 12,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "14.1. Os direitos de propriedade intelectual (PI) sobre os resultados do projeto deverão seguir as normas internas da instituição de vínculo empregatício do(a) proponente, bem como das normativas relativas a PI, nacionais e estaduais.",
+   "evidences": [
+    {
+     "page": 12,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "14.1. Os direitos de propriedade intelectual (PI) sobre os resultados do projeto deverão seguir as normas internas da instituição de vínculo empregatício do(a) proponente, bem como das normativas relativas a PI, nacionais e estaduais."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-d1b340af40133bbbab79",
+   "label": "A interveniente deverá informar à FAPESC, por meio do endereço eletrônico inovatalentos@fapesc.sc.go",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "14.3. A interveniente deverá informar à FAPESC, por meio do endereço eletrônico inovatalentos@fapesc.sc.gov.br, em até 30 (trinta) dias, sempre que for realizado pedido de proteção de ativo de propriedade intelectual oriundo do projeto (patente, desenho industrial, programa de computador), bem como, em igual prazo, quando de sua concessão pelo respectivo órgão concedente. 15. DA DIVULGAÇÃO CIENTÍFICA E COMUNICAÇÃO SOCIAL",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 12,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "14.3. A interveniente deverá informar à FAPESC, por meio do endereço eletrônico inovatalentos@fapesc.sc.gov.br, em até 30 (trinta) dias, sempre que for realizado pedido de proteção de ativo de propriedade intelectual oriundo do projeto (patente, desenho industrial, programa de computador), bem como, em igual prazo, quando de sua concessão pelo respectivo órgão concedente. 15. DA DIVULGAÇÃO CIENTÍFICA E COMUNICAÇÃO SOCIAL",
+   "evidences": [
+    {
+     "page": 12,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "14.3. A interveniente deverá informar à FAPESC, por meio do endereço eletrônico inovatalentos@fapesc.sc.gov.br, em até 30 (trinta) dias, sempre que for realizado pedido de proteção de ativo de propriedade intelectual oriundo do projeto (patente, desenho industrial, programa de computador), bem como, em igual prazo, quando de sua concessão pelo respectivo órgão concedente. 15. DA DIVULGAÇÃO CIENTÍFICA E COMUNICAÇÃO SOCIAL"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-a118006106c8d2323305",
+   "label": "Quaisquer divulgações e publicações, presentes ou futuras, sob qualquer forma de comunicação ou por ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "15.1. Quaisquer divulgações e publicações, presentes ou futuras, sob qualquer forma de comunicação ou por qualquer veículo, resultantes das atividades apoiadas pela presente Chamada Pública deverão, obrigatoriamente, mencionar em destaque o apoio da Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC).",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 12,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "15.1. Quaisquer divulgações e publicações, presentes ou futuras, sob qualquer forma de comunicação ou por qualquer veículo, resultantes das atividades apoiadas pela presente Chamada Pública deverão, obrigatoriamente, mencionar em destaque o apoio da Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC).",
+   "evidences": [
+    {
+     "page": 12,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "15.1. Quaisquer divulgações e publicações, presentes ou futuras, sob qualquer forma de comunicação ou por qualquer veículo, resultantes das atividades apoiadas pela presente Chamada Pública deverão, obrigatoriamente, mencionar em destaque o apoio da Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC)."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-ce00b837a71b792a55b3",
+   "label": "Todos os artigos científicos indexados em bases de dados e editoras internacionais (Scopus, Web of S",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "15.2. Todos os artigos científicos indexados em bases de dados e editoras internacionais (Scopus, Web of Science, Springer, Scielo, entre outros), proveniente das ações e resultados dos projetos selecionados nesta Chamada, deverão citar a FAPESC como entidade apoiadora no manuscrito da seguinte maneira: “Fundacao de Amparo a Pesquisa e Inovacao do Estado de Santa Catarina (FAPESC), Edital 54/2024”. Nas demais bases de dados, editoras lusófonas, publicações em canais de divulgação, citações em políticas públicas, apresentação em eventos/congressos e demais casos, citar a FAPESC como entidade apoiadora da seguinte maneira: “Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC), Edital 54/2024”.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 12,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "15.2. Todos os artigos científicos indexados em bases de dados e editoras internacionais (Scopus, Web of Science, Springer, Scielo, entre outros), proveniente das ações e resultados dos projetos selecionados nesta Chamada, deverão citar a FAPESC como entidade apoiadora no manuscrito da seguinte maneira: “Fundacao de Amparo a Pesquisa e Inovacao do Estado de Santa Catarina (FAPESC), Edital 54/2024”. Nas demais bases de dados, editoras lusófonas, publicações em canais de divulgação, citações em políticas públicas, apresentação em eventos/congressos e demais casos, citar a FAPESC como entidade apoiadora da seguinte maneira: “Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC), Edital 54/2024”.",
+   "evidences": [
+    {
+     "page": 12,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "15.2. Todos os artigos científicos indexados em bases de dados e editoras internacionais (Scopus, Web of Science, Springer, Scielo, entre outros), proveniente das ações e resultados dos projetos selecionados nesta Chamada, deverão citar a FAPESC como entidade apoiadora no manuscrito da seguinte maneira: “Fundacao de Amparo a Pesquisa e Inovacao do Estado de Santa Catarina (FAPESC), Edital 54/2024”. Nas demais bases de dados, editoras lusófonas, publicações em canais de divulgação, citações em políticas públicas, apresentação em eventos/congressos e demais casos, citar a FAPESC como entidade apoiadora da seguinte maneira: “Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC), Edital 54/2024”."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-a4ee15686f157639cd66",
+   "label": "O uso da marca da FAPESC deverá seguir as orientações contidas no Manual de Marca da FAPESC, disponí",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "15.3. O uso da marca da FAPESC deverá seguir as orientações contidas no Manual de Marca da FAPESC, disponível no site https://fapesc.sc.gov.br/identidade-visual/.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 12,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "15.3. O uso da marca da FAPESC deverá seguir as orientações contidas no Manual de Marca da FAPESC, disponível no site https://fapesc.sc.gov.br/identidade-visual/.",
+   "evidences": [
+    {
+     "page": 12,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "15.3. O uso da marca da FAPESC deverá seguir as orientações contidas no Manual de Marca da FAPESC, disponível no site https://fapesc.sc.gov.br/identidade-visual/."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-773ccf703fa90ec13b99",
+   "label": "Todo conteúdo proveniente das ações e resultados dos projetos selecionados nesta Chamada, publicado ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "15.4. Todo conteúdo proveniente das ações e resultados dos projetos selecionados nesta Chamada, publicado ou postado em vídeos, fotos e/ou atividades, nos sites e nas redes sociais, sempre que possível, deverá marcar a FAPESC utilizando os seguintes perfis: Instagram (@fapesc.sc), Facebook (fapesc.gov), X, antigo Twitter, (fapesc), LinkedIn (company/fapesc) e YouTube (fapescgovsc), assim como o Governo do Estado com o perfil @governosc.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 12,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "15.4. Todo conteúdo proveniente das ações e resultados dos projetos selecionados nesta Chamada, publicado ou postado em vídeos, fotos e/ou atividades, nos sites e nas redes sociais, sempre que possível, deverá marcar a FAPESC utilizando os seguintes perfis: Instagram (@fapesc.sc), Facebook (fapesc.gov), X, antigo Twitter, (fapesc), LinkedIn (company/fapesc) e YouTube (fapescgovsc), assim como o Governo do Estado com o perfil @governosc.",
+   "evidences": [
+    {
+     "page": 12,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "15.4. Todo conteúdo proveniente das ações e resultados dos projetos selecionados nesta Chamada, publicado ou postado em vídeos, fotos e/ou atividades, nos sites e nas redes sociais, sempre que possível, deverá marcar a FAPESC utilizando os seguintes perfis: Instagram (@fapesc.sc), Facebook (fapesc.gov), X, antigo Twitter, (fapesc), LinkedIn (company/fapesc) e YouTube (fapescgovsc), assim como o Governo do Estado com o perfil @governosc."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-ffb385583eaaba3fed6c",
+   "label": "divulgação digital, de sua produção intelectual/industrial indexada em bases de dados, resultante de",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "divulgação digital, de sua produção intelectual/industrial indexada em bases de dados, resultante de projeto que tenha recebido incentivo da FAPESC, deverá mencionar o apoio da FAPESC, bem como o Edital de Chamada Pública a que estiver vinculada.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 13,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "divulgação digital, de sua produção intelectual/industrial indexada em bases de dados, resultante de projeto que tenha recebido incentivo da FAPESC, deverá mencionar o apoio da FAPESC, bem como o Edital de Chamada Pública a que estiver vinculada.",
+   "evidences": [
+    {
+     "page": 13,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "divulgação digital, de sua produção intelectual/industrial indexada em bases de dados, resultante de projeto que tenha recebido incentivo da FAPESC, deverá mencionar o apoio da FAPESC, bem como o Edital de Chamada Pública a que estiver vinculada."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-698207d918288040782b",
+   "label": "Quando da apresentação de ações e resultados do projeto, deve-se enviar à Assessoria de Comunicação ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "15.6. Quando da apresentação de ações e resultados do projeto, deve-se enviar à Assessoria de Comunicação da FAPESC, por meio do endereço eletrônico comunicacao@fapesc.sc.gov.br, dados, imagens e informações que viabilizem o anúncio dessas ações. Os materiais de apoio para divulgação deverão conter texto em formato jornalístico, programação, indicação do meio de publicação, fotos em boa resolução e vídeo curto, de no máximo 1 (um) minuto, explicando o projeto e o resultado. Solicita-se, sempre que possível, antecedência mínima de 15 (quinze) dias. 16. DA IMPUGNAÇÃO, REVOGAÇÃO OU ANULAÇÃO DA CHAMADA PÚBLICA",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 13,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "15.6. Quando da apresentação de ações e resultados do projeto, deve-se enviar à Assessoria de Comunicação da FAPESC, por meio do endereço eletrônico comunicacao@fapesc.sc.gov.br, dados, imagens e informações que viabilizem o anúncio dessas ações. Os materiais de apoio para divulgação deverão conter texto em formato jornalístico, programação, indicação do meio de publicação, fotos em boa resolução e vídeo curto, de no máximo 1 (um) minuto, explicando o projeto e o resultado. Solicita-se, sempre que possível, antecedência mínima de 15 (quinze) dias. 16. DA IMPUGNAÇÃO, REVOGAÇÃO OU ANULAÇÃO DA CHAMADA PÚBLICA",
+   "evidences": [
+    {
+     "page": 13,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "15.6. Quando da apresentação de ações e resultados do projeto, deve-se enviar à Assessoria de Comunicação da FAPESC, por meio do endereço eletrônico comunicacao@fapesc.sc.gov.br, dados, imagens e informações que viabilizem o anúncio dessas ações. Os materiais de apoio para divulgação deverão conter texto em formato jornalístico, programação, indicação do meio de publicação, fotos em boa resolução e vídeo curto, de no máximo 1 (um) minuto, explicando o projeto e o resultado. Solicita-se, sempre que possível, antecedência mínima de 15 (quinze) dias. 16. DA IMPUGNAÇÃO, REVOGAÇÃO OU ANULAÇÃO DA CHAMADA PÚBLICA"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-0ef30435b4c4d152075a",
+   "label": "A impugnação deverá ser dirigida à Diretoria de Ciência, Tecnologia e Inovação da FAPESC, por corres",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "16.3. A impugnação deverá ser dirigida à Diretoria de Ciência, Tecnologia e Inovação da FAPESC, por correspondência eletrônica, para o e-mail inovatalentos@fapesc.sc.gov.br, com o assunto: “Impugnação Edital FAPESC 54/2024”.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 13,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "16.3. A impugnação deverá ser dirigida à Diretoria de Ciência, Tecnologia e Inovação da FAPESC, por correspondência eletrônica, para o e-mail inovatalentos@fapesc.sc.gov.br, com o assunto: “Impugnação Edital FAPESC 54/2024”.",
+   "evidences": [
+    {
+     "page": 13,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "16.3. A impugnação deverá ser dirigida à Diretoria de Ciência, Tecnologia e Inovação da FAPESC, por correspondência eletrônica, para o e-mail inovatalentos@fapesc.sc.gov.br, com o assunto: “Impugnação Edital FAPESC 54/2024”."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-c74593e06c34a4368a79",
+   "label": "Havendo revogação ou anulação da presente Chamada Pública, as atividades que estiverem em execução n",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "16.7. Havendo revogação ou anulação da presente Chamada Pública, as atividades que estiverem em execução não serão prejudicadas, devendo ser concluídas, conforme o cronograma aprovado entre os envolvidos na presente Chamada. 17. DA CLÁUSULA ANTICORRUPÇÃO (IN CGE/SEA n.º 01/2020)",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 13,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "16.7. Havendo revogação ou anulação da presente Chamada Pública, as atividades que estiverem em execução não serão prejudicadas, devendo ser concluídas, conforme o cronograma aprovado entre os envolvidos na presente Chamada. 17. DA CLÁUSULA ANTICORRUPÇÃO (IN CGE/SEA n.º 01/2020)",
+   "evidences": [
+    {
+     "page": 13,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "16.7. Havendo revogação ou anulação da presente Chamada Pública, as atividades que estiverem em execução não serão prejudicadas, devendo ser concluídas, conforme o cronograma aprovado entre os envolvidos na presente Chamada. 17. DA CLÁUSULA ANTICORRUPÇÃO (IN CGE/SEA n.º 01/2020)"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-6396c31b98464444853c",
+   "label": "A FAPESC e o IEL/SC poderão compartilhar entre si os dados pessoais coletados no objetivo do Edital,",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "18.3. A FAPESC e o IEL/SC poderão compartilhar entre si os dados pessoais coletados no objetivo do Edital, bem como poderão compartilhar com órgãos públicos para comprimentos de exigências legais; e, ainda, o IEL/SC poderá compartilhar com o seu Departamento Nacional, única e exclusivamente, para fins de envio de produção e recebimento de fomento, sendo vedada sua utilização para quaisquer outras finalidades.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 14,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "18.3. A FAPESC e o IEL/SC poderão compartilhar entre si os dados pessoais coletados no objetivo do Edital, bem como poderão compartilhar com órgãos públicos para comprimentos de exigências legais; e, ainda, o IEL/SC poderá compartilhar com o seu Departamento Nacional, única e exclusivamente, para fins de envio de produção e recebimento de fomento, sendo vedada sua utilização para quaisquer outras finalidades.",
+   "evidences": [
+    {
+     "page": 14,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "18.3. A FAPESC e o IEL/SC poderão compartilhar entre si os dados pessoais coletados no objetivo do Edital, bem como poderão compartilhar com órgãos públicos para comprimentos de exigências legais; e, ainda, o IEL/SC poderá compartilhar com o seu Departamento Nacional, única e exclusivamente, para fins de envio de produção e recebimento de fomento, sendo vedada sua utilização para quaisquer outras finalidades."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-9cdac9d8c4ece8606978",
+   "label": "A interveniente poderá, quando necessário, solicitar a substituição do(a) coordenador(a) do projeto,",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "19.7. A interveniente poderá, quando necessário, solicitar a substituição do(a) coordenador(a) do projeto, por meio do IEL/SC, devendo apresentar justificativa fundamentada e os documentos previstos no item 8.1, obrigatórios ao proponente, que serão analisados pela FAPESC.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 14,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "19.7. A interveniente poderá, quando necessário, solicitar a substituição do(a) coordenador(a) do projeto, por meio do IEL/SC, devendo apresentar justificativa fundamentada e os documentos previstos no item 8.1, obrigatórios ao proponente, que serão analisados pela FAPESC.",
+   "evidences": [
+    {
+     "page": 14,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "19.7. A interveniente poderá, quando necessário, solicitar a substituição do(a) coordenador(a) do projeto, por meio do IEL/SC, devendo apresentar justificativa fundamentada e os documentos previstos no item 8.1, obrigatórios ao proponente, que serão analisados pela FAPESC."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-19df09b5c0ebe436e37a",
+   "label": "Quaisquer alterações relativas à execução do projeto deverão ser solicitadas pelo(a) proponente ou p",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "19.8. Quaisquer alterações relativas à execução do projeto deverão ser solicitadas pelo(a) proponente ou pela interveniente, por meio do IEL/SC, mediante apresentação de justificativa fundamentada, devendo aguardar a aprovação pela FAPESC para sua efetivação.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 14,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "19.8. Quaisquer alterações relativas à execução do projeto deverão ser solicitadas pelo(a) proponente ou pela interveniente, por meio do IEL/SC, mediante apresentação de justificativa fundamentada, devendo aguardar a aprovação pela FAPESC para sua efetivação.",
+   "evidences": [
+    {
+     "page": 14,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "19.8. Quaisquer alterações relativas à execução do projeto deverão ser solicitadas pelo(a) proponente ou pela interveniente, por meio do IEL/SC, mediante apresentação de justificativa fundamentada, devendo aguardar a aprovação pela FAPESC para sua efetivação."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-0f04f2b95b53b39a5c34",
+   "label": "Solicitações e esclarecimentos acerca do conteúdo desta Chamada Pública deverão ser encaminhados dir",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "20.5. Solicitações e esclarecimentos acerca do conteúdo desta Chamada Pública deverão ser encaminhados diretamente ao endereço eletrônico inovatalentos@fapesc.sc.gov.br.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 15,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "20.5. Solicitações e esclarecimentos acerca do conteúdo desta Chamada Pública deverão ser encaminhados diretamente ao endereço eletrônico inovatalentos@fapesc.sc.gov.br.",
+   "evidences": [
+    {
+     "page": 15,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "20.5. Solicitações e esclarecimentos acerca do conteúdo desta Chamada Pública deverão ser encaminhados diretamente ao endereço eletrônico inovatalentos@fapesc.sc.gov.br."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-482dc243b8f4c83f9173",
+   "label": "/0001- 26, com sede no Parque Tecnológico ALFA, Rodovia José Carlos Daux, 600 (SC 401), Km 01, Módul",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "01.682.869/0001- 26, com sede no Parque Tecnológico ALFA, Rodovia José Carlos Daux, 600 (SC 401), Km 01, Módulo 12A, Prédio CELTA/FAPESC, 5º andar, Bairro João Paulo, Florianópolis, Santa Catarina, CEP 88030-902, doravante denominada FAPESC. 2 DO BOLSISTA Nome: Estado Civil: Nacionalidade: CPF: Raça/Etnia: Documento de Identificação2: Órgão Expedidor: Data de Expedição: UF: Profissão: Data de Nascimento: Sexo: Nome do Pai: Nome da Mãe: Endereço Residencial: Bairro: CEP: Cidade: País: Telefone: Celular: E-mail: Tempo de residência no Estado de SC: 1 O presente documento está disponível apenas para leitura e não deve ser apresentado para fins de vinculação de bolsista, sendo válido apenas quando enviado pela FAPESC. 2Documento oficial de identificação, que contenha CPF e possua validade de até 10 (dez) anos da data de emissão:",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Documentos obrigatórios",
+   "dimension": "readiness",
+   "page": 16,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "01.682.869/0001- 26, com sede no Parque Tecnológico ALFA, Rodovia José Carlos Daux, 600 (SC 401), Km 01, Módulo 12A, Prédio CELTA/FAPESC, 5º andar, Bairro João Paulo, Florianópolis, Santa Catarina, CEP 88030-902, doravante denominada FAPESC. 2 DO BOLSISTA Nome: Estado Civil: Nacionalidade: CPF: Raça/Etnia: Documento de Identificação2: Órgão Expedidor: Data de Expedição: UF: Profissão: Data de Nascimento: Sexo: Nome do Pai: Nome da Mãe: Endereço Residencial: Bairro: CEP: Cidade: País: Telefone: Celular: E-mail: Tempo de residência no Estado de SC: 1 O presente documento está disponível apenas para leitura e não deve ser apresentado para fins de vinculação de bolsista, sendo válido apenas quando enviado pela FAPESC. 2Documento oficial de identificação, que contenha CPF e possua validade de até 10 (dez) anos da data de emissão:",
+   "evidences": [
+    {
+     "page": 16,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "01.682.869/0001- 26, com sede no Parque Tecnológico ALFA, Rodovia José Carlos Daux, 600 (SC 401), Km 01, Módulo 12A, Prédio CELTA/FAPESC, 5º andar, Bairro João Paulo, Florianópolis, Santa Catarina, CEP 88030-902, doravante denominada FAPESC. 2 DO BOLSISTA Nome: Estado Civil: Nacionalidade: CPF: Raça/Etnia: Documento de Identificação2: Órgão Expedidor: Data de Expedição: UF: Profissão: Data de Nascimento: Sexo: Nome do Pai: Nome da Mãe: Endereço Residencial: Bairro: CEP: Cidade: País: Telefone: Celular: E-mail: Tempo de residência no Estado de SC: 1 O presente documento está disponível apenas para leitura e não deve ser apresentado para fins de vinculação de bolsista, sendo válido apenas quando enviado pela FAPESC. 2Documento oficial de identificação, que contenha CPF e possua validade de até 10 (dez) anos da data de emissão:"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-bb67266cd4fc16c2c569",
+   "label": "Contrapartida: base e condições a revisar",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "6.9 Como contrapartida aos recursos recebidos, os bolsistas beneficiados por esta Chamada Pública poderão ser solicitados, a qualquer momento, para atuar como monitores ou para participar de grupo de trabalho em eventos científicos realizados pela FAPESC, bem como, para ministrar palestra, no decorrer ou ao final do período da bolsa, com o intuito de apresentar os trabalhos desenvolvidos durante a execução do programa;",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 17,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "6.9 Como contrapartida aos recursos recebidos, os bolsistas beneficiados por esta Chamada Pública poderão ser solicitados, a qualquer momento, para atuar como monitores ou para participar de grupo de trabalho em eventos científicos realizados pela FAPESC, bem como, para ministrar palestra, no decorrer ou ao final do período da bolsa, com o intuito de apresentar os trabalhos desenvolvidos durante a execução do programa;",
+   "evidences": [
+    {
+     "page": 17,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "6.9 Como contrapartida aos recursos recebidos, os bolsistas beneficiados por esta Chamada Pública poderão ser solicitados, a qualquer momento, para atuar como monitores ou para participar de grupo de trabalho em eventos científicos realizados pela FAPESC, bem como, para ministrar palestra, no decorrer ou ao final do período da bolsa, com o intuito de apresentar os trabalhos desenvolvidos durante a execução do programa;"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-bfb94a57352a0df28ed4",
+   "label": "Contrapartida: base e condições a revisar",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "6.10 Como contrapartida aos recursos recebidos, os bolsistas beneficiados por esta Chamada Pública farão parte do cadastro de consultores ad hoc da FAPESC, e, a qualquer momento, poderão ser selecionados para avaliações de projetos em outras Chamadas Públicas, sem custos para a FAPESC;",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 17,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "6.10 Como contrapartida aos recursos recebidos, os bolsistas beneficiados por esta Chamada Pública farão parte do cadastro de consultores ad hoc da FAPESC, e, a qualquer momento, poderão ser selecionados para avaliações de projetos em outras Chamadas Públicas, sem custos para a FAPESC;",
+   "evidences": [
+    {
+     "page": 17,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "6.10 Como contrapartida aos recursos recebidos, os bolsistas beneficiados por esta Chamada Pública farão parte do cadastro de consultores ad hoc da FAPESC, e, a qualquer momento, poderão ser selecionados para avaliações de projetos em outras Chamadas Públicas, sem custos para a FAPESC;"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-4635058ad9dd3e4c26f0",
+   "label": "As solicitações de desvinculação de bolsista devem ser encaminhadas até o dia 10 do mês. Após esta d",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "7.5 As solicitações de desvinculação de bolsista devem ser encaminhadas até o dia 10 do mês. Após esta data, a desvinculação será realizada somente no mês seguinte;",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 18,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "7.5 As solicitações de desvinculação de bolsista devem ser encaminhadas até o dia 10 do mês. Após esta data, a desvinculação será realizada somente no mês seguinte;",
+   "evidences": [
+    {
+     "page": 18,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "7.5 As solicitações de desvinculação de bolsista devem ser encaminhadas até o dia 10 do mês. Após esta data, a desvinculação será realizada somente no mês seguinte;"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-21b24170fda953512196",
+   "label": "É vedado aos coordenadores de Programas de Pós-Graduação, ou de Projetos, conceder bolsas aos cônjug",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "7.7 É vedado aos coordenadores de Programas de Pós-Graduação, ou de Projetos, conceder bolsas aos cônjuges, companheiros ou parentes em linha reta, colateral ou por afinidade, até o segundo grau, inclusive; salvo se homologado pelo Colegiado do Programa ou aprovado em Edital Específico ou Chamada Pública.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 18,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "7.7 É vedado aos coordenadores de Programas de Pós-Graduação, ou de Projetos, conceder bolsas aos cônjuges, companheiros ou parentes em linha reta, colateral ou por afinidade, até o segundo grau, inclusive; salvo se homologado pelo Colegiado do Programa ou aprovado em Edital Específico ou Chamada Pública.",
+   "evidences": [
+    {
+     "page": 18,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "7.7 É vedado aos coordenadores de Programas de Pós-Graduação, ou de Projetos, conceder bolsas aos cônjuges, companheiros ou parentes em linha reta, colateral ou por afinidade, até o segundo grau, inclusive; salvo se homologado pelo Colegiado do Programa ou aprovado em Edital Específico ou Chamada Pública."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-2ed23b1b3e8162e8aaa1",
+   "label": "Fazer, obrigatoriamente, menção expressa à FAPESC em qualquer ação promocional ou publicação de trab",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "7.16 Fazer, obrigatoriamente, menção expressa à FAPESC em qualquer ação promocional ou publicação de trabalhos relacionados com o objeto do presente Termo; DAS ATRIBUIÇÕES E RESPONSABILIDADES DA INTERVENIENTE",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 18,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "7.16 Fazer, obrigatoriamente, menção expressa à FAPESC em qualquer ação promocional ou publicação de trabalhos relacionados com o objeto do presente Termo; DAS ATRIBUIÇÕES E RESPONSABILIDADES DA INTERVENIENTE",
+   "evidences": [
+    {
+     "page": 18,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "7.16 Fazer, obrigatoriamente, menção expressa à FAPESC em qualquer ação promocional ou publicação de trabalhos relacionados com o objeto do presente Termo; DAS ATRIBUIÇÕES E RESPONSABILIDADES DA INTERVENIENTE"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-85b1832763e18a17f569",
+   "label": "Dentro dos prazos estabelecidos pela FAPESC, o coordenador e o supervisor, com o bolsista, elaborarã",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "10.3 Dentro dos prazos estabelecidos pela FAPESC, o coordenador e o supervisor, com o bolsista, elaborarão relatório do projeto e relatório circunstanciado das atividades do bolsista. Os relatórios deverão ser entregues a cada 6 (seis) meses e, 10 (dez) dias após a vigência final, deverá ser apresentado Relatório Final do projeto do bolsista.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 19,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "10.3 Dentro dos prazos estabelecidos pela FAPESC, o coordenador e o supervisor, com o bolsista, elaborarão relatório do projeto e relatório circunstanciado das atividades do bolsista. Os relatórios deverão ser entregues a cada 6 (seis) meses e, 10 (dez) dias após a vigência final, deverá ser apresentado Relatório Final do projeto do bolsista.",
+   "evidences": [
+    {
+     "page": 19,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "10.3 Dentro dos prazos estabelecidos pela FAPESC, o coordenador e o supervisor, com o bolsista, elaborarão relatório do projeto e relatório circunstanciado das atividades do bolsista. Os relatórios deverão ser entregues a cada 6 (seis) meses e, 10 (dez) dias após a vigência final, deverá ser apresentado Relatório Final do projeto do bolsista."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-cf38520fa0cd46b7e506",
+   "label": "Na hipótese de o coordenador do projeto ou do supervisor do bolsista deixar de fazer parte do quadro",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "10.6 Na hipótese de o coordenador do projeto ou do supervisor do bolsista deixar de fazer parte do quadro de servidores da instituição de execução ou, ainda, ficar impedido de exercer essa função, a instituição deverá informar à FAPESC, no prazo de 5 (cinco) dias úteis, sob pena de suspensão das atividades realizadas em conjunto.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 19,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "10.6 Na hipótese de o coordenador do projeto ou do supervisor do bolsista deixar de fazer parte do quadro de servidores da instituição de execução ou, ainda, ficar impedido de exercer essa função, a instituição deverá informar à FAPESC, no prazo de 5 (cinco) dias úteis, sob pena de suspensão das atividades realizadas em conjunto.",
+   "evidences": [
+    {
+     "page": 19,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "10.6 Na hipótese de o coordenador do projeto ou do supervisor do bolsista deixar de fazer parte do quadro de servidores da instituição de execução ou, ainda, ficar impedido de exercer essa função, a instituição deverá informar à FAPESC, no prazo de 5 (cinco) dias úteis, sob pena de suspensão das atividades realizadas em conjunto."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-500485900b2d9e776876",
+   "label": "Documentos com alternativas ou condições",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "10.7 O bolsista deverá exercer suas atividades no local definido em seu Plano de Trabalho. Em casos excepcionais, caso seja necessário seu deslocamento, caberá à instituição parceira providenciar os recursos necessários, bem como responsabilizar-se civilmente. 11 DA SUSPENSÃO E CANCELAMENTO DA BOLSA",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 19,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "10.7 O bolsista deverá exercer suas atividades no local definido em seu Plano de Trabalho. Em casos excepcionais, caso seja necessário seu deslocamento, caberá à instituição parceira providenciar os recursos necessários, bem como responsabilizar-se civilmente. 11 DA SUSPENSÃO E CANCELAMENTO DA BOLSA",
+   "evidences": [
+    {
+     "page": 19,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "10.7 O bolsista deverá exercer suas atividades no local definido em seu Plano de Trabalho. Em casos excepcionais, caso seja necessário seu deslocamento, caberá à instituição parceira providenciar os recursos necessários, bem como responsabilizar-se civilmente. 11 DA SUSPENSÃO E CANCELAMENTO DA BOLSA"
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-d7541a59c088c79ef6a3",
+   "label": "Nos casos previstos pelo item 11.2- c, a solicitação de afastamento deverá ser acompanhada dos docum",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.2.1 Nos casos previstos pelo item 11.2- c, a solicitação de afastamento deverá ser acompanhada dos documentos comprobatórios da gestação, nascimento, adoção ou guarda judicial, conforme o caso, além de especificadas as datas de início e término do afastamento.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 19,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.2.1 Nos casos previstos pelo item 11.2- c, a solicitação de afastamento deverá ser acompanhada dos documentos comprobatórios da gestação, nascimento, adoção ou guarda judicial, conforme o caso, além de especificadas as datas de início e término do afastamento.",
+   "evidences": [
+    {
+     "page": 19,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.2.1 Nos casos previstos pelo item 11.2- c, a solicitação de afastamento deverá ser acompanhada dos documentos comprobatórios da gestação, nascimento, adoção ou guarda judicial, conforme o caso, além de especificadas as datas de início e término do afastamento."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-35d7920ba55b7aaa5b00",
+   "label": "É vedada a suspensão do pagamento da bolsa durante o afastamento previsto no item 11.2, c.",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.2.2 É vedada a suspensão do pagamento da bolsa durante o afastamento previsto no item 11.2, c.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 19,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.2.2 É vedada a suspensão do pagamento da bolsa durante o afastamento previsto no item 11.2, c.",
+   "evidences": [
+    {
+     "page": 19,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.2.2 É vedada a suspensão do pagamento da bolsa durante o afastamento previsto no item 11.2, c."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-800a38e4e73c2a306f2f",
+   "label": "Documentos com alternativas ou condições",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.3 Caso o afastamento do bolsista seja concedido, o Plano de Trabalho deverá ser adaptado para o cumprimento dos objetivos do projeto.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 19,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.3 Caso o afastamento do bolsista seja concedido, o Plano de Trabalho deverá ser adaptado para o cumprimento dos objetivos do projeto.",
+   "evidences": [
+    {
+     "page": 19,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.3 Caso o afastamento do bolsista seja concedido, o Plano de Trabalho deverá ser adaptado para o cumprimento dos objetivos do projeto."
+    }
+   ],
+   "confidence": "Média",
+   "confidence_note": "Padrão explícito identificado; ainda requer conferência do escopo e das exceções.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-da2c5422b5fa818fb62f",
+   "label": "A solicitação de cancelamento da bolsa deverá ser formalizada por meio de envio de e- mail (inovatal",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "11.7 A solicitação de cancelamento da bolsa deverá ser formalizada por meio de envio de e- mail (inovatalentos@fapesc.sc.gov.br), preferencialmente até o dia 10 (dez) do mês vigente da bolsa, passado o prazo, será solicitado a restituição do valor repassado ao bolsista.",
+   "mandatory": false,
+   "classification": "Classificatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 20,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "11.7 A solicitação de cancelamento da bolsa deverá ser formalizada por meio de envio de e- mail (inovatalentos@fapesc.sc.gov.br), preferencialmente até o dia 10 (dez) do mês vigente da bolsa, passado o prazo, será solicitado a restituição do valor repassado ao bolsista.",
+   "evidences": [
+    {
+     "page": 20,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "11.7 A solicitação de cancelamento da bolsa deverá ser formalizada por meio de envio de e- mail (inovatalentos@fapesc.sc.gov.br), preferencialmente até o dia 10 (dez) do mês vigente da bolsa, passado o prazo, será solicitado a restituição do valor repassado ao bolsista."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-77cb959c90a63f0aa315",
+   "label": "A solicitação de prorrogação deve ser formalizada à FAPESC com justificativa para a solicitação e me",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "12.2 A solicitação de prorrogação deve ser formalizada à FAPESC com justificativa para a solicitação e mediante apresentação de relatório Técnico das atividades desenvolvidas e está condicionada a aprovação da FAPESC, em todas as modalidades de bolsas.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 20,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "12.2 A solicitação de prorrogação deve ser formalizada à FAPESC com justificativa para a solicitação e mediante apresentação de relatório Técnico das atividades desenvolvidas e está condicionada a aprovação da FAPESC, em todas as modalidades de bolsas.",
+   "evidences": [
+    {
+     "page": 20,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "12.2 A solicitação de prorrogação deve ser formalizada à FAPESC com justificativa para a solicitação e mediante apresentação de relatório Técnico das atividades desenvolvidas e está condicionada a aprovação da FAPESC, em todas as modalidades de bolsas."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-7a4f25c92b5995f47c7f",
+   "label": "Quando comprovada alguma ocorrência disposta no item 14.1, o bolsista deverá dar início ao ressarcim",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "13.2 Quando comprovada alguma ocorrência disposta no item 14.1, o bolsista deverá dar início ao ressarcimento do valor total das mensalidades recebidas, atualizadas pelo valor da bolsa vigente, até 30 (trinta) dias após o recebimento do comunicado de solicitação de devolução.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 20,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "13.2 Quando comprovada alguma ocorrência disposta no item 14.1, o bolsista deverá dar início ao ressarcimento do valor total das mensalidades recebidas, atualizadas pelo valor da bolsa vigente, até 30 (trinta) dias após o recebimento do comunicado de solicitação de devolução.",
+   "evidences": [
+    {
+     "page": 20,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "13.2 Quando comprovada alguma ocorrência disposta no item 14.1, o bolsista deverá dar início ao ressarcimento do valor total das mensalidades recebidas, atualizadas pelo valor da bolsa vigente, até 30 (trinta) dias após o recebimento do comunicado de solicitação de devolução."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-058f46f19ab8e481a05e",
+   "label": "As devoluções de valores deverão ser efetuadas diretamente em conta bancária especificada no documen",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "13.5 As devoluções de valores deverão ser efetuadas diretamente em conta bancária especificada no documento Guia de Depósito Identificado fornecida pela FAPESC. 14 DA DIVULGAÇÃO",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 20,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "13.5 As devoluções de valores deverão ser efetuadas diretamente em conta bancária especificada no documento Guia de Depósito Identificado fornecida pela FAPESC. 14 DA DIVULGAÇÃO",
+   "evidences": [
+    {
+     "page": 20,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "13.5 As devoluções de valores deverão ser efetuadas diretamente em conta bancária especificada no documento Guia de Depósito Identificado fornecida pela FAPESC. 14 DA DIVULGAÇÃO"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-614c16482f6433ee0017",
+   "label": "Quaisquer divulgações e publicações, presentes ou futuras, sob qualquer forma de comunicação ou por ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "14.1 Quaisquer divulgações e publicações, presentes ou futuras, sob qualquer forma de comunicação ou por qualquer veículo, resultantes das atividades apoiadas pela presente Chamada Pública deverão, obrigatoriamente, mencionar em destaque o apoio financeiro do Governo do Estado de Santa Catarina realizado via Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC).",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 20,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "14.1 Quaisquer divulgações e publicações, presentes ou futuras, sob qualquer forma de comunicação ou por qualquer veículo, resultantes das atividades apoiadas pela presente Chamada Pública deverão, obrigatoriamente, mencionar em destaque o apoio financeiro do Governo do Estado de Santa Catarina realizado via Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC).",
+   "evidences": [
+    {
+     "page": 20,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "14.1 Quaisquer divulgações e publicações, presentes ou futuras, sob qualquer forma de comunicação ou por qualquer veículo, resultantes das atividades apoiadas pela presente Chamada Pública deverão, obrigatoriamente, mencionar em destaque o apoio financeiro do Governo do Estado de Santa Catarina realizado via Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC)."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-538eabbe0496d90da95b",
+   "label": "Todos os artigos científicos indexados em bases de dados e editoras internacionais (Elsevier, Web of",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "14.2 Todos os artigos científicos indexados em bases de dados e editoras internacionais (Elsevier, Web of Science, Springer, Scielo, entre outros), patentes internacionais e citações em políticas públicas internacionais, proveniente das ações e resultados dos projetos apoiados pela FAPESC, deverão citar a FAPESC como entidade financiadora no manuscrito da seguinte maneira: Fundacao de Amparo a Pesquisa e Inovacao do Estado de Santa Catarina (FAPESC). Nas demais bases de dados lusófonas, editoras lusófonas, publicações",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 20,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "14.2 Todos os artigos científicos indexados em bases de dados e editoras internacionais (Elsevier, Web of Science, Springer, Scielo, entre outros), patentes internacionais e citações em políticas públicas internacionais, proveniente das ações e resultados dos projetos apoiados pela FAPESC, deverão citar a FAPESC como entidade financiadora no manuscrito da seguinte maneira: Fundacao de Amparo a Pesquisa e Inovacao do Estado de Santa Catarina (FAPESC). Nas demais bases de dados lusófonas, editoras lusófonas, publicações",
+   "evidences": [
+    {
+     "page": 20,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "14.2 Todos os artigos científicos indexados em bases de dados e editoras internacionais (Elsevier, Web of Science, Springer, Scielo, entre outros), patentes internacionais e citações em políticas públicas internacionais, proveniente das ações e resultados dos projetos apoiados pela FAPESC, deverão citar a FAPESC como entidade financiadora no manuscrito da seguinte maneira: Fundacao de Amparo a Pesquisa e Inovacao do Estado de Santa Catarina (FAPESC). Nas demais bases de dados lusófonas, editoras lusófonas, publicações"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-131095e73c7576799b00",
+   "label": "em canais de divulgação nacionais, citações em políticas públicas nacionais, apresentação em eventos",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "em canais de divulgação nacionais, citações em políticas públicas nacionais, apresentação em eventos/congressos nacionais e demais casos deverão citar a FAPESC como entidade financiadora da seguinte maneira: Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC).",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 21,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "em canais de divulgação nacionais, citações em políticas públicas nacionais, apresentação em eventos/congressos nacionais e demais casos deverão citar a FAPESC como entidade financiadora da seguinte maneira: Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC).",
+   "evidences": [
+    {
+     "page": 21,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "em canais de divulgação nacionais, citações em políticas públicas nacionais, apresentação em eventos/congressos nacionais e demais casos deverão citar a FAPESC como entidade financiadora da seguinte maneira: Fundação de Amparo à Pesquisa e Inovação do Estado de Santa Catarina (FAPESC)."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-017412088d79654a3101",
+   "label": "Qualquer trabalho publicado pelo bolsista, individual ou em colaboração, deverá mencionar o apoio da",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "14.3 Qualquer trabalho publicado pelo bolsista, individual ou em colaboração, deverá mencionar o apoio da FAPESC, conforme disposto no item 15.2.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 21,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "14.3 Qualquer trabalho publicado pelo bolsista, individual ou em colaboração, deverá mencionar o apoio da FAPESC, conforme disposto no item 15.2.",
+   "evidences": [
+    {
+     "page": 21,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "14.3 Qualquer trabalho publicado pelo bolsista, individual ou em colaboração, deverá mencionar o apoio da FAPESC, conforme disposto no item 15.2."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-4ede2bfc784220769465",
+   "label": "O uso da logomarca da FAPESC deve seguir as orientações contidas no Manual da Marca FAPESC, disponív",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "14.4 O uso da logomarca da FAPESC deve seguir as orientações contidas no Manual da Marca FAPESC, disponível no site www.fapesc.sc.gov.br.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 21,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "14.4 O uso da logomarca da FAPESC deve seguir as orientações contidas no Manual da Marca FAPESC, disponível no site www.fapesc.sc.gov.br.",
+   "evidences": [
+    {
+     "page": 21,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "14.4 O uso da logomarca da FAPESC deve seguir as orientações contidas no Manual da Marca FAPESC, disponível no site www.fapesc.sc.gov.br."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-75ebfbf7a8544c2967e9",
+   "label": "Todo conteúdo proveniente das ações e resultados dos projetos selecionados nesta Chamada, publicado ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "14.5 Todo conteúdo proveniente das ações e resultados dos projetos selecionados nesta Chamada, publicado ou postado em vídeos, fotos e/ou atividades, nos sites e nos perfis do Instagram, Facebook, Twitter, Youtube entre outras redes sociais, sempre que possível, deverão registrar como marcador as hashtags #FAPESC.SC e #GOVERNOSC além de marcar a FAPESC com @FAPESC.gov, @FAPESC.sc.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 21,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "14.5 Todo conteúdo proveniente das ações e resultados dos projetos selecionados nesta Chamada, publicado ou postado em vídeos, fotos e/ou atividades, nos sites e nos perfis do Instagram, Facebook, Twitter, Youtube entre outras redes sociais, sempre que possível, deverão registrar como marcador as hashtags #FAPESC.SC e #GOVERNOSC além de marcar a FAPESC com @FAPESC.gov, @FAPESC.sc.",
+   "evidences": [
+    {
+     "page": 21,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "14.5 Todo conteúdo proveniente das ações e resultados dos projetos selecionados nesta Chamada, publicado ou postado em vídeos, fotos e/ou atividades, nos sites e nos perfis do Instagram, Facebook, Twitter, Youtube entre outras redes sociais, sempre que possível, deverão registrar como marcador as hashtags #FAPESC.SC e #GOVERNOSC além de marcar a FAPESC com @FAPESC.gov, @FAPESC.sc."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-198cef0521bd00a57277",
+   "label": "Quando da apresentação de ações e resultados do projeto, deve-se enviar à Assessoria de Comunicação ",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "14.6 Quando da apresentação de ações e resultados do projeto, deve-se enviar à Assessoria de Comunicação da FAPESC, por meio do endereço eletrônico comunicacao@FAPESC.sc.gov.br dados, imagens e informações que viabilizem o anúncio dele. Os materiais de apoio para divulgação deverão conter texto em formato jornalístico, programação, indicação do meio de publicação e fotos em boa resolução. Solicita-se, sempre que possível, antecedência mínima de 15 (quinze) dias. 15 DA PROTEÇÃO DE DADOS",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 21,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "14.6 Quando da apresentação de ações e resultados do projeto, deve-se enviar à Assessoria de Comunicação da FAPESC, por meio do endereço eletrônico comunicacao@FAPESC.sc.gov.br dados, imagens e informações que viabilizem o anúncio dele. Os materiais de apoio para divulgação deverão conter texto em formato jornalístico, programação, indicação do meio de publicação e fotos em boa resolução. Solicita-se, sempre que possível, antecedência mínima de 15 (quinze) dias. 15 DA PROTEÇÃO DE DADOS",
+   "evidences": [
+    {
+     "page": 21,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "14.6 Quando da apresentação de ações e resultados do projeto, deve-se enviar à Assessoria de Comunicação da FAPESC, por meio do endereço eletrônico comunicacao@FAPESC.sc.gov.br dados, imagens e informações que viabilizem o anúncio dele. Os materiais de apoio para divulgação deverão conter texto em formato jornalístico, programação, indicação do meio de publicação e fotos em boa resolução. Solicita-se, sempre que possível, antecedência mínima de 15 (quinze) dias. 15 DA PROTEÇÃO DE DADOS"
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-d401f607b589cbc0f60b",
+   "label": "Os partícipes deverão manter sob sigilo e confidencialidade as metodologias empregadas e os resultad",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "15.6 Os partícipes deverão manter sob sigilo e confidencialidade as metodologias empregadas e os resultados obtidos/desenvolvidos em cada uma das linhas temáticas, que somente poderão ser divulgados e reproduzidos, total ou parcialmente em concordância com as partes.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 21,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "15.6 Os partícipes deverão manter sob sigilo e confidencialidade as metodologias empregadas e os resultados obtidos/desenvolvidos em cada uma das linhas temáticas, que somente poderão ser divulgados e reproduzidos, total ou parcialmente em concordância com as partes.",
+   "evidences": [
+    {
+     "page": 21,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "15.6 Os partícipes deverão manter sob sigilo e confidencialidade as metodologias empregadas e os resultados obtidos/desenvolvidos em cada uma das linhas temáticas, que somente poderão ser divulgados e reproduzidos, total ou parcialmente em concordância com as partes."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  },
+  {
+   "id": "auto-e1fd6636b98f6f22de4d",
+   "label": "Resumo do Plano de Trabalho 3. DAS ETAPAS E METAS Insira nas tabelas as etapas, metas e entregas ass",
+   "field": "manual",
+   "scope": "project",
+   "op": "manual",
+   "expected": "2.1 Resumo do Plano de Trabalho 3. DAS ETAPAS E METAS Insira nas tabelas as etapas, metas e entregas associadas, assegurando que o cronograma seja compatível com a duração da bolsa e do projeto. Inclua as informações de forma direta e concisa. Título da Etapa 1: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 2: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 3: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 4: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos 3 O presente documento está disponível apenas para leitura e não deve ser apresentado para fins de vinculação de bolsista, sendo válido apenas quando enviado pela FAPESC.",
+   "mandatory": true,
+   "classification": "Obrigatório",
+   "requirement_type": "Objeto",
+   "dimension": "eligibility",
+   "page": 23,
+   "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+   "evidence": "2.1 Resumo do Plano de Trabalho 3. DAS ETAPAS E METAS Insira nas tabelas as etapas, metas e entregas associadas, assegurando que o cronograma seja compatível com a duração da bolsa e do projeto. Inclua as informações de forma direta e concisa. Título da Etapa 1: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 2: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 3: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 4: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos 3 O presente documento está disponível apenas para leitura e não deve ser apresentado para fins de vinculação de bolsista, sendo válido apenas quando enviado pela FAPESC.",
+   "evidences": [
+    {
+     "page": 23,
+     "source": "https://fapesc.sc.gov.br/wp-content/uploads/2024/09/CP_54_24_Inova_Talentos.pdf",
+     "evidence": "2.1 Resumo do Plano de Trabalho 3. DAS ETAPAS E METAS Insira nas tabelas as etapas, metas e entregas associadas, assegurando que o cronograma seja compatível com a duração da bolsa e do projeto. Inclua as informações de forma direta e concisa. Título da Etapa 1: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 2: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 3: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos Título da Etapa 4: Período Início: Fim: Descrição da Etapa Metas da Etapa Previsão de Entregas associadas a Etapa* Objetivos Específicos 3 O presente documento está disponível apenas para leitura e não deve ser apresentado para fins de vinculação de bolsista, sendo válido apenas quando enviado pela FAPESC."
+    }
+   ],
+   "confidence": "Baixa",
+   "confidence_note": "Obrigação detectada; interpretação ou campo comparável não determinado com segurança.",
+   "confirmed": false,
+   "validation_status": "pending",
+   "review_status": "Pendente de revisão",
+   "extracted": true,
+   "extractor_version": "2.1",
+   "document_id": "d9dd2ea7781ac46400ad6d73"
+  }
+ ]
+}

@@ -12,6 +12,10 @@ from .matching import FIELDS, dimension_for
 
 VERSION = '2.1'
 MAX_CRITERIA = 160
+# Negação em texto normalizado (sem acento): "não será admitida", "não podem participar", "vedado", "proibido".
+# Faz o critério de natureza jurídica e de porte virar "não pertence à lista" em vez de "um dos valores".
+NEGATION = re.compile(r'\bnao (?:sera|serao|e|sao|pode|podem|poderao)\s+(?:admitid|aceit|permitid|autorizad|elegiv|contratad)\w*'
+                      r'|\bnao (?:pode|podem|poderao) participar|\bnao admit\w*|\bvedad[oa]s?\b|\bproibid[oa]s?\b')
 SECTION_PATTERNS = [
     ('Despesas proibidas', r'(?:itens|despesas).{0,15}nao financi|nao financiaveis'),
     ('Despesas financiáveis', r'itens financiaveis|despesas financiaveis|despesas permitidas'),
@@ -231,14 +235,14 @@ def analyze(pages, source):
                                                (r'associac(?:ao|oes)', 'Associação'), (r'fundac(?:ao|oes)', 'Fundação')]
                       if re.search(pat, n)]
             if values:
-                add(b, 'legal_type', 'not_in' if re.search(r'nao (?:poderao|serao)|vedad', n) else 'in', values, confidence='Média')
+                add(b, 'legal_type', 'not_in' if NEGATION.search(n) else 'in', values, confidence='Média')
         age = re.search(r'(?:minimo(?: de)?|pelo menos)\s+(\d+)\s*(?:\([^)]{1,35}\)\s*)?(meses|anos)', n)
         if age and re.search(r'cnpj|constituid|constituicao|abertura', n) and not re.search(r'experiencia|bolsista|doutor|mestre', n):
             add(b, 'age_months', 'min', int(age[1]) * (12 if age[2] == 'anos' else 1), 'Tempo mínimo de constituição')
         if usable and re.search(r'(?:microempresa|empresa de pequeno porte|\bmei\b)', n):
             sizes = [label for pat, label in [(r'microempresa', 'ME'), (r'empresa[s]? de pequeno porte|\bepp\b', 'EPP'), (r'\bmei\b', 'MEI')] if re.search(pat, n)]
             if sizes and not re.search(r'receita bruta|faturamento', n):
-                add(b, 'size', 'not_in' if re.search(r'nao (?:podem|poderao|serao)|vedad', n) else 'in', sizes, confidence='Média')
+                add(b, 'size', 'not_in' if NEGATION.search(n) else 'in', sizes, confidence='Média')
         degree = re.search(r'titulacao minima de (graduacao|mestrado|doutorado)', n)
         if degree and b['subject'] != 'bolsista':
             degrees = ['Graduação', 'Especialização', 'Mestrado', 'Doutorado']

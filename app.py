@@ -38,6 +38,7 @@ from inovamatch import dashboard
 from inovamatch import compatibility
 from inovamatch import alerts
 from inovamatch import versioning
+from inovamatch import curadoria
 from inovamatch.demo import simulate_rectification
 from inovamatch import attention
 from inovamatch.filters import STATUS_FILTERS
@@ -215,6 +216,7 @@ def demo_activate():
     copy_real_calls(demo, real_store().all('calls'))
     if not real_calls_in(demo):
         crawl(demo, fetcher=CacheOnlyFetcher())  # só cache em disco; nunca acessa a rede
+    curadoria.apply(demo)  # critérios curados (data/curadoria) também na demonstração
     demo_matches(demo)  # até 5 matches fictícios, só se houver edital real
     st.session_state.dataset = ORIGIN_LABELS[DEMO]
     st.session_state.plan = plans.DEFAULT  # demonstração abre no plano Institucional (tudo liberado)
@@ -608,9 +610,24 @@ def metadata_editor(store, call):
             st.rerun()
 
 
+def curadoria_counter(criteria, curated):
+    """Quantos critérios já foram conferidos na fonte e quantos faltam (para revisar rápido)."""
+    n = curadoria.counts(criteria)
+    if not n['total']:
+        return
+    a, b, c = st.columns(3)
+    a.metric('Critérios validados', f"{n['validated']} de {n['total']}")
+    b.metric('Faltam validar', n['missing'])
+    c.metric('Comparáveis pelo match', f"{n['structured_validated']} de {n['structured']}",
+             help='Só critérios de campo estruturado e já validados entram na nota. Os demais são revisão humana e ficam como "A verificar".')
+    st.caption('Curadoria salva em data/curadoria: o que você validar aqui sobrevive ao recarregar.' if curated
+               else 'Validações ficam só nesta base (este edital não tem arquivo de curadoria).')
+
+
 def criteria_editor(store, call):
     criteria = call.get('criteria', [])
     if criteria:
+        curadoria_counter(criteria, curadoria.is_curated(call))
         for mandatory, group in [(True, 'Obrigatórios'), (False, 'Classificatórios')]:
             rows = [c for c in criteria if c.get('mandatory', True) == mandatory and c.get('validation_status') != 'rejected']
             if not rows:
@@ -639,7 +656,7 @@ def criteria_editor(store, call):
         st.info(f"Extraído automaticamente · confiança {old.get('confidence', 'não informada')}. {old.get('confidence_note', '')}")
         if st.button('Descartar sugestão selecionada', key='reject_' + call['id'] + chosen):
             updated = [{**c, 'validation_status': 'rejected', 'review_status': 'Descartado', 'confirmed': False} if c['id'] == chosen else c for c in criteria]
-            store.save('calls', {**call, 'criteria': updated, 'criteria_complete': False})
+            curadoria.sync(store.save('calls', {**call, 'criteria': updated, 'criteria_complete': False}))
             st.rerun()
     # Fora do formulário para os controles de valor acompanharem o tipo de regra.
     suffix = call['id'] + '_' + chosen
@@ -697,11 +714,12 @@ def criteria_editor(store, call):
                 if confirmed and not located:
                     st.error('A citação da IA não foi localizada na página do documento associado. Corrija o trecho ou carregue a fonte antes de confirmar.')
                     return
-            store.save('calls', {**call, 'criteria': [c for c in criteria if c['id'] != criterion['id']] + [criterion], 'criteria_complete': False})
+            curadoria.sync(store.save('calls', {**call, 'criteria': [c for c in criteria if c['id'] != criterion['id']] + [criterion],
+                                               'criteria_complete': False}))
             st.session_state['pending_criterion_' + call['id']] = criterion['id']
             st.rerun()
     if old and st.button('Excluir critério selecionado', key='delete_' + suffix):
-        store.save('calls', {**call, 'criteria': [c for c in criteria if c['id'] != old['id']], 'criteria_complete': False})
+        curadoria.sync(store.save('calls', {**call, 'criteria': [c for c in criteria if c['id'] != old['id']], 'criteria_complete': False}))
         st.rerun()
 
 
@@ -996,6 +1014,7 @@ def update_panel(store):
                 with st.status('Atualizando editais da FAPESC…', expanded=True) as box:
                     try:
                         report = crawl(store, progress=box.write)
+                        curadoria.apply(store)
                         box.update(label='Atualização concluída: ' + summary_line(report), state='complete', expanded=False)
                         st.session_state.scan_report = report
                     except Exception as exc:  # fronteira da interface: rede/disco nunca derrubam a tela
@@ -2439,6 +2458,9 @@ def main():
                               'e carregue a demonstração de novo.']))
     else:
         store = real_store()
+    if not st.session_state.get('curadoria_' + dataset):  # carrega a curadoria ao iniciar, em cada base
+        curadoria.apply(store)
+        st.session_state['curadoria_' + dataset] = True
     if not can('multi_startup'):
         store = ScopedStore(store, plans.PERSONA_STARTUP[current_plan()])
     with st.sidebar:
