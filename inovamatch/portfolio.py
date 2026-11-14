@@ -27,7 +27,8 @@ def recalculate(store, startup_id=None, call_id=None):
 def register_application(store, call, startup, project):
     return store.save('applications', {'id': f'{call["id"]}:{project["id"]}', 'call_id': call['id'],
                                        'startup_id': startup['id'], 'project_id': project['id'],
-                                       'status': 'Em preparação', 'started_at': now_iso()})
+                                       'status': 'Em preparação', 'started_at': now_iso(),
+                                       'valor_solicitado': project.get('requested')})
 
 
 def overview(store):

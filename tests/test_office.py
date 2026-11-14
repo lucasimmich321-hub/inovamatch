@@ -261,3 +261,98 @@ def test_demo_documents_are_fictitious_and_flagged():
     docs = store.all('documents')
     assert docs and all(d['demo'] and d['arquivo'] is None and '(fictício)' in d['nome'] for d in docs)
     assert any(vault.validity_status(d) == vault.EXPIRED for d in docs)
+
+
+# T5 · candidaturas e resultado --------------------------------------------------------------
+
+from inovamatch import applications as apps  # noqa: E402
+from inovamatch.portfolio import register_application  # noqa: E402
+
+
+def started(store):
+    call, startup, project = store.get('calls', 'pub'), store.get('startups', 's-sc'), store.get('projects', 'p-sc')
+    store.save('projects', {**project, 'requested': 80_000})
+    return register_application(store, call, startup, store.get('projects', 'p-sc'))
+
+
+def test_register_keeps_requested_value_and_flow_to_approved():
+    store = Store(office_data())
+    application = started(store)
+    assert application['status'] == apps.PREPARING and application['valor_solicitado'] == 80_000
+    sub = apps.update_application(store, application['id'], status=apps.SUBMITTED, data_submissao='2026-10-01')
+    assert sub['status'] == apps.SUBMITTED and sub['motivo'] is None
+    ok = apps.update_application(store, application['id'], status=apps.APPROVED, data_resultado='2026-11-01', valor_captado=75_000)
+    assert ok['valor_captado'] == 75_000 and ok['data_submissao'] == '2026-10-01'
+
+
+@pytest.mark.parametrize('fields,message', [
+    ({'status': 'Ganhou'}, 'Status'),
+    ({'status': apps.SUBMITTED}, 'data de submissão'),
+    ({'status': apps.APPROVED, 'data_submissao': '2026-10-01'}, 'data do resultado'),
+    ({'status': apps.APPROVED, 'data_submissao': '2026-10-01', 'data_resultado': '2026-09-01', 'valor_captado': 1}, 'anterior'),
+    ({'status': apps.APPROVED, 'data_submissao': '2026-10-01', 'data_resultado': '2026-11-01'}, 'valor captado'),
+    ({'status': apps.SUBMITTED, 'data_submissao': '2026-10-01', 'valor_captado': 10}, 'só vale'),
+    ({'status': apps.REJECTED, 'data_submissao': '2026-10-01', 'data_resultado': '2026-11-01'}, 'motivo'),
+    ({'status': apps.NOT_SUBMITTED, 'motivo': 'Outro'}, 'Observação'),
+    ({'status': apps.PREPARING, 'valor_solicitado': -5}, 'maior ou igual a zero'),
+])
+def test_application_validation(fields, message):
+    store = Store(office_data())
+    application = started(store)
+    with pytest.raises(ValueError, match=message):
+        apps.update_application(store, application['id'], **fields)
+
+
+def test_lost_reason_and_suggestion_is_never_saved_automatically():
+    store = Store(office_data())
+    application = started(store)
+    expired = {**store.get('calls', 'pub'), 'deadline': '2026-01-10'}
+    assert apps.suggest_reason({**application, 'status': apps.NOT_SUBMITTED}, expired) == 'Prazo perdido'
+    assert apps.suggest_reason({**application, 'status': apps.REJECTED}, None, {'blockers': 1}) == 'Inelegível'
+    assert apps.suggest_reason({**application, 'status': apps.REJECTED}, None, {'blockers': 0}, {'docs_missing': 2}) == \
+        'Documentação incorreta ou incompleta'
+    assert apps.suggest_reason(application) is None
+    assert store.get('applications', application['id']).get('motivo') is None
+    lost = apps.update_application(store, application['id'], status=apps.NOT_SUBMITTED, motivo='Desistência da startup', motivo_obs=' mudou de foco ')
+    assert lost['motivo'] == 'Desistência da startup' and lost['motivo_obs'] == 'mudou de foco'
+    back = apps.update_application(store, application['id'], status=apps.PREPARING)
+    assert back['motivo'] is None  # motivo só existe para perda
+
+
+def test_result_form_on_link_screen():
+    data = office_data()
+    store = Store(data)
+    started(store)
+    app = open_app(data)
+    assert any(e.label == 'Registrar andamento e resultado' for e in app.expander)
+    next(s for s in app.selectbox if s.label == 'Status da candidatura').set_value(apps.NOT_SUBMITTED)
+    next(b for b in app.button if b.label == 'Salvar andamento').click().run()
+    clean(app)
+    assert any('Escolha o motivo' in e.value for e in app.error)
+    assert any('Sugestão de motivo' in c.value for c in app.caption)
+    assert app.session_state['real_data']['applications']['pub:p-sc']['status'] == apps.PREPARING
+    next(s for s in app.selectbox if s.label == 'Motivo (se reprovada ou não submetida)').set_value('Prazo perdido')
+    next(s for s in app.selectbox if s.label == 'Status da candidatura').set_value(apps.NOT_SUBMITTED)
+    next(b for b in app.button if b.label == 'Salvar andamento').click().run()
+    clean(app)
+    saved = app.session_state['real_data']['applications']['pub:p-sc']
+    assert saved['status'] == apps.NOT_SUBMITTED and saved['motivo'] == 'Prazo perdido'
+
+
+def test_follow_up_table_by_call_with_documents_count(tmp_path, monkeypatch):
+    monkeypatch.setenv('INOVAMATCH_VAULT', str(tmp_path / 'vault'))
+    data = office_data()
+    store = Store(data)
+    store.save('calls', {**store.get('calls', 'pub'), 'criteria': checklist_call()['criteria']})
+    vault.add_document(store, 's-sc', 'Contrato social', 'contrato.pdf', PDF)
+    started(store)
+    app = open_app(data, 'Startups')
+    table = next(d for d in app.dataframe if 'Documentos' in d.value.columns).value
+    assert table.to_dict('records') == [{'Startup': 'Startup SC', 'Projeto': 'Projeto SC', 'Edital': 'Edital publicado',
+                                         'Documentos': '1 de 3', 'Candidatura': 'Em preparação', 'Solicitado': 'R$ 80.000,00',
+                                         'Captado': '—', 'Motivo': '—'}]
+    next(s for s in app.selectbox if s.label == 'Filtrar por edital').set_value('pub').run()
+    clean(app)
+    table = next(d for d in app.dataframe if 'Documentos' in d.value.columns).value
+    assert table['Startup'].tolist() == ['Startup SC', 'Startup PR']
+    assert table['Candidatura'].tolist() == ['Em preparação', 'Não iniciada']

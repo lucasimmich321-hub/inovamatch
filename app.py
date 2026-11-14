@@ -24,6 +24,8 @@ from inovamatch.vault import (DOC_TYPES, DEMO_NOTICE, EXPIRED, SOON, OK as OK_VA
                               read_document, remove_document, replace_document, startup_documents, validity_status)
 from inovamatch.link_checklist import (DOCS as CHK_DOCS, DATA as CHK_DATA, MANUAL as CHK_MANUAL, DEADLINE as CHK_DEADLINE,
                                        build_checklist, summary as checklist_summary, to_csv as checklist_csv, to_pdf as checklist_pdf)
+from inovamatch.applications import (STATUSES, REASONS, PREPARING, LOST, NOT_SUBMITTED, REJECTED, suggest_reason,
+                                     update_application)
 from inovamatch.call_status import call_situation, continuous_confirmed, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN, DECLARABLE
 
 st.set_page_config(page_title='InovaMatch · Radar de Fomento', page_icon='◈', layout='wide')
@@ -611,14 +613,8 @@ def portfolio_view(store):
         st.dataframe(stats['rows'], hide_index=True, width='stretch')
     else:
         st.info('Cadastre startups e projetos ou carregue a demonstração.')
-    applications = store.all('applications')
-    if applications:
-        calls = {c['id']: c for c in store.all('calls')}
-        projects = {p['id']: p for p in store.all('projects')}
-        st.markdown('**Candidaturas em preparação**')
-        st.dataframe([{'Edital': calls.get(a['call_id'], {}).get('title', a['call_id']),
-                       'Projeto': projects.get(a['project_id'], {}).get('name', a['project_id']), 'Situação': a['status'],
-                       'Início': a.get('started_at')} for a in applications], hide_index=True, width='stretch')
+    st.markdown('**Acompanhamento por edital**')
+    follow_up_view(store)
 
 
 def review_state(call):
@@ -940,7 +936,8 @@ def link_detail(store, call, startup, project):
     c.metric('Pendentes de verificação', result['pending'])
     application = store.get('applications', f'{call["id"]}:{project["id"]}')
     if application:
-        st.caption(f"Candidatura: {application.get('status', 'Em preparação')} desde {when(application.get('started_at'))}")
+        st.caption(f"Candidatura: {application.get('status', 'Em preparação')} · iniciada em {when(application.get('started_at'))}")
+        application_form(store, application, call, result, checklist_summary(build_checklist(store, call, startup, project)))
     elif st.button('Iniciar candidatura', type='primary', key='start_' + call['id'] + project['id']):
         register_application(store, call, startup, project)
         save_analysis(store, call, startup, project, result)
@@ -1139,6 +1136,72 @@ def link_checklist_view(store, call, startup, project):
     a.download_button('Exportar checklist (CSV)', checklist_csv(items, done), safe + '.csv', 'text/csv', key='chk_csv_' + call['id'] + project['id'])
     b.download_button('Exportar checklist (PDF)', checklist_pdf(items, f"Checklist · {call['title']}", f"{startup['name']} · {project['name']}", done),
                       safe + '.pdf', 'application/pdf', key='chk_pdf_' + call['id'] + project['id'])
+
+
+def application_form(store, application, call, result, totals):
+    """Registro de andamento e resultado da candidatura. O motivo sugerido nunca é salvo sozinho."""
+    status = application.get('status', PREPARING)
+    probe = application if status in LOST else {**application, 'status': NOT_SUBMITTED if deadline_info(call)['status'] == 'expired' else REJECTED}
+    hint = suggest_reason(probe, call, result, totals)
+    as_date = lambda v: date.fromisoformat(v) if v else None
+    with st.expander('Registrar andamento e resultado', expanded=status != PREPARING):
+        with st.form('application_' + application['id']):
+            new_status = st.selectbox('Status da candidatura', STATUSES, index=STATUSES.index(status) if status in STATUSES else 0)
+            a, b = st.columns(2)
+            requested = a.number_input('Valor solicitado (R$)', min_value=0.0, step=1000.0,
+                                       value=float(application['valor_solicitado']) if application.get('valor_solicitado') is not None else None)
+            captured = b.number_input('Valor captado (R$), se aprovada', min_value=0.0, step=1000.0,
+                                      value=float(application['valor_captado']) if application.get('valor_captado') is not None else None)
+            submitted = a.date_input('Data de submissão', value=as_date(application.get('data_submissao')), format='DD/MM/YYYY',
+                                     min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
+            decided = b.date_input('Data do resultado', value=as_date(application.get('data_resultado')), format='DD/MM/YYYY',
+                                   min_value=date(2000, 1, 1), max_value=date(2100, 12, 31))
+            options = ['—'] + REASONS
+            reason = st.selectbox('Motivo (se reprovada ou não submetida)', options,
+                                  index=options.index(application['motivo']) if application.get('motivo') in REASONS else 0)
+            if hint:
+                st.caption(f'Sugestão de motivo, caso a candidatura não avance: {hint}. Não é salva automaticamente: escolha acima para registrar.')
+            note = st.text_area('Observação', application.get('motivo_obs', ''))
+            save = st.form_submit_button('Salvar andamento', type='primary')
+        if save:
+            try:
+                update_application(store, application['id'], status=new_status, valor_solicitado=requested, valor_captado=captured,
+                                   data_submissao=submitted, data_resultado=decided, motivo=None if reason == '—' else reason, motivo_obs=note)
+                st.session_state.flash = 'Andamento da candidatura salvo.'
+                st.rerun()
+            except ValueError as exc:
+                st.error(str(exc))
+
+
+def follow_up_view(store):
+    """Startup × edital: o que cada uma enviou (documentos x de y) e o status da candidatura."""
+    calls = {c['id']: c for c in store.all('calls')}
+    startups = {s['id']: s for s in store.all('startups')}
+    projects = {p['id']: p for p in store.all('projects')}
+    applications = {a['id']: a for a in store.all('applications')}
+    options = ['__all__'] + [cid for cid in calls if review_state(calls[cid]) == PUBLISHED or any(a['call_id'] == cid for a in applications.values())]
+    chosen = st.selectbox('Filtrar por edital', options, key='follow_call',
+                          format_func=lambda cid: 'Todos os editais com candidatura' if cid == '__all__' else calls[cid]['title'])
+    pairs = [(a['call_id'], a['project_id']) for a in applications.values()] if chosen == '__all__' else \
+        [(chosen, pid) for pid in projects]
+    rows = []
+    for call_id, project_id in pairs:
+        call, project = calls.get(call_id), projects.get(project_id)
+        startup = startups.get(project['startup_id']) if project else None
+        if not call or not startup:
+            continue
+        totals = checklist_summary(build_checklist(store, call, startup, project))
+        application = applications.get(f'{call_id}:{project_id}', {})
+        rows.append({'Startup': startup['name'], 'Projeto': project['name'], 'Edital': call['title'],
+                     'Documentos': f"{totals['docs_sent']} de {totals['docs_total']}",
+                     'Candidatura': application.get('status', 'Não iniciada'),
+                     'Solicitado': brl(application.get('valor_solicitado')) if application.get('valor_solicitado') is not None else '—',
+                     'Captado': brl(application.get('valor_captado')) if application.get('valor_captado') is not None else '—',
+                     'Motivo': application.get('motivo') or '—'})
+    if rows:
+        st.dataframe(rows, hide_index=True, width='stretch')
+    else:
+        st.info('Nenhuma candidatura registrada ainda. Inicie uma candidatura a partir de um vínculo.')
 
 
 def startups_page(store, simulated):
