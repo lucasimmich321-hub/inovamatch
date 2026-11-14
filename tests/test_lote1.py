@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 from streamlit.testing.v1 import AppTest
+from nav import goto
 
 from inovamatch.acceptance import reference_cases
 from inovamatch.call_status import call_situation, CONTINUOUS, CONTINUOUS_PENDING, UNKNOWN
@@ -83,7 +84,7 @@ def test_match_semantics_unchanged_by_continuous_status():
 
 def test_review_form_confirms_continuous_and_rejects_dates_together():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    app.sidebar.radio[0].set_value('Editais').run()
+    goto(app, 'Editais')
     next(r for r in app.radio if r.label == 'Origem').set_value('Cadastro manual').run()
     next(x for x in app.text_input if x.label == 'Título do edital *').set_value('Chamada em fluxo contínuo')
     next(x for x in app.text_input if x.label == 'Referência da fonte *').set_value('Regulamento')
@@ -136,7 +137,7 @@ def test_radar_hides_closed_and_off_focus_until_chips_are_used():
     store.save('calls', fixture_call('fapesc_66_2025', id='closed', title='Encerrado na fonte', source_closed=True, relevance='Relevante'))
     store.save('calls', fixture_call('fapesc_66_2025', id='off', title='Pós-graduação', recurring_schedule=False, relevance='Fora do foco'))
     app.session_state['real_data'] = data
-    app.sidebar.radio[0].set_value('Editais').run()
+    goto(app, 'Editais')
     clean(app)
     titles = lambda: next(t for t in app.dataframe if 'Título' in t.value.columns).value['Título'].tolist()
     assert titles() == ['Inova Talentos']
@@ -178,7 +179,7 @@ def test_update_progress_is_collapsed_and_summary_formatted(monkeypatch):
         return report
     monkeypatch.setattr(crawler, 'crawl', fake_crawl)
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    app.sidebar.radio[0].set_value('Editais').run()
+    goto(app, 'Editais')
     next(b for b in app.button if b.label == 'Atualizar editais').click().run()
     clean(app)
     captions = [c.value for c in app.caption]
@@ -216,7 +217,7 @@ def test_secondary_text_contrast_and_focus_visible():
 def test_match_justifications_in_expander_with_essential_columns():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
     next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
-    app.sidebar.radio[0].set_value('Vínculos').run()
+    goto(app, 'Vínculos')
     clean(app)
     assert any(e.label == 'Justificativas e evidências da comparação' for e in app.expander)
     toggle = next(t for t in app.toggle if t.label.startswith('Mostrar todas as colunas'))

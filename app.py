@@ -84,15 +84,20 @@ h1,h2,h3 {font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em;color:var
 </style>'''
 st.html(CSS)
 
-PAGES = ['Vínculos', 'Editais', 'Startups', 'Painel']
-ICONS = ['⟷', '◎', '◇', '▦']
-# Nomes das 7 telas antigas (links internos e ai_ui) apontam para a tela nova equivalente.
-LEGACY_PAGES = {'Dashboard': 'Painel', 'Radar de Editais': 'Editais', 'Cadastrar Startup': 'Startups', 'Cadastrar Projeto': 'Startups',
-                'Match Inteligente': 'Vínculos', 'Copiloto de Captação': 'Vínculos', 'Portfólio da Incubadora': 'Startups'}
+# Navegação por tarefa do usuário (st.navigation). Ícones Material nativos; nada de símbolos unicode no menu.
+PAGE_DEFS = [('Início', 'inicio', ':material/home:'), ('Editais', 'editais', ':material/description:'),
+             ('Startups', 'startups', ':material/rocket_launch:'), ('Candidaturas', 'candidaturas', ':material/assignment:'),
+             ('Alertas', 'alertas', ':material/notifications:')]
+PAGES = [title for title, _, _ in PAGE_DEFS]
+# Nomes de telas antigas (links internos e o ai_ui, que não é alterado) levam à página nova equivalente.
+LEGACY_PAGES = {'Dashboard': 'Início', 'Painel': 'Início', 'Radar de Editais': 'Editais', 'Vínculos': 'Editais',
+                'Match Inteligente': 'Editais', 'Copiloto de Captação': 'Candidaturas', 'Cadastrar Startup': 'Startups',
+                'Cadastrar Projeto': 'Candidaturas', 'Portfólio da Incubadora': 'Startups'}
+CTX = {}
 
 
 def go(page, call_id=None):
-    st.session_state.page = LEGACY_PAGES.get(page, page)
+    st.session_state.goto = LEGACY_PAGES.get(page, page)
     if call_id:
         st.session_state.focus_call = call_id
 
@@ -103,7 +108,7 @@ def demo_activate():
     demo_documents(Store(data))
     demo_applications(Store(data))
     st.session_state.dataset = 'Demonstração'
-    st.session_state.page = 'Vínculos'
+    st.session_state.goto = 'Início'
 
 
 def brl(value):
@@ -243,62 +248,6 @@ def office_results(store):
     st.html('<div class="section-head">Operação</div>')
 
 
-def painel(store):
-    # Título único da página: o hero (antes havia um H1 repetindo a mesma ideia).
-    st.html('<div class="eyebrow">INOVALE 2026 &nbsp; / &nbsp; RADAR INTELIGENTE DE FOMENTO</div>')
-    st.html('''<div class="hero"><div class="eyebrow">ENCONTRE. COMPARE. PREPARE.</div>
-    <h1>Transforme oportunidades<br>em próximos passos.</h1>
-    <p>Conecte sua startup ao fomento e saiba o que falta para candidatar seu projeto.</p></div>''')
-    office_results(store)
-    calls = store.all('calls')
-    soon = [c for c in calls if deadline_info(c)['status'] == 'soon']
-    stats = overview(store)
-    cols = st.columns(4)
-    for col, label, value in zip(cols, ['Editais encontrados', 'Startups cadastradas', 'Projetos no portfólio', 'Editais com requisitos analisados'],
-                                [stats['calls'], stats['startups'], stats['projects'], stats['analyzed']]):
-        col.metric(label, value)
-    for col, label, value in zip(st.columns(4), ['Oportunidades potencialmente elegíveis', 'Prazos em até 7 dias', 'Pendências documentais / operacionais', 'Candidaturas em preparação'],
-                                [stats['eligible'], stats['deadlines'], stats['doc_pending'], stats['preparing']]):
-        col.metric(label, value)
-    st.caption('Indicadores recalculados com os dados atuais. Oportunidades contam combinações projeto + edital; pendências não representam reprovação.')
-    if stats['needs_review']:
-        st.warning(f"{stats['needs_review']} edital(is) precisam de revisão dos requisitos antes de concluir a elegibilidade.")
-    st.html('<div class="section-head">No seu radar</div>')
-    st.caption('Prazos confirmados aparecem primeiro. A coleta é acionada por você.')
-    if not calls:
-        with st.container(border=True):
-            st.markdown('**Seu radar está pronto para começar.**')
-            st.write('Busque editais na FAPESC ou carregue a demonstração na barra lateral para explorar o fluxo completo.')
-            st.button('Ir para Editais →', type='primary', on_click=go, args=('Editais',))
-    else:
-        ordered = sorted(calls, key=lambda c: (deadline_info(c)['days'] is None,
-                                              deadline_info(c)['days'] if deadline_info(c)['days'] is not None else 99999))[:6]
-        for offset in range(0, len(ordered), 3):
-            for col, call in zip(st.columns(3), ordered[offset:offset + 3]):
-                with col, st.container(border=True):
-                    badge = 'SIMULADO' if call.get('simulated') else escape(call.get('institution', 'Fonte pública'))
-                    st.html(f'<div class="opportunity"><span class="tag {"demo" if call.get("simulated") else ""}">{badge}</span>'
-                            f'<h3>{escape(call["title"])}</h3><span class="muted">{escape(deadline_label(call))}</span></div>')
-                    st.button('Ver edital →', key='open_' + call['id'], on_click=go, args=('Editais', call['id']), width='stretch')
-    if soon:
-        st.warning(f'{len(soon)} edital(is) com prazo confirmado em até 7 dias. Confira o horário e as retificações na fonte.')
-    if stats['rows']:
-        st.markdown('**Startups e oportunidades da incubadora**')
-        st.dataframe(stats['rows'], hide_index=True, width='stretch')
-        st.button('Ver startups →', on_click=go, args=('Startups',))
-    if calls:
-        with st.expander('Novos editais e revisões necessárias'):
-            st.dataframe([{'Edital': c['title'], 'Instituição': c.get('institution'), 'Encontrado em': when(c.get('discovered_at'), 'Cadastro manual'),
-                           'Revisão': 'Concluída' if c.get('criteria_complete') else 'Necessária'} for c in sorted(calls, key=lambda c: c.get('discovered_at', ''), reverse=True)[:20]], hide_index=True)
-    st.html('<div class="steps"><strong>Uma candidatura preparada começa com três passos</strong><br>'
-            '01 &nbsp; Cadastre sua startup e seu projeto &nbsp; → &nbsp; 02 &nbsp; Revise os critérios do edital &nbsp; → &nbsp; '
-            '03 &nbsp; Faça o match e organize a preparação</div>')
-    st.html('<div class="soon"><span class="tag demo">Em breve</span><div class="section-head">Visão da startup</div>'
-            'Cada startup verá, só para leitura, os editais que o escritório direcionou a ela e o checklist do vínculo. '
-            'Ainda não disponível: hoje o InovaMatch é operado pelo escritório de projetos.</div>')
-    st.html('<div class="footer">InovaMatch · Hackathon Incubadora Joaçaba 2026 · Regras transparentes, evidências rastreáveis.</div>')
-
-
 def startup_form(store, simulated):
     st.caption('As informações da empresa são avaliadas separadamente das informações do projeto.')
     records = store.all('startups')
@@ -350,24 +299,45 @@ def startup_form(store, simulated):
             st.error(str(exc))
 
 
-def project_form(store, simulated):
-    st.caption('Defina a proposta, o orçamento e as despesas antes de comparar com um edital.')
-    startups = store.all('startups')
+def candidacy_form(store, simulated):
+    st.caption('Quem propõe, para qual edital e com qual projeto. As três frentes do desafio: o Polo/CETEPI, parcerias com universidade ou prefeitura e as startups.')
+    kind = st.segmented_control('Quem propõe', PROPONENT_KINDS, default='Startup', key=f'proponent_kind_{simulated}') or 'Startup'
+    startups = [o for o in store.all('startups') if org_kind(o) == kind]
     if not startups:
-        st.info('Cadastre uma startup para vincular seu primeiro projeto.')
+        if kind == 'Startup':
+            st.info('Cadastre uma startup para criar a primeira candidatura dela.')
+            st.button('Cadastrar startup →', on_click=go, args=('Startups',), key='cand_go_startups')
+            return
+        with st.form(f'quick_org_{kind}_{simulated}'):
+            st.markdown(f'**Cadastrar proponente: {kind}**')
+            org_name = st.text_input('Nome *', placeholder='Ex.: CETEPI Joaçaba' if kind.startswith('Polo') else 'Ex.: Universidade ou Prefeitura de …')
+            a, b = st.columns(2)
+            org_state = a.selectbox('Estado', [''] + STATES, format_func=lambda x: x or 'Não informado')
+            org_legal = b.text_input('Natureza jurídica', placeholder='Ex.: Associação, Autarquia municipal')
+            if st.form_submit_button('Salvar proponente', type='primary'):
+                try:
+                    store.save('startups', {'name': org_name.strip(), 'kind': kind, 'state': org_state or None, 'legal_type': org_legal.strip(),
+                                            'documents': [], 'simulated': simulated})
+                    st.rerun()
+                except ValueError as exc:
+                    st.error(str(exc))
         return
-    records = store.all('projects')
+    ids = {o['id'] for o in startups}
+    records = [r for r in store.all('projects') if r['startup_id'] in ids]
     lookup = {r['id']: r for r in records}
     pending = st.session_state.pop(f'pending_project_{simulated}', None)
     if pending in lookup:
         st.session_state[f'project_edit_{simulated}'] = pending
-    selected = st.selectbox('Novo projeto ou editar', ['__new__'] + list(lookup),
-                            format_func=lambda i: '＋ Novo projeto' if i == '__new__' else lookup[i]['name'], key=f'project_edit_{simulated}')
+    selected = st.selectbox('Nova candidatura ou editar projeto existente', ['__new__'] + list(lookup),
+                            format_func=lambda i: 'Nova candidatura' if i == '__new__' else lookup[i]['name'], key=f'project_edit_{simulated}')
     old = lookup.get(selected, {})
     index = {s['id']: s['name'] for s in startups}
     with st.form('project_' + selected):
-        sid = st.selectbox('Startup responsável *', list(index), format_func=lambda i: index[i],
+        sid = st.selectbox('Proponente *', list(index), format_func=lambda i: index[i],
                            index=list(index).index(old['startup_id']) if old.get('startup_id') in index else 0)
+        open_calls = {c['id']: c for c in sort_calls(store.all('calls')) if status_group(c) != 'Encerrado'}
+        call_choice = st.selectbox('Edital', ['__none__'] + list(open_calls), key=f'candidacy_call_{selected}',
+                                   format_func=lambda i: 'Escolher depois' if i == '__none__' else open_calls[i]['title'])
         name = st.text_input('Nome do projeto *', old.get('name', ''))
         objective = st.text_area('Objetivo', old.get('objective', ''))
         description = st.text_area('Descrição', old.get('description', ''))
@@ -391,7 +361,7 @@ def project_form(store, simulated):
         partner_types = st.text_area('Tipos dos parceiros — um por linha', '\n'.join(old.get('partner_types', [])), help='Ex.: ICT, Empresa. O vínculo e a qualificação precisam de comprovação.')
         project_documents = st.text_area('Documentos do projeto e da equipe — um por linha', '\n'.join(old.get('project_documents', [])), help='Ex.: Diploma, Currículo Lattes, Comprovante de vínculo. A titularidade e a validade devem ser conferidas.')
         recalc = st.checkbox('Recalcular compatibilidade após salvar o projeto', value=True)
-        saved = st.form_submit_button('Salvar projeto', type='primary')
+        saved = st.form_submit_button('Salvar candidatura', type='primary')
     if saved:
         try:
             saved_record = store.save('projects', {**old, 'startup_id': sid, 'name': name.strip(), 'objective': objective,
@@ -400,11 +370,14 @@ def project_form(store, simulated):
                                    'budget_notes': budget_notes, 'team': team, 'simulated': simulated,
                                    'trl': trl, 'duration_months': duration, 'execution_state': execution_state or None,
                                    'coordinator_state': coordinator_state or None, 'coordinator_degree': coordinator_degree or None,
-                                   'partners': lines(partners), 'partner_types': lines(partner_types), 'project_documents': lines(project_documents)})
+                                   'partners': lines(partners), 'partner_types': lines(partner_types), 'project_documents': lines(project_documents),
+                                   'proponent_kind': kind})
             if recalc:
                 recalculate(store, startup_id=sid)
+            if call_choice != '__none__' and not store.get('applications', f"{call_choice}:{saved_record['id']}"):
+                register_application(store, open_calls[call_choice], store.get('startups', sid), saved_record)
             st.session_state[f'pending_project_{simulated}'] = saved_record['id']
-            st.session_state.flash = 'Projeto salvo e vinculado à startup.'
+            st.session_state.flash = 'Candidatura salva.' if call_choice != '__none__' else 'Projeto salvo. Escolha o edital quando quiser.'
             st.rerun()
         except ValueError as exc:
             st.error(str(exc))
@@ -626,27 +599,7 @@ def documentation_view(call):
         st.markdown('**Condições de envio identificadas**')
         st.dataframe([{'Condição': c['evidence'], 'Página': c.get('page'), 'Fonte': c['source'], 'Revisão': c.get('review_status')} for c in submission], hide_index=True, width='stretch')
     st.caption('O checklist operacional é individual por startup, projeto e edital. Marque as tarefas e acompanhe o progresso no Copiloto.')
-    st.button('Ver vínculos com as startups →', on_click=go, args=('Vínculos',), key='docs_copilot_' + call['id'])
-
-
-def compatibility_view(store, call):
-    entries = list(matrix(store, call_id=call['id']))
-    if not entries:
-        st.info('Cadastre projetos e analise os requisitos deste edital para comparar o portfólio.')
-        return
-    if st.button('Recalcular este edital com todo o portfólio', key='scale_' + call['id']):
-        count = recalculate(store, call_id=call['id'])
-        st.success(f'{count} comparação(ões) registrada(s).')
-    st.dataframe([{'Startup': e['startup']['name'], 'Projeto': e['project']['name'], 'Resultado': e['result']['verdict'],
-                   'Impedimentos': e['result']['blockers'], 'Pendências': e['result']['pending'],
-                   'Pendências documentais / operacionais': e['result']['dimensions']['readiness']['pending']} for e in entries], hide_index=True, width='stretch')
-    by_project = {e['project']['id']: e for e in entries}
-    selected = st.selectbox('Projeto para inspecionar justificativas', list(by_project), format_func=lambda key: by_project[key]['startup']['name'] + ' · ' + by_project[key]['project']['name'], key='inspect_' + call['id'])
-    result = by_project[selected]['result']
-    verdict_banner(result)
-    dimensions_view(result)
-    with st.expander('Justificativas e evidências da comparação'):
-        result_table(result, 'compat_' + call['id'])
+    st.caption('Veja quais startups atendem a este edital na aba “Startups compatíveis”.')
 
 
 def dimensions_view(result):
@@ -723,7 +676,7 @@ def call_detail(store, call):
         st.caption(f"{len(call['criteria'])} critérios registrados · {pending} aguardando revisão · última análise: {when(call.get('analyzed_at'), 'não registrada')}")
     for warning in call.get('extraction_warnings', []):
         st.warning(warning)
-    tab_summary, tab1, tab_docs, tab_compat, tab3 = st.tabs(['Resumo', 'Requisitos', 'Documentação', 'Compatibilidade', 'Fonte'])
+    tab_summary, tab1, tab_docs, tab_compat, tab3 = st.tabs(['Resumo', 'Requisitos', 'Documentação', 'Startups compatíveis', 'Fonte'])
     with tab_summary:
         summary_view(store, call)
     with tab1:
@@ -732,7 +685,7 @@ def call_detail(store, call):
     with tab_docs:
         documentation_view(call)
     with tab_compat:
-        compatibility_view(store, call)
+        compat_section(store, call)
     with tab3:
         st.caption('A extração usa expressões regulares e pistas textuais. Sugestões nunca são confirmação. PDFs digitalizados precisam de transcrição manual.')
         if call.get('url') and not call.get('simulated'):
@@ -1005,84 +958,11 @@ def link_detail(store, call, startup, project):
         link_checklist_view(store, call, startup, project)
     with st.expander('Resumo por dimensão'):
         dimensions_view(result)
+    items = build_checklist(store, call, startup, project)
+    st.download_button('Gerar rascunho da candidatura (.txt)', draft_text(call, startup, project, result, items),
+                       f"rascunho-{project['id']}-{call['id']}.txt", 'text/plain', icon=':material/edit_note:',
+                       key='draft_' + call['id'] + project['id'], help='Texto de preparação a partir das regras registradas. Não é a proposta oficial.')
     st.caption('“Atende” refere-se às regras registradas e aos dados declarados, sem auditoria documental. Não é aprovação nem chance de aprovação.')
-
-
-def links_by_call(store):
-    include = st.toggle('Incluir editais ainda em revisão', key='links_include_review',
-                        help='Por padrão só aparecem editais publicados pelo escritório e não encerrados.')
-    calls = linkable_calls(store, include)
-    if not calls:
-        st.info('Nenhum edital publicado ainda. Revise e publique um edital na tela Editais, ou carregue a demonstração.')
-        st.button('Ir para Editais →', on_click=go, args=('Editais',))
-        return
-    call = pick('Edital', calls, 'links_call', name='title', preferred=st.session_state.get('match_call'))
-    st.html(status_badge(call) + f' <span class="muted">{escape(review_state(call))} · {escape(deadline_label(call))}</span>')
-    startups = {s['id']: s for s in store.all('startups')}
-    projects = store.all('projects')
-    if not startups:
-        st.info('Cadastre as startups do polo para ver os vínculos.')
-        st.button('Cadastrar startup →', on_click=go, args=('Startups',))
-        return
-    rows, pairs = [], {}
-    for project in projects:
-        startup = startups.get(project['startup_id'])
-        if not startup:
-            continue
-        result = match(call, startup, project)
-        application = store.get('applications', f'{call["id"]}:{project["id"]}')
-        pairs[project['id']] = (startup, project)
-        rows.append({'Startup': startup['name'], 'Projeto': project['name'], 'Resultado': verdict_label(result),
-                     'Motivo principal': main_reason(result), 'Pendentes': result['pending'], 'Não atendidos': result['blockers'],
-                     'Candidatura': application.get('status') if application else '—'})
-    owners = {p['startup_id'] for p in projects}
-    rows += [{'Startup': s['name'], 'Projeto': 'Sem projeto cadastrado', 'Resultado': 'Pendente de verificação',
-              'Motivo principal': 'Cadastre um projeto para comparar', 'Pendentes': 1, 'Não atendidos': 0, 'Candidatura': '—'}
-             for s in startups.values() if s['id'] not in owners]
-    order = {'Atende': 0, 'Pendente de verificação': 1, 'Não atende': 2}
-    rows.sort(key=lambda r: order[r['Resultado']])
-    st.dataframe(rows, hide_index=True, width='stretch')
-    if not pairs:
-        return
-    chosen = st.selectbox('Abrir vínculo', list(pairs), key='links_open_' + call['id'],
-                          format_func=lambda pid: pairs[pid][0]['name'] + ' · ' + pairs[pid][1]['name'])
-    link_detail(store, call, *pairs[chosen])
-
-
-def links_by_startup(store):
-    startups = store.all('startups')
-    if not startups:
-        st.info('Cadastre as startups do polo para ver os vínculos.')
-        return
-    a, b = st.columns(2)
-    with a:
-        startup = pick('Startup', startups, 'links_startup')
-    projects = [p for p in store.all('projects') if p['startup_id'] == startup['id']]
-    with b:
-        project = pick('Projeto', projects, 'links_project')
-    if not project:
-        st.info('Esta startup ainda não tem projeto cadastrado.')
-        st.button('Cadastrar projeto →', on_click=go, args=('Startups',))
-        return
-    include = st.toggle('Incluir editais ainda em revisão', key='links_include_review_startup')
-    calls = linkable_calls(store, include)
-    if not calls:
-        st.info('Nenhum edital publicado ainda.')
-        return
-    results = {c['id']: (c, match(c, startup, project)) for c in calls}
-    st.dataframe([{'Edital': c['title'], 'Situação': status_text(c), 'Prazo': deadline_label(c), 'Resultado': verdict_label(r),
-                   'Motivo principal': main_reason(r)} for c, r in results.values()], hide_index=True, width='stretch')
-    chosen = st.selectbox('Abrir vínculo', list(results), key='links_open_startup', format_func=lambda cid: results[cid][0]['title'])
-    link_detail(store, results[chosen][0], startup, project)
-
-
-def vinculos(store):
-    heading('Vínculos', 'Para cada edital publicado, quais startups do polo atendem, o que falta e por quê. Sem nota e sem chance de aprovação.')
-    mode = st.segmented_control('Ver por', ['Edital', 'Startup'], default='Edital', key='links_mode') or 'Edital'
-    if mode == 'Edital':
-        links_by_call(store)
-    else:
-        links_by_startup(store)
 
 
 VALIDITY_MARK = {EXPIRED: '🔴', SOON: '🟡', OK_VALID: '🟢', NO_DATE: '⚪'}
@@ -1258,34 +1138,258 @@ def follow_up_view(store):
         st.info('Nenhuma candidatura registrada ainda. Inicie uma candidatura a partir de um vínculo.')
 
 
+PROPONENT_KINDS = ['Startup', 'Polo/CETEPI', 'Parceria com universidade ou prefeitura']
+
+
+def org_kind(org):
+    return org.get('kind') or 'Startup'
+
+
+def link_rows(store, call):
+    """Proponentes × projetos para um edital, com o resultado do match existente (sem nota nem chance)."""
+    orgs = {s['id']: s for s in store.all('startups')}
+    rows, pairs = [], {}
+    for project in store.all('projects'):
+        org = orgs.get(project['startup_id'])
+        if not org:
+            continue
+        result = match(call, org, project)
+        application = store.get('applications', f'{call["id"]}:{project["id"]}')
+        pairs[project['id']] = (org, project)
+        rows.append({'Proponente': org['name'], 'Tipo': org_kind(org), 'Projeto': project['name'], 'Resultado': verdict_label(result),
+                     'Motivo principal': main_reason(result), 'Pendentes': result['pending'], 'Não atendidos': result['blockers'],
+                     'Candidatura': application.get('status') if application else '—'})
+    owners = {p['startup_id'] for p in store.all('projects')}
+    rows += [{'Proponente': s['name'], 'Tipo': org_kind(s), 'Projeto': 'Sem projeto cadastrado', 'Resultado': 'Pendente de verificação',
+              'Motivo principal': 'Crie uma candidatura para comparar', 'Pendentes': 1, 'Não atendidos': 0, 'Candidatura': '—'}
+             for s in orgs.values() if s['id'] not in owners]
+    order = {'Atende': 0, 'Pendente de verificação': 1, 'Não atende': 2}
+    rows.sort(key=lambda r: order[r['Resultado']])
+    return rows, pairs
+
+
+def compat_section(store, call):
+    """Ação "Startups compatíveis" do detalhe do edital (antes eram as telas Match e Vínculos)."""
+    if not store.all('startups'):
+        st.info('Cadastre as startups do polo para ver quais atendem a este edital.')
+        st.button('Cadastrar startup →', on_click=go, args=('Startups',), key='compat_go_' + call['id'])
+        return
+    if review_state(call) != PUBLISHED and not call.get('simulated'):
+        st.caption('Edital ainda em revisão: o resultado usa critérios que podem mudar até a publicação.')
+    rows, pairs = link_rows(store, call)
+    st.dataframe(rows, hide_index=True, width='stretch')
+    if not pairs:
+        st.button('Nova candidatura →', on_click=go, args=('Candidaturas',), key='compat_new_' + call['id'])
+        return
+    chosen = st.selectbox('Abrir vínculo', list(pairs), key='links_open_' + call['id'],
+                          format_func=lambda pid: pairs[pid][0]['name'] + ' · ' + pairs[pid][1]['name'])
+    link_detail(store, call, *pairs[chosen])
+
+
+def draft_text(call, org, project, result, items):
+    """Rascunho de preparação para o escritório (texto). Não é a proposta oficial nem usa IA."""
+    lines_out = [f"RASCUNHO DE PREPARAÇÃO · {call['title']}", f"Proponente: {org['name']} ({org_kind(org)}) · Projeto: {project['name']}",
+                 f"Resultado do match: {verdict_label(result)} · {main_reason(result)}", f"Prazo: {deadline_label(call)}", '',
+                 'O QUE O EDITAL PEDE E O QUE TEMOS']
+    for row in result['rows']:
+        status = {PASS: 'OK', FAIL: 'NÃO ATENDE', PENDING: 'VERIFICAR'}[row['status']]
+        page = f" (pág. {row['page']})" if row.get('page') else ''
+        lines_out.append(f"- [{status}] {row['requirement']}{page}: edital pede {display(row['expected'])}; cadastro: {display(row['actual'])}")
+    lines_out += ['', 'CHECKLIST']
+    lines_out += [f"- {i['item']}: {i['situacao']}" + (f" (pág. {i['pagina']})" if i.get('pagina') else '') for i in items]
+    lines_out += ['', 'PROJETO', f"Objetivo: {project.get('objective') or 'a preencher'}", f"Valor solicitado: {brl(project.get('requested'))}",
+                  f"Orçamento: {brl(project.get('budget'))}", '',
+                  'Rascunho gerado pelo InovaMatch a partir das regras registradas. Confira o edital integral e as retificações; '
+                  'não substitui o formulário oficial nem garante aprovação.']
+    return '\n'.join(lines_out)
+
+
+def startup_matches(store, startup):
+    """Editais compatíveis com uma startup (antes: Match direto)."""
+    projects = [p for p in store.all('projects') if p['startup_id'] == startup['id']]
+    if not projects:
+        st.info('Esta startup ainda não tem candidatura/projeto. Crie em Candidaturas → Nova candidatura.')
+        return
+    project = pick('Projeto', projects, 'profile_project_' + startup['id'])
+    calls = [c for c in sort_calls(store.all('calls')) if status_group(c) != 'Encerrado' and (review_state(c) == PUBLISHED or c.get('simulated'))]
+    if not calls:
+        st.info('Nenhum edital publicado e aberto no momento.')
+        return
+    results = {c['id']: (c, match(c, startup, project)) for c in calls}
+    st.dataframe([{'Edital': c['title'], 'Situação': status_text(c), 'Prazo': deadline_label(c), 'Resultado': verdict_label(r),
+                   'Motivo principal': main_reason(r)} for c, r in results.values()], hide_index=True, width='stretch')
+    chosen = st.selectbox('Abrir vínculo', list(results), key='profile_open_' + startup['id'], format_func=lambda cid: results[cid][0]['title'])
+    link_detail(store, results[chosen][0], startup, project)
+
+
+def startups_list(store):
+    portfolio_view(store)
+    startups = [s for s in store.all('startups') if org_kind(s) == 'Startup']
+    if not startups:
+        return
+    st.html('<div class="section-head">Perfil</div>')
+    startup = pick('Startup', startups, 'profile_startup')
+    docs = startup_documents(store, startup['id'])
+    expired = sum(validity_status(d) == EXPIRED for d in docs)
+    a, b, c = st.columns(3)
+    a.markdown(f"**Sede**  \n{md_escape(display(startup.get('city')))} / {md_escape(display(startup.get('state')))}")
+    b.markdown(f"**CNPJ**  \n{md_escape(display(startup.get('cnpj')))}")
+    c.markdown(f"**Documentos no cofre**  \n{len(docs)}" + (f' · {expired} vencido(s)' if expired else ''))
+    st.html('<div class="section-head">Editais compatíveis</div>')
+    startup_matches(store, startup)
+
+
 def startups_page(store, simulated):
-    heading('Startups', 'As startups que o escritório atende, seus projetos e o acompanhamento das candidaturas.')
-    tab_startup, tab_project, tab_docs, tab_follow = st.tabs(['Cadastro da startup', 'Projetos', 'Documentos', 'Acompanhamento'])
-    with tab_startup:
+    heading('Startups', 'As startups que o escritório atende: perfil, documentos e editais compatíveis.')
+    tab_list, tab_edit, tab_docs = st.tabs(['Lista e perfil', 'Cadastrar ou editar', 'Documentos'])
+    with tab_list:
+        startups_list(store)
+    with tab_edit:
         startup_form(store, simulated)
-    with tab_project:
-        project_form(store, simulated)
     with tab_docs:
         vault_view(store, simulated)
+
+
+def open_candidacy(store):
+    calls = {c['id']: c for c in store.all('calls')}
+    projects = {p['id']: p for p in store.all('projects')}
+    orgs = {s['id']: s for s in store.all('startups')}
+    usable = {a['id']: a for a in store.all('applications')
+              if a['call_id'] in calls and a['project_id'] in projects and projects[a['project_id']]['startup_id'] in orgs}
+    if not usable:
+        return
+    chosen = st.selectbox('Abrir candidatura', list(usable), key='open_candidacy',
+                          format_func=lambda i: orgs[projects[usable[i]['project_id']]['startup_id']]['name'] + ' · ' + calls[usable[i]['call_id']]['title'])
+    app_record = usable[chosen]
+    project = projects[app_record['project_id']]
+    link_detail(store, calls[app_record['call_id']], orgs[project['startup_id']], project)
+
+
+def candidaturas_page(store, simulated):
+    heading('Candidaturas', 'Edital × proponente: andamento, checklist, rascunho e resultado.')
+    tab_follow, tab_new, tab_results = st.tabs(['Andamento', 'Nova candidatura', 'Resultados'])
     with tab_follow:
-        portfolio_view(store)
+        follow_up_view(store)
+        open_candidacy(store)
+    with tab_new:
+        candidacy_form(store, simulated)
+    with tab_results:
+        office_results(store)
+
+
+def inicio(store):
+    heading('Início', 'O que precisa da sua atenção: prazos que vencem, editais para revisar e pendências.')
+    calls = store.all('calls')
+    if not calls and not store.all('startups'):
+        with st.container(border=True):
+            st.markdown('**Comece por aqui**')
+            st.write('1. Em **Editais**, clique em "Atualizar editais" para ler a FAPESC.  \n2. Cadastre as startups do polo.  \n'
+                     '3. Revise um edital e veja as startups compatíveis.')
+            a, b = st.columns(2)
+            a.button('Ir para Editais', type='primary', icon=':material/description:', on_click=go, args=('Editais',))
+            b.button('Carregar demonstração', icon=':material/play_circle:', on_click=demo_activate, key='home_demo')
+        return
+    soon = [c for c in calls if not continuous_confirmed(c) and deadline_info(c)['days'] is not None and 0 <= deadline_info(c)['days'] <= 30]
+    soon.sort(key=lambda c: deadline_info(c)['days'])
+    awaiting = [c for c in sort_calls(calls) if review_state(c) != PUBLISHED and not c.get('simulated') and status_group(c) != 'Encerrado']
+    pending = home_pendencies(store)
+    col_deadline, col_review, col_pending = st.columns(3)
+    with col_deadline, st.container(border=True):
+        st.markdown(f'**Prazos que vencem** · {len(soon)}')
+        st.caption('Prazos confirmados nos próximos 30 dias.')
+        for call in soon[:6]:
+            st.markdown(f"{md_escape(call['title'][:90])}  \n**{md_escape(deadline_label(call))}**")
+            st.button('Ver edital', key='home_deadline_' + call['id'], on_click=go, args=('Editais', call['id']), icon=':material/arrow_forward:')
+        if not soon:
+            st.caption('Nenhum prazo confirmado nos próximos 30 dias. Prazos só contam depois de confirmados na revisão.')
+    with col_review, st.container(border=True):
+        st.markdown(f'**Editais para revisar** · {len(awaiting)}')
+        st.caption('Novos editais ficam aqui até o escritório confirmar prazo e critérios.')
+        for call in awaiting[:6]:
+            st.markdown(md_escape(call['title'][:90]))
+            st.button('Revisar', key='home_review_' + call['id'], on_click=go, args=('Editais', call['id']), icon=':material/fact_check:')
+        if not awaiting:
+            st.caption('Nada aguardando revisão.')
+        st.caption('Aviso de edital alterado (comparação de versões) ainda não implementado.')
+    with col_pending, st.container(border=True):
+        st.markdown(f'**Pendências** · {len(pending)}')
+        st.caption('Documentos faltando ou vencidos e candidaturas sem resultado.')
+        for text in pending[:8]:
+            st.markdown('- ' + md_escape(text))
+        if not pending:
+            st.caption('Nenhuma pendência registrada.')
+        if pending:
+            st.button('Abrir candidaturas', key='home_candidacies', on_click=go, args=('Candidaturas',), icon=':material/assignment:')
+    st.html('<div class="soon"><span class="tag demo">Em breve</span><div class="section-head">Visão da startup</div>'
+            'Cada startup verá, só para leitura, os editais que o escritório direcionou a ela e o checklist do vínculo. '
+            'Ainda não disponível: hoje o InovaMatch é operado pelo escritório de projetos.</div>')
+
+
+def home_pendencies(store):
+    calls = {c['id']: c for c in store.all('calls')}
+    projects = {p['id']: p for p in store.all('projects')}
+    orgs = {s['id']: s for s in store.all('startups')}
+    out = []
+    for a in store.all('applications'):
+        call, project = calls.get(a['call_id']), projects.get(a['project_id'])
+        org = orgs.get(project['startup_id']) if project else None
+        if not call or not org:
+            continue
+        if a.get('status') == PREPARING:
+            totals = checklist_summary(build_checklist(store, call, org, project))
+            if totals['docs_missing'] or totals['docs_expired']:
+                out.append(f"{org['name']}: {totals['docs_missing']} documento(s) faltando e {totals['docs_expired']} vencido(s) para {call['title'][:60]}")
+        elif a.get('status') == 'Submetida':
+            out.append(f"{org['name']}: candidatura submetida a {call['title'][:60]} sem resultado registrado")
+    for doc in store.all('documents'):
+        status = validity_status(doc)
+        if status in (EXPIRED, SOON) and doc['startup_id'] in orgs:
+            out.append(f"{orgs[doc['startup_id']]['name']}: {doc['tipo']} {status.lower()}")
+    return out
+
+
+def alertas_page(store):
+    heading('Alertas', 'Fila de avisos por destinatário: equipe do polo, parceiros e startups incubadas.')
+    with st.container(border=True):
+        st.markdown('**Ainda não implementado.**')
+        st.write('Esta tela vai reunir os avisos de edital novo compatível, prazo chegando (7, 3 e 1 dia) e edital alterado, '
+                 'com texto pronto e links de e-mail e WhatsApp. Nada é enviado automaticamente.')
+        st.caption('Enquanto isso, prazos e pendências aparecem no Início.')
+
+
+def _page(title):
+    def render():
+        store, simulated = CTX['store'], CTX['simulated']
+        {'Início': lambda: inicio(store), 'Editais': lambda: radar(store, simulated), 'Startups': lambda: startups_page(store, simulated),
+         'Candidaturas': lambda: candidaturas_page(store, simulated), 'Alertas': lambda: alertas_page(store)}[title]()
+    render.__name__ = 'page_' + title.encode('ascii', 'ignore').decode().lower()
+    return render
 
 
 def main():
     if st.session_state.get('flash'):
         st.toast(st.session_state.pop('flash'), icon='✅')
+    # O ai_ui (não alterado) grava page="Match Inteligente" + match_call: abre o edital na aba de startups compatíveis.
+    legacy = st.session_state.pop('page', None)
+    if legacy == 'Match Inteligente' and st.session_state.get('match_call'):
+        st.session_state.focus_call = st.session_state['match_call']
+        st.session_state.goto = 'Editais'
+    elif legacy:
+        st.session_state.goto = LEGACY_PAGES.get(legacy, legacy)
+    st.logo(str(Path(__file__).parent / 'assets' / 'logo.svg'), size='large')
+    pages = {title: st.Page(_page(title), title=title, icon=icon, url_path=slug, default=(slug == 'inicio'))
+             for title, slug, icon in PAGE_DEFS}
+    nav = st.navigation(list(pages.values()), position='sidebar')
     with st.sidebar:
-        st.html('<div class="brand"><span class="brand-icon">◈</span><div><div class="brand-name">InovaMatch</div><div class="brand-sub">INTELIGÊNCIA EM FOMENTO</div></div></div>')
         st.caption('ESPAÇO DE TRABALHO')
-        dataset = st.selectbox('Base de dados', ['Meus dados', 'Demonstração'], key='dataset', label_visibility='collapsed')
-        if st.session_state.get('page') in LEGACY_PAGES:
-            st.session_state.page = LEGACY_PAGES[st.session_state.page]
-        page = st.radio('Navegação', PAGES, format_func=lambda p: ICONS[PAGES.index(p)] + '  ' + p, key='page', label_visibility='collapsed')
-        st.divider()
-        st.markdown('**Explore o fluxo completo**')
-        st.caption('3 startups e 2 editais fictícios para experimentar editais, vínculos e candidaturas.')
-        st.button('Carregar demonstração', on_click=demo_activate, width='stretch')
-        st.caption('InovaMatch · MVP / 2026')
+        # A escolha fica numa chave comum de sessão: estado de widget é limpo quando a página muda.
+        options = ['Meus dados', 'Demonstração']
+        current = st.session_state.get('dataset', options[0])
+        # Chave amarrada ao valor: quando a base muda (inclusive pelo botão de demonstração), nasce um seletor novo já com o valor certo.
+        dataset = st.selectbox('Base de dados', options, index=options.index(current), key='_dataset_widget_' + current, label_visibility='collapsed')
+        st.session_state.dataset = dataset
+        st.button('Carregar demonstração', on_click=demo_activate, width='stretch', icon=':material/play_circle:')
+        st.caption('3 startups e 2 editais fictícios para experimentar o fluxo completo.')
     simulated = dataset == 'Demonstração'
     if simulated:
         store = Store(st.session_state.setdefault('demo_data', {}))
@@ -1294,17 +1398,18 @@ def main():
         storage_mode = os.environ.get('INOVAMATCH_STORAGE', 'session').lower()
         path = os.environ.get('INOVAMATCH_DB', 'data/inovamatch.db') if storage_mode == 'sqlite' else None
         store = Store(st.session_state.setdefault('real_data', {}), path=path)
-    if simulated or not store.path:
-        with st.sidebar:
-            st.caption('Dados nesta sessão. Podem ser perdidos ao desconectar, recarregar ou reiniciar o site. Exporte uma cópia antes de sair.')
-    else:
-        with st.sidebar:
-            st.caption('SQLite local ativo. Use somente em ambiente privado: os cadastros são compartilhados entre sessões deste servidor.')
     with st.sidebar:
-        st.download_button('↓ Exportar dados em JSON', store.export(), 'inovamatch-demo.json' if simulated else 'inovamatch-dados.json', 'application/json', width='stretch')
-    route = {'Vínculos': lambda: vinculos(store), 'Editais': lambda: radar(store, simulated),
-             'Startups': lambda: startups_page(store, simulated), 'Painel': lambda: painel(store)}
-    route[page]()
+        if simulated or not store.path:
+            st.caption('Dados nesta sessão. Podem ser perdidos ao desconectar, recarregar ou reiniciar o site. Exporte uma cópia antes de sair.')
+        else:
+            st.caption('SQLite local ativo. Use somente em ambiente privado: os cadastros são compartilhados entre sessões deste servidor.')
+        st.download_button('Exportar dados em JSON', store.export(), 'inovamatch-demo.json' if simulated else 'inovamatch-dados.json',
+                           'application/json', width='stretch', icon=':material/download:')
+    goto = st.session_state.pop('goto', None)
+    if goto in pages:
+        st.switch_page(pages[goto])
+    CTX.update(store=store, simulated=simulated)
+    nav.run()
 
 
 if __name__ == '__main__':

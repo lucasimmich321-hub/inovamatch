@@ -4,6 +4,7 @@ from datetime import timedelta
 from inovamatch.domain import today
 import pytest
 from streamlit.testing.v1 import AppTest
+from nav import goto
 
 APP = str(Path(__file__).resolve().parents[1] / 'app.py')
 
@@ -23,31 +24,24 @@ def button(app, label):
 
 
 def navigate(app, page):
-    app.sidebar.radio[0].set_value(page).run()
+    goto(app, page)
     return clean(app)
 
 
 def test_all_pages_and_demo_matching_and_copilot():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    assert app.session_state['page'] == 'Vínculos'  # tela principal
-    navigate(app, 'Painel')
-    # Painel tem um único título de página: o H1 do hero.
-    assert not app.title
-    assert sum('<h1>' in h.value for h in app.get('html')) == 1
+    assert [t.value for t in app.title] == ['Início']  # página inicial
     button(app, 'Carregar demonstração').click().run()
     clean(app)
-    assert app.session_state['dataset'] == 'Demonstração' and app.session_state['page'] == 'Vínculos'
-    for page in ['Startups', 'Editais', 'Painel']:
+    assert app.session_state['dataset'] == 'Demonstração'
+    for page in ['Startups', 'Candidaturas', 'Alertas', 'Início', 'Editais']:
         navigate(app, page)
-    metrics = {m.label: m.value for m in app.metric}
-    assert (metrics['Editais encontrados'], metrics['Startups cadastradas']) == ('2', '3')
-    navigate(app, 'Vínculos')
-    # Vínculos: tabela edital × startups com Atende / Pendente / Não atende.
+    # Editais › Startups compatíveis: edital × proponentes com Atende / Pendente / Não atende.
     summary = next(d for d in app.dataframe if 'Motivo principal' in d.value.columns)
     # As 3 startups fictícias: elegível, pendente e impedida (mesma semântica do match reverso antigo).
     assert summary.value['Resultado'].tolist() == ['Atende', 'Pendente de verificação', 'Não atende']
-    assert len(app.checkbox) > 0
-    app.checkbox[0].check().run()
+    task = next(c for c in app.checkbox if (c.key or '').startswith('chk_'))
+    task.check().run()
     clean(app)
     assert any(t['done'] for t in app.session_state['demo_data']['tasks'].values())
     button(app, 'Iniciar candidatura').click().run()
@@ -55,8 +49,7 @@ def test_all_pages_and_demo_matching_and_copilot():
     real = [a for a in app.session_state['demo_data']['applications'].values() if not a.get('simulated')]
     assert [a['id'] for a in real] == ['demo-call-1:project-demo-verde']
     assert len(app.session_state['demo_data']['analyses']) == 1
-    app.segmented_control[0].set_value('Startup').run()
-    clean(app)
+    navigate(app, 'Startups')
     assert any('Motivo principal' in d.value.columns and 'Edital' in d.value.columns for d in app.dataframe)
 
 
@@ -74,14 +67,14 @@ def test_live_create_and_edit_startup_then_create_project():
     button(app, 'Salvar startup').click().run()
     clean(app)
     assert app.session_state['real_data']['startups'][sid]['name'] == 'Startup editada'
-    navigate(app, 'Startups')
+    navigate(app, 'Candidaturas')  # "Cadastrar Projeto" virou "Nova candidatura"
     next(x for x in app.text_input if x.label == 'Nome do projeto *').set_value('Projeto ao vivo')
-    button(app, 'Salvar projeto').click().run()
+    button(app, 'Salvar candidatura').click().run()
     clean(app)
     assert len(app.session_state['real_data']['projects']) == 1
     assert next(iter(app.session_state['real_data']['projects'].values()))['startup_id'] == sid
     next(x for x in app.text_input if x.label == 'Nome do projeto *').set_value('Projeto editado')
-    button(app, 'Salvar projeto').click().run()
+    button(app, 'Salvar candidatura').click().run()
     clean(app)
     assert len(app.session_state['real_data']['projects']) == 1
     assert next(iter(app.session_state['real_data']['projects'].values()))['name'] == 'Projeto editado'
@@ -99,10 +92,10 @@ def test_session_isolation_and_empty_pages():
 def test_dashboard_open_call_and_criterion_edit():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
     button(app, 'Carregar demonstração').click().run()
-    navigate(app, 'Painel')
-    next(b for b in app.button if b.label == 'Ver edital →').click().run()
+    navigate(app, 'Início')
+    next(b for b in app.button if b.label == 'Ver edital').click().run()  # card "Prazos que vencem"
     clean(app)
-    assert app.session_state['page'] == 'Editais'
+    assert [t.value for t in app.title] == ['Editais']
     select = next(s for s in app.selectbox if s.label == 'Adicionar ou editar critério')
     select.set_value('criterion-0').run()
     clean(app)
@@ -174,7 +167,7 @@ def test_automatic_pdf_analysis_prefills_review_and_integrates_portfolio(monkeyp
     assert len(current['criteria']) > 10
     assert len(current['documents']) == 2
     assert len(app.session_state['real_data']['analyses']) == 1
-    assert [tab.label for tab in app.tabs] == ['Resumo', 'Requisitos', 'Documentação', 'Compatibilidade', 'Fonte']
+    assert [tab.label for tab in app.tabs] == ['Resumo', 'Requisitos', 'Documentação', 'Startups compatíveis', 'Fonte']
     state_rule = next(c for c in current['criteria'] if c['field'] == 'state')
     next(s for s in app.selectbox if s.label == 'Adicionar ou editar critério').set_value(state_rule['id']).run()
     clean(app)
@@ -186,9 +179,7 @@ def test_automatic_pdf_analysis_prefills_review_and_integrates_portfolio(monkeyp
     revised = app.session_state['real_data']['calls'][call['id']]
     rule = next(c for c in revised['criteria'] if c['id'] == state_rule['id'])
     assert rule['confirmed'] and rule['extracted'] and rule['validation_status'] == 'validated'
-    navigate(app, 'Vínculos')
-    next(t for t in app.toggle if t.label == 'Incluir editais ainda em revisão').set_value(True).run()
-    button(app, 'Iniciar candidatura').click().run()
+    button(app, 'Iniciar candidatura').click().run()  # aba "Startups compatíveis" do mesmo edital
     clean(app)
     assert len(app.session_state['real_data']['applications']) == 1
     navigate(app, 'Startups')

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from streamlit.testing.v1 import AppTest
+from nav import goto
 
 from inovamatch.crawler import AWAITING, PUBLISHED
 from inovamatch.domain import today
@@ -38,38 +39,43 @@ def office_data():
     return data
 
 
-def open_app(data, page=None):
+def open_app(data, page='Editais', focus='pub'):
+    """Abre o app com os dados; por padrão no detalhe do edital publicado (aba Startups compatíveis)."""
     app = AppTest.from_file(APP, default_timeout=20).run()
     app.session_state['real_data'] = data
-    if page:
-        app.sidebar.radio[0].set_value(page).run()
-    else:
-        app.run()
+    if focus:
+        app.session_state['focus_call'] = focus
+    goto(app, page)
     return clean(app)
 
 
 # T3 ------------------------------------------------------------------------------------------
 
-def test_four_screens_and_links_is_the_main_one():
+def test_five_task_pages_with_real_navigation():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    assert list(app.sidebar.radio[0].options) == ['⟷  Vínculos', '◎  Editais', '◇  Startups', '▦  Painel']
-    assert app.session_state['page'] == 'Vínculos'
-    for page in ['Editais', 'Startups', 'Painel', 'Vínculos']:
-        app.sidebar.radio[0].set_value(page).run()
+    assert [t.value for t in app.title] == ['Início']
+    for page in ['Editais', 'Startups', 'Candidaturas', 'Alertas', 'Início']:
+        goto(app, page)
         clean(app)
+        assert [t.value for t in app.title] == [page]
 
 
-def test_links_show_only_published_calls_with_verdict_and_reason():
+def test_dataset_choice_survives_page_changes():
+    app = clean(AppTest.from_file(APP, default_timeout=20).run())
+    next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
+    for page in ['Editais', 'Startups', 'Início']:
+        goto(app, page)
+        assert app.session_state['dataset'] == 'Demonstração' and app.sidebar.selectbox[0].value == 'Demonstração'
+
+
+def test_compatible_startups_in_call_detail_with_verdict_and_reason():
     app = open_app(office_data())
-    edital = next(s for s in app.selectbox if s.label == 'Edital')
-    assert [o for o in edital.options] == ['Edital publicado']
     summary = next(d for d in app.dataframe if 'Motivo principal' in d.value.columns).value
-    assert summary['Startup'].tolist() == ['Startup SC', 'Startup PR']
+    assert summary['Proponente'].tolist() == ['Startup SC', 'Startup PR']
     assert summary['Resultado'].tolist() == ['Atende', 'Não atende']
     assert summary['Motivo principal'].tolist()[1] == 'Não atende: Sede em SC'
-    next(t for t in app.toggle if t.label == 'Incluir editais ainda em revisão').set_value(True).run()
-    clean(app)
-    assert len(next(s for s in app.selectbox if s.label == 'Edital').options) == 2
+    review = open_app(office_data(), focus='rev')
+    assert any('Edital ainda em revisão' in c.value for c in review.caption)
 
 
 def test_open_link_shows_reasons_and_starts_candidacy():
@@ -77,26 +83,29 @@ def test_open_link_shows_reasons_and_starts_candidacy():
     app = open_app(data)
     reasons = next(d for d in app.dataframe if 'Justificativa' in d.value.columns).value
     assert 'Sede em SC' in reasons['Requisito'].tolist()
+    assert any(b.label == 'Gerar rascunho da candidatura (.txt)' for b in app.get('download_button'))
     next(b for b in app.button if b.label == 'Iniciar candidatura').click().run()
     clean(app)
     assert app.session_state['real_data']['applications']['pub:p-sc']['status'] == 'Em preparação'
 
 
-def test_legacy_page_names_and_ai_compare_land_on_links():
+def test_legacy_page_names_and_ai_compare_land_on_call_detail():
     data = office_data()
     app = AppTest.from_file(APP, default_timeout=20)
     app.session_state['real_data'] = data
-    # O botão "Comparar com startups" do ai_ui grava estes dois valores (antes do rádio ser desenhado).
+    # O botão "Comparar com startups" do ai_ui (não alterado) grava estes dois valores.
     app.session_state['page'] = 'Match Inteligente'
     app.session_state['match_call'] = 'rev'
     app.run()
     clean(app)
-    assert app.session_state['page'] == 'Vínculos'
-    assert next(s for s in app.selectbox if s.label == 'Edital').value == 'rev'
+    assert [t.value for t in app.title] == ['Editais']
+    assert next(s for s in app.selectbox if s.label == 'Selecione um edital para revisar').value == 'rev'
 
 
-def test_panel_has_coming_soon_startup_view():
-    app = open_app(office_data(), 'Painel')
+def test_home_shows_deadlines_review_and_coming_soon():
+    app = open_app(office_data(), 'Início', focus=None)
+    assert any(m.value.startswith('**Prazos que vencem** · 2') for m in app.markdown)
+    assert any(m.value.startswith('**Editais para revisar** · 1') for m in app.markdown)
     assert any('Em breve' in h.value and 'Visão da startup' in h.value for h in app.get('html'))
 
 
@@ -247,7 +256,7 @@ def test_link_screen_shows_checklist_and_vault_tab(vault_dir):
     marker.check().run()
     clean(app)
     assert any(t.get('kind') == 'checklist' and t['done'] for t in app.session_state['real_data']['tasks'].values())
-    app.sidebar.radio[0].set_value('Startups').run()
+    goto(app, 'Startups')
     clean(app)
     table = next(d for d in app.dataframe if 'Validade' in d.value.columns)
     assert table.value['Tipo'].tolist() == ['Contrato social']
@@ -403,11 +412,11 @@ def test_csv_export_neutralizes_formulas():
 
 def test_panel_screen_with_demo_and_empty_state():
     app = clean(AppTest.from_file(APP, default_timeout=20).run())
-    app.sidebar.radio[0].set_value('Painel').run()
+    goto(app, 'Candidaturas')  # resultados do escritório: Candidaturas › Resultados
     clean(app)
     assert any('Nenhuma candidatura finalizada' in i.value for i in app.info)
     next(b for b in app.button if b.label == 'Carregar demonstração').click().run()
-    app.sidebar.radio[0].set_value('Painel').run()
+    goto(app, 'Candidaturas')
     clean(app)
     metrics = {m.label: m.value for m in app.metric}
     assert metrics['Captado'] == 'R$ 230.000,00' and metrics['Deixou de captar'] == 'R$ 410.000,00'
